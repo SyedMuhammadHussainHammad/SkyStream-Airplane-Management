@@ -192,10 +192,13 @@ main > div { padding: 0 !important; max-width: 100% !important; }
           </div>
           <div>
             <label class="field-label">Password</label>
-            {{ form.password(class="field-input", placeholder="••••••••", id="pax-password", autocomplete="current-password") }}
+            <input type="password" name="_pax_pw" id="pax-password" class="field-input" placeholder="••••••••" autocomplete="current-password">
           </div>
           <button type="submit" class="submit-btn mt-1">Sign in →</button>
         </div>
+
+        <!-- Hidden real password field — always submitted -->
+        {{ form.password(class="hidden", id="real-password") }}
 
         <!-- Crew fields -->
         <div id="crew-fields" class="hidden space-y-4">
@@ -209,7 +212,6 @@ main > div { padding: 0 !important; max-width: 100% !important; }
           </div>
           <div>
             <label class="field-label">Password</label>
-            <!-- separate visible input — value copied to form.password on submit -->
             <input type="password" id="crew-password" class="field-input" placeholder="••••••••" autocomplete="current-password">
           </div>
           <label class="flex items-center gap-3 cursor-pointer select-none" onclick="toggleAdminMode()">

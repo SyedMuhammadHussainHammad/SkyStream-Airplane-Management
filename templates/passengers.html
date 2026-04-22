@@ -112,7 +112,7 @@
     </div>
 </div>
 
-<form method="POST" action="{{ url_for('passenger_details', flight_id=flight.id) }}" id="passengerForm">
+<form method="POST" action="{{ url_for('passenger_details', flight_id=flight.id, tier=package_tier) }}" id="passengerForm">
     {{ form.hidden_tag() }}
     <input type="hidden" id="passengers_count" name="passengers_count" value="1">
 
