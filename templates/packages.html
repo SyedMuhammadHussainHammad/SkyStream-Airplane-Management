@@ -50,8 +50,22 @@
     .f-yes { color:#4ade80; }
     .f-no  { color:#475569; }
 
-    /* Progress stepper */
-    .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+    /* Package card body — dark in dark mode, tinted in light mode */
+    .pkg-body {
+        background: #0d1f3c;
+        transition: background .3s;
+    }
+    html:not(.dark-mode) .pkg-body {
+        background: #b8d2e8;
+    }
+    /* step upcoming in light mode */
+    html:not(.dark-mode) .step-upcoming {
+        background: rgba(14,165,233,.1);
+        color: #1e4a6e;
+        border-color: rgba(14,165,233,.25);
+    }
+    html:not(.dark-mode) .step-line { background: rgba(14,165,233,.2); }
+    html:not(.dark-mode) .f-no { color: #1e4a6e; }
     .step-active   { background:#0ea5e9; color:#fff; box-shadow:0 0 12px rgba(14,165,233,.5); }
     .step-done     { background:rgba(34,197,94,.2); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
     .step-upcoming { background:rgba(255,255,255,.05); color:#475569; border:1px solid rgba(255,255,255,.08); }
@@ -105,7 +119,7 @@
                     <h3 class="text-white font-display font-bold text-2xl">Basic</h3>
                     <p class="text-blue-200 text-xs mt-1 font-medium">Essential Travel</p>
                 </div>
-                <div class="p-6" style="background:#0d1f3c;">
+                <div class="p-6 pkg-body">
                     <div class="text-center mb-6">
                         <span class="text-4xl font-display font-black text-white">Rs 19,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>
@@ -137,7 +151,7 @@
                     <h3 class="text-white font-display font-bold text-2xl">Economy</h3>
                     <p class="text-sky-100 text-xs mt-1 font-medium">Comfortable Value</p>
                 </div>
-                <div class="p-6" style="background:#0d1f3c;">
+                <div class="p-6 pkg-body">
                     <div class="text-center mb-6">
                         <span class="text-4xl font-display font-black text-white">Rs 24,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>
@@ -165,7 +179,7 @@
                     <h3 class="text-white font-display font-bold text-2xl">Premium</h3>
                     <p class="text-amber-200 text-xs mt-1 font-medium">Ultimate Luxury</p>
                 </div>
-                <div class="p-6" style="background:#0d1f3c;">
+                <div class="p-6 pkg-body">
                     <div class="text-center mb-6">
                         <span class="text-4xl font-display font-black shimmer-badge">Rs 30,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>

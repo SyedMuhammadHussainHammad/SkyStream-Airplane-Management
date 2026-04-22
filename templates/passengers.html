@@ -64,9 +64,20 @@
         border-color: #f59e0b;
     }
 
-    .aisle {
-        width: 16px;
+    /* Seat map & passenger card headers */
+    .pax-card-header {
+        background: linear-gradient(135deg, #050d1f, #0a2a4a);
     }
+    html:not(.dark-mode) .pax-card-header {
+        background: linear-gradient(135deg, #0a1e36, #0f2d4a);
+    }
+    /* Seat map legend & column labels bg */
+    html:not(.dark-mode) .seat-legend {
+        background: #c8dff0 !important;
+        border-color: #8ab4d4 !important;
+    }
+    /* Progress bar track */
+    html:not(.dark-mode) .progress-track { background: #8ab4d4; }
 
     #seat-map-scroll {
         overflow-y: auto;
@@ -96,7 +107,7 @@
             </span>
         </div>
     </div>
-    <div class="h-1 rounded-full" style="background:#e2e8f0;">
+    <div class="h-1 rounded-full progress-track" style="background:#e2e8f0;">
         <div class="h-1 rounded-full" style="width:75%;background:linear-gradient(90deg,#0ea5e9,#c9922a);"></div>
     </div>
 </div>
@@ -111,7 +122,7 @@
         <div>
             <div class="card overflow-hidden">
                 <!-- Map header -->
-                <div class="bg-navy px-6 py-5 text-center" style="background:linear-gradient(135deg,#050d1f,#0a2a4a);">
+                <div class="bg-navy px-6 py-5 text-center" class="pax-card-header">
                     <p class="font-bold text-white text-base tracking-wide">Cabin map</p>
                     <p class="text-slate-400 text-xs mt-1">Flight #{{ flight.id }} · {{ flight.plane.plane_id if
                         flight.plane else 'TBA' }}</p>
@@ -242,7 +253,7 @@
 
 <template id="passenger-template">
     <div class="card overflow-hidden passenger-card">
-        <div class="px-5 py-3.5 flex items-center justify-between" style="background:linear-gradient(135deg,#050d1f,#0a2a4a);">
+        <div class="px-5 py-3.5 flex items-center justify-between" class="pax-card-header">
             <p class="text-white font-bold text-sm">Passenger <span class="p-num">1</span></p>
             <span class="seat-label text-slate-400 text-xs font-mono">No seat selected</span>
         </div>

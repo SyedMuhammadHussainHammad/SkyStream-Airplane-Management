@@ -31,51 +31,58 @@
         .checkout-grid { grid-template-columns: 1fr; }
     }
     .panel {
-        background: #fff;
+        background: rgba(74,120,152,.6);
         border-radius: 18px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 14px rgba(2, 6, 23, .06);
+        border: 1px solid rgba(255,255,255,.2);
+        box-shadow: 0 2px 14px rgba(0,0,0,.2);
     }
+    .dark-mode .panel { background: #0d1f3c; border-color: #1e3a5f; box-shadow: 0 2px 14px rgba(0,0,0,.3); }
     .panel-head {
         padding: 18px 20px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid rgba(255,255,255,.15);
     }
+    .dark-mode .panel-head { border-bottom-color: #1e3a5f; }
     .panel-body { padding: 20px; }
     .route-code {
-        font-family: 'Sora', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 28px;
         font-weight: 800;
         line-height: 1;
-        color: #0f172a;
+        color: #ffffff;
     }
+    .dark-mode .route-code { color: #e2e8f0; }
     .payment-option {
         display: block;
-        border: 1px solid #dbe4f0;
+        border: 1px solid rgba(255,255,255,.2);
         border-radius: 12px;
         padding: 12px 14px;
         transition: all .2s ease;
         cursor: pointer;
-        background: #fff;
+        background: rgba(47,84,112,.6);
     }
+    .dark-mode .payment-option { background: #0a1628; border-color: #1e3a5f; }
     .payment-option:hover {
-        border-color: #0ea5e9;
-        box-shadow: 0 0 0 3px rgba(14,165,233,.14);
+        border-color: rgba(255,255,255,.5);
+        box-shadow: 0 0 0 3px rgba(255,255,255,.1);
     }
     .payment-option input { accent-color: #0ea5e9; }
     .total-pill {
         border-radius: 14px;
-        background: linear-gradient(135deg, #ecfeff, #e0f2fe);
-        border: 1px solid #bae6fd;
+        background: rgba(47,84,112,.7);
+        border: 1px solid rgba(255,255,255,.2);
         padding: 14px 16px;
     }
+    .dark-mode .total-pill { background: linear-gradient(135deg,#0c1a2e,#0a1628); border-color: #1e3a5f; }
     .subtle {
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: .5px;
-        color: #64748b;
+        color: #a8cfe0;
     }
-    .table-row:not(:last-child) { border-bottom: 1px solid #eef2f7; }
+    .dark-mode .subtle { color: #64748b; }
+    .table-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,.12); }
+    .dark-mode .table-row:not(:last-child) { border-bottom-color: #1e3a5f; }
 </style>
 {% endblock %}
 
@@ -132,13 +139,13 @@
                 </div>
 
                 <div class="rounded-xl border border-slate-200 overflow-hidden">
-                    <table class="w-full text-sm bg-white">
+                    <table class="w-full text-sm">
                         <thead>
-                            <tr class="bg-slate-50">
-                                <th class="text-left px-4 py-3 subtle">#</th>
-                                <th class="text-left px-4 py-3 subtle">Passenger</th>
-                                <th class="text-left px-4 py-3 subtle">Seat</th>
-                                <th class="text-left px-4 py-3 subtle">Meal</th>
+                            <tr style="background:linear-gradient(135deg,#0a1e36,#0f2d4a);">
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">#</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Passenger</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Seat</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Meal</th>
                             </tr>
                         </thead>
                         <tbody>
