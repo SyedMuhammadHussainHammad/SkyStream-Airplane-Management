@@ -180,43 +180,42 @@ main > div { padding: 0 !important; max-width: 100% !important; }
 
       <form method="POST" action="{{ url_for('login') }}" id="login-form" novalidate class="px-7 py-6">
         {{ form.hidden_tag() }}
-        {% for subfield in form.login_type %}{{ subfield(class="hidden") }}{% endfor %}
+
+        <!-- login_type radio — set by JS -->
+        {{ form.login_type(class="hidden") }}
 
         <!-- Passenger fields -->
         <div id="passenger-fields" class="space-y-4">
           <div>
             <label class="field-label">Email address</label>
-            {{ form.email(class="field-input", placeholder="you@example.com", id="pax-email") }}
-            {% for e in form.email.errors %}<p class="mt-1 text-xs text-red-500">{{ e }}</p>{% endfor %}
+            {{ form.email(class="field-input", placeholder="you@example.com", id="pax-email", autocomplete="email") }}
           </div>
           <div>
             <label class="field-label">Password</label>
-            {{ form.password(class="field-input", placeholder="••••••••", id="pax-password") }}
-            {% for e in form.password.errors %}<p class="mt-1 text-xs text-red-500">{{ e }}</p>{% endfor %}
+            {{ form.password(class="field-input", placeholder="••••••••", id="pax-password", autocomplete="current-password") }}
           </div>
           <button type="submit" class="submit-btn mt-1">Sign in →</button>
         </div>
 
         <!-- Crew fields -->
         <div id="crew-fields" class="hidden space-y-4">
-          <div class="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-medium" style="background:#fef9c3;border:1px solid #fde68a;color:#92400e;">
+          <div class="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-medium" style="background:rgba(254,243,199,.15);border:1px solid rgba(253,230,138,.3);color:#fde68a;">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             Authorized crew and admin personnel only.
           </div>
           <div>
             <label class="field-label">Staff ID / Email (Admin)</label>
-            <input type="text" name="staff_id" id="crew-staffid" class="field-input font-mono" placeholder="e.g. SS-PAK-001 or admin@skystream.pk">
-            {% for e in form.staff_id.errors %}<p class="mt-1 text-xs text-red-500">{{ e }}</p>{% endfor %}
+            {{ form.staff_id(class="field-input font-mono", placeholder="e.g. STF-1001", id="crew-staffid", autocomplete="username") }}
           </div>
           <div>
             <label class="field-label">Password</label>
-            <input type="password" name="crew_password" id="crew-password" class="field-input" placeholder="••••••••">
+            <!-- separate visible input — value copied to form.password on submit -->
+            <input type="password" id="crew-password" class="field-input" placeholder="••••••••" autocomplete="current-password">
           </div>
           <label class="flex items-center gap-3 cursor-pointer select-none" onclick="toggleAdminMode()">
             <div id="admin-track" class="toggle-track"><div class="toggle-thumb"></div></div>
-            <span class="text-xs text-slate-600 font-semibold">Login as Administrator</span>
+            <span class="text-xs text-white font-semibold">Login as Administrator</span>
           </label>
-          <input type="checkbox" id="admin-toggle" class="hidden">
           <button type="submit" class="submit-btn">Crew / Admin Sign in →</button>
         </div>
       </form>
@@ -235,6 +234,11 @@ main > div { padding: 0 !important; max-width: 100% !important; }
 let currentTab = 'passenger';
 let adminMode = false;
 
+// Radio buttons rendered by WTForms: login_type-0=customer, login_type-1=staff, login_type-2=admin
+const radioCustomer = document.querySelector('input[name="login_type"][value="customer"]');
+const radioStaff    = document.querySelector('input[name="login_type"][value="staff"]');
+const radioAdmin    = document.querySelector('input[name="login_type"][value="admin"]');
+
 function switchTab(tab) {
   currentTab = tab;
   const isPax = tab === 'passenger';
@@ -242,28 +246,37 @@ function switchTab(tab) {
   document.getElementById('crew-fields').classList.toggle('hidden', isPax);
   document.getElementById('tab-passenger').classList.toggle('active', isPax);
   document.getElementById('tab-crew').classList.toggle('active', !isPax);
-  document.getElementById(isPax ? 'login_type-0' : 'login_type-1').checked = true;
+  if (isPax) {
+    radioCustomer.checked = true;
+    adminMode = false;
+    document.getElementById('admin-track').classList.remove('on');
+  } else {
+    radioStaff.checked = true;
+  }
 }
 
 function toggleAdminMode() {
   adminMode = !adminMode;
-  const track = document.getElementById('admin-track');
-  track.classList.toggle('on', adminMode);
-  document.getElementById(adminMode ? 'login_type-2' : 'login_type-1').checked = true;
+  document.getElementById('admin-track').classList.toggle('on', adminMode);
+  if (adminMode) radioAdmin.checked = true;
+  else           radioStaff.checked = true;
 }
 
 document.getElementById('login-form').addEventListener('submit', function() {
   if (currentTab === 'crew') {
-    document.getElementById('pax-password').value = document.getElementById('crew-password').value;
-    document.getElementById('crew-password').disabled = true;
+    // Copy the crew password into the WTForms password field so Flask receives it
+    const crewPass = document.getElementById('crew-password').value;
+    document.getElementById('pax-password').value = crewPass;
+
+    // For admin mode, also copy staff_id input into the email field
     if (adminMode) {
-      document.getElementById('pax-email').value = document.getElementById('crew-staffid').value;
-      document.getElementById('crew-staffid').disabled = true;
+      const staffVal = document.getElementById('crew-staffid').value.trim();
+      document.getElementById('pax-email').value = staffVal;
     }
-  } else {
-    document.getElementById('crew-password').disabled = true;
-    document.getElementById('crew-staffid').disabled = true;
   }
 });
+
+// Init — default to customer tab
+radioCustomer.checked = true;
 </script>
 {% endblock %}
