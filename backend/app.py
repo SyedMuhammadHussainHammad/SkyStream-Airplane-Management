@@ -15,19 +15,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_migrate import Migrate
 
 load_dotenv()
 
-# 1. DEFINE EXTENSIONS GLOBALLY (This allows models.py to find them immediately)
-#
-# This repo keeps `templates/` and `static/` at the project root (sibling of
-# `backend/`). When running `backend/app.py` directly (or via serverless),
-# Flask's default lookup would be `backend/templates`, so we configure explicit
-# absolute paths.
+# Templates and static live at the project root (parent of backend/)
+# This works both locally and on Vercel
 _project_root = os.path.abspath(os.path.join(_backend_dir, os.pardir))
 _templates_dir = os.path.join(_project_root, "templates")
-_static_dir = os.path.join(_project_root, "static")
+_static_dir    = os.path.join(_project_root, "static")
 
 def debug_log(*, run_id: str, hypothesis_id: str, location: str, message: str, data: dict):
     """No-op debug logger for local dev. Override by setting DEBUG_LOG_PATH env var."""
@@ -57,32 +52,32 @@ app = Flask(
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
-migrate = Migrate()
 
 # 2. CONFIGURATION
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skystream-secret-key-123')
-database_url = os.environ.get('DATABASE_URL')
+database_url = os.environ.get('DATABASE_URL', '')
 
-if database_url and database_url.startswith("postgres://"):
+# Render/Neon/Heroku use postgres:// — SQLAlchemy needs postgresql://
+if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Prefer local SQLite for dev by default, even if a stray DATABASE_URL is set.
-# In production/serverless environments (or when explicitly requested), use
-# DATABASE_URL.
-use_database_url = bool(database_url)
-
-if not use_database_url:
-    base_dir = os.path.abspath(os.path.dirname(__file__))
-    database_url = 'sqlite:///' + os.path.join(base_dir, 'instance', 'skystream.db')
+# Fall back to SQLite for local dev only
+if not database_url:
+    _instance_dir = os.path.join(_backend_dir, 'instance')
+    os.makedirs(_instance_dir, exist_ok=True)
+    database_url = 'sqlite:///' + os.path.join(_instance_dir, 'skystream.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 # 3. INITIALIZE EXTENSIONS WITH APP
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
-migrate.init_app(app, db)
 
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
