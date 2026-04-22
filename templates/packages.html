@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Select Package{% endblock %}
+
+{% block head %}
+<style>
+    /* ── Package card flip ── */
+    .pkg-wrapper {
+        perspective: 900px;
+        cursor: pointer;
+    }
+    .pkg-inner {
+        position: relative;
+        border-radius: 20px;
+        border: 2px solid rgba(255,255,255,.08);
+        overflow: hidden;
+        transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+        transform-style: preserve-3d;
+    }
+    .pkg-wrapper:hover .pkg-inner {
+        transform: translateY(-6px) rotateX(3deg);
+    }
+    /* selected ring */
+    input:checked ~ .pkg-inner {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14,165,233,.2), 0 20px 40px rgba(0,0,0,.3);
+        transform: translateY(-8px);
+    }
+    /* gold ring for premium */
+    .pkg-premium input:checked ~ .pkg-inner {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(245,158,11,.2), 0 20px 40px rgba(0,0,0,.3);
+    }
+    /* Header gradient per tier */
+    .tier-basic   { background: linear-gradient(135deg,#1e3a5f,#1a3a8a); }
+    .tier-economy { background: linear-gradient(135deg,#0369a1,#0ea5e9); }
+    .tier-premium { background: linear-gradient(135deg,#92400e,#d97706); }
+
+    /* shimmer on premium badge */
+    .shimmer-badge {
+        background: linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b);
+        background-size: 200% 100%;
+        animation: shimmer 2s linear infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    @keyframes shimmer { from{background-position:-200% 0} to{background-position:200% 0} }
+
+    /* Feature check/cross */
+    .f-yes { color:#4ade80; }
+    .f-no  { color:#475569; }
+
+    /* Progress stepper */
+    .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+    .step-active   { background:#0ea5e9; color:#fff; box-shadow:0 0 12px rgba(14,165,233,.5); }
+    .step-done     { background:rgba(34,197,94,.2); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+    .step-upcoming { background:rgba(255,255,255,.05); color:#475569; border:1px solid rgba(255,255,255,.08); }
+    .step-line     { flex:1; height:2px; background:rgba(255,255,255,.07); }
+    .step-line.done { background:linear-gradient(90deg,#22c55e,#0ea5e9); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Progress stepper -->
+<div class="flex items-center gap-2 mb-10 max-w-2xl mx-auto justify-center">
+    <div class="step-dot step-done">✓</div>
+    <div class="step-line done"></div>
+    <div class="step-dot step-active">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot step-upcoming">3</div>
+    <div class="step-line"></div>
+    <div class="step-dot step-upcoming">4</div>
+</div>
+<div class="flex justify-center gap-16 text-xs text-slate-500 mb-10 -mt-7 max-w-2xl mx-auto">
+    <span class="text-emerald-400 font-semibold">Search</span>
+    <span style="color:#38bdf8;" class="font-semibold">Package</span>
+    <span>Passengers</span>
+    <span>Checkout</span>
+</div>
+
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+    <div>
+        <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#38bdf8;">Step 2 of 4</p>
+        <h1 class="text-3xl font-black text-white">Choose Your Package</h1>
+    </div>
+    <div class="inline-flex items-center gap-2 glass px-5 py-2.5 rounded-2xl text-sm font-semibold text-white" style="border:1px solid rgba(255,255,255,.1);">
+        ✈️ {{ flight.origin }} → {{ flight.destination }}
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}">
+    {{ form.hidden_tag() }}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+        <!-- ═══ BASIC ═══ -->
+        <label class="pkg-wrapper block" for="pkg-basic">
+            <input type="radio" id="pkg-basic" name="{{ form.package_tier.name }}" value="Basic"
+                   class="peer sr-only" {% if form.package_tier.data == 'Basic' %}checked{% endif %}>
+            <div class="pkg-inner">
+                <div class="tier-basic px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">🎒</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Basic</h3>
+                    <p class="text-blue-200 text-xs mt-1 font-medium">Essential Travel</p>
+                </div>
+                <div class="p-6" style="background:#0d1f3c;">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black text-white">Rs 19,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
+                    </div>
+                    <ul class="space-y-3 text-sm mb-6">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 23 kg Checked luggage</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Seat selection included</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Meals (not included)</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
+                    </ul>
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all" style="border:1px solid rgba(14,165,233,.3);">
+                        Choose Basic
+                    </div>
+                </div>
+            </div>
+        </label>
+
+        <!-- ═══ ECONOMY ═══ -->
+        <label class="pkg-wrapper block relative" for="pkg-economy">
+            <!-- badge -->
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-white text-[10px] font-extrabold px-4 py-1 rounded-full border-2 shadow-lg tracking-wide" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border-color:#050d1f;">
+                ⭐ Most Popular
+            </span>
+            <input type="radio" id="pkg-economy" name="{{ form.package_tier.name }}" value="Economy"
+                   class="peer sr-only" {% if form.package_tier.data == 'Economy' %}checked{% endif %}>
+            <div class="pkg-inner mt-3">
+                <div class="tier-economy px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">🧳</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Economy</h3>
+                    <p class="text-sky-100 text-xs mt-1 font-medium">Comfortable Value</p>
+                </div>
+                <div class="p-6" style="background:#0d1f3c;">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black text-white">Rs 24,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
+                    </div>
+                    <ul class="space-y-3 text-sm mb-6">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 10 kg Carry-on only</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Seat selection included</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Select free meal from list</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
+                    </ul>
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all" style="border:1px solid rgba(14,165,233,.3);">
+                        Choose Economy
+                    </div>
+                </div>
+            </div>
+        </label>
+
+        <!-- ═══ PREMIUM ═══ -->
+        <label class="pkg-wrapper pkg-premium block" for="pkg-premium">
+            <input type="radio" id="pkg-premium" name="{{ form.package_tier.name }}" value="Premium"
+                   class="peer sr-only" {% if form.package_tier.data == 'Premium' %}checked{% endif %}>
+            <div class="pkg-inner">
+                <div class="tier-premium px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">👑</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Premium</h3>
+                    <p class="text-amber-200 text-xs mt-1 font-medium">Ultimate Luxury</p>
+                </div>
+                <div class="p-6" style="background:#0d1f3c;">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black shimmer-badge">Rs 30,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
+                    </div>
+                    <ul class="space-y-3 text-sm mb-6">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 56 kg Luggage capacity</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> All gourmet meals included</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Premium drinks included</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Any seat — priority boarding</li>
+                    </ul>
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white border border-amber-500/30 peer-checked:bg-amber-500/10 transition-all">
+                        Choose Premium
+                    </div>
+                </div>
+            </div>
+        </label>
+    </div>
+
+    {% if form.package_tier.errors %}
+    <div class="ss-card border-red-500/30 px-5 py-3 text-sm text-red-400 mb-6 flex items-center gap-2">
+        ⚠️ Please select a package to continue.
+    </div>
+    {% endif %}
+
+    <!-- Nav buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 border-t border-white/06 pt-7">
+        <a href="{{ url_for('search_flights') }}"
+           class="flex items-center justify-center gap-2 text-slate-400 hover:text-white font-semibold px-6 py-3.5 rounded-xl transition-all text-sm" style="border:1px solid rgba(255,255,255,.1);">
+            ← Back to Search
+        </a>
+        {{ form.submit(class="flex-1 sm:flex-none sm:min-w-[200px] btn-primary py-3.5 px-8 rounded-xl text-sm font-bold", id="pkg-submit-btn") }}
+    </div>
+</form>
+{% endblock %}

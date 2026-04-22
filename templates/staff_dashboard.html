@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block head %}
+<style>
+    /* ── Sidebar profile card ── */
+    .profile-gradient { background: linear-gradient(145deg,#020c1b,#041830); }
+
+    /* ── Avatar ring ── */
+    .avatar-ring {
+        background: linear-gradient(135deg,#0ea5e9,#38bdf8);
+        padding: 3px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .avatar-inner {
+        background: var(--ss-dark);
+        border-radius: 50%;
+        width: 80px; height: 80px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem; font-weight: 900;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #0ea5e9;
+    }
+
+    /* ── Stat card ── */
+    .stat-card {
+        background: rgba(14,165,233,.06);
+        border: 1px solid rgba(14,165,233,.12);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        transition: transform .25s ease;
+    }
+    .stat-card:hover { transform: translateY(-3px); background: rgba(14,165,233,.1); }
+
+    /* ── Route line animation ── */
+    .route-dash { stroke-dasharray:5 4; animation:dashAnim 1.2s linear infinite; }
+    @keyframes dashAnim { to { stroke-dashoffset:-18; } }
+
+    /* ── 3D roster card ── */
+    .roster-card {
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+    .roster-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 48px rgba(0,0,0,.3), 0 0 0 1px rgba(14,165,233,.15);
+    }
+
+    /* Stars */
+    .star-filled { color:#f59e0b; }
+    .star-empty  { color:rgba(255,255,255,.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="w-full lg:w-72 flex-shrink-0">
+        <div class="ss-card overflow-hidden sticky top-24">
+
+            <!-- Profile header -->
+            <div class="profile-gradient px-6 pt-8 pb-6 text-center border-b border-white/06">
+                <div class="avatar-ring mb-4 inline-block">
+                    <div class="avatar-inner">
+                        {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+                    </div>
+                </div>
+                <h2 class="text-white font-display font-extrabold text-xl mt-1">
+                    {{ current_user.first_name }} {{ current_user.last_name }}
+                </h2>
+                <span class="pill pill-blue text-xs mt-2 inline-block">
+                    👨‍✈️ {{ current_user.staff_id }}
+                </span>
+                {% if profile %}
+                <p class="text-slate-500 text-xs mt-2">{{ profile.role or 'Crew Member' }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Profile details -->
+            <div class="p-5 border-b border-white/06">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4">Profile</p>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-center gap-3 text-slate-400">
+                        <span class="text-base">🎂</span>
+                        <span><span class="text-slate-600 text-xs">Age:</span> {{ current_user.age }}</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-400">
+                        <span class="text-base">✉️</span>
+                        <span class="truncate text-xs">{{ current_user.email }}</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-400">
+                        <span class="text-base">📱</span>
+                        <span class="text-xs"><span class="text-slate-600">Phone:</span> {{ current_user.phone_number }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Stats grid -->
+            {% if profile %}
+            <div class="grid grid-cols-2 gap-3 p-5">
+                <div class="stat-card">
+                    <p class="text-2xl font-display font-black" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ profile.completed_duties }}</p>
+                    <p class="text-slate-500 text-xs mt-1">Duties</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-2xl font-display font-black" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ profile.feedback_rating }}<span class="text-xs text-slate-500">/5</span></p>
+                    <p class="text-slate-500 text-xs mt-1">Rating</p>
+                </div>
+                <div class="stat-card" style="background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.12);">
+                    <p class="text-base font-display font-black text-green-400">${{ "{:,.0f}".format(profile.salary) }}</p>
+                    <p class="text-slate-500 text-xs mt-1">Salary</p>
+                </div>
+                <div class="stat-card" style="background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.12);">
+                    <p class="text-2xl font-display font-black text-amber-400">{{ profile.reward_points }}</p>
+                    <p class="text-slate-500 text-xs mt-1">Points</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="flex-1 min-w-0">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-display font-extrabold text-white">My Duty Roster</h2>
+            <span class="pill pill-blue text-xs">{{ rosters|length }} Assignment(s)</span>
+        </div>
+
+        {% if rosters %}
+        <div class="space-y-6">
+            {% for r in rosters %}
+            {% set plane = r.flight.plane if r.flight.plane else none %}
+            <div class="ss-card overflow-hidden roster-card" id="roster-{{ loop.index }}">
+
+                <!-- Card header -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-white/06"
+                     style="background:rgba(14,165,233,.04);">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2 h-2 rounded-full bg-ss-blue animate-pulse"></span>
+                        <span class="text-ss-blue2 font-display font-bold text-sm">Flight #{{ r.flight.id }}</span>
+                        {% if plane %}
+                        <span class="hidden sm:inline font-mono text-xs text-slate-400 bg-white/05 px-2 py-0.5 rounded border border-white/08">{{ plane.plane_id }}</span>
+                        <span class="hidden sm:inline text-slate-500 text-xs">{{ plane.model }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="pill pill-blue text-xs">
+                        {{ r.flight.departure_time.strftime('%d %b %Y, %H:%M') }}
+                    </span>
+                </div>
+
+                <div class="p-6">
+                    <!-- Aircraft info banner -->
+                    {% if plane %}
+                    <div class="glass rounded-2xl px-5 py-4 mb-6 flex flex-wrap gap-5 border border-white/06">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">Aircraft</p>
+                            <p class="font-display font-bold text-ss-blue2 font-mono text-sm">{{ plane.plane_id }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">Model</p>
+                            <p class="font-semibold text-white text-sm">{{ plane.model }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">Capacity</p>
+                            <p class="font-semibold text-white text-sm">{{ plane.capacity }} seats</p>
+                        </div>
+                        <div class="ml-auto">
+                            <span class="pill text-xs
+                                {% if plane.status == 'in_flight'    %}pill-blue
+                                {% elif plane.status == 'maintenance' %}pill-orange
+                                {% else %}pill-green{% endif %}">
+                                {% if plane.status == 'in_flight' %}✈ In Flight
+                                {% elif plane.status == 'maintenance' %}🔧 Maintenance
+                                {% else %}🟢 On Ground{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Route display -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="text-center">
+                            <p class="text-3xl font-display font-extrabold text-white">
+                                {{ r.flight.origin.split('(')[-1].replace(')','') if '(' in r.flight.origin else r.flight.origin[:3] }}
+                            </p>
+                            <p class="text-xs text-slate-500 mt-1">{{ r.flight.origin.split('(')[0].strip() }}</p>
+                        </div>
+                        <div class="flex-1 flex flex-col items-center px-6">
+                            <p class="text-xs text-slate-500 mb-2">{{ r.flight.duration }}</p>
+                            <svg class="w-full h-6" viewBox="0 0 100 20" preserveAspectRatio="none">
+                                <line x1="0" y1="10" x2="82" y2="10" stroke="rgba(14,165,233,.35)" stroke-width="1.5" class="route-dash"/>
+                                <text x="85" y="14" font-size="10" fill="#0ea5e9">✈</text>
+                            </svg>
+                            <p class="text-xs text-slate-500 mt-1">Direct Flight</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl font-display font-extrabold text-white">
+                                {{ r.flight.destination.split('(')[-1].replace(')','') if '(' in r.flight.destination else r.flight.destination[:3] }}
+                            </p>
+                            <p class="text-xs text-slate-500 mt-1">{{ r.flight.destination.split('(')[0].strip() }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Roster details -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-white/06 pt-5">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">🏨 Hotel</p>
+                            <p class="text-sm font-semibold text-white">{{ r.hotel or 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">🎫 Travel ID</p>
+                            <p class="text-sm font-semibold text-white font-mono">{{ r.travel_id or 'N/A' }}</p>
+                        </div>
+                        <!-- Star rating -->
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2">⭐ Feedback</p>
+                            <div class="flex items-center gap-1">
+                                {% if profile %}
+                                    {% set rating = profile.feedback_rating | int %}
+                                    {% for i in range(5) %}
+                                        <span class="text-lg {% if i < rating %}star-filled{% else %}star-empty{% endif %}">★</span>
+                                    {% endfor %}
+                                    <span class="text-xs text-slate-500 ml-1">{{ profile.feedback_rating }}/5.0</span>
+                                {% else %}
+                                <span class="text-slate-600 text-xs">No ratings yet</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="ss-card p-14 text-center">
+            <p class="text-5xl mb-4">🗓️</p>
+            <h3 class="text-white font-display font-bold text-xl mb-2">No Upcoming Duties</h3>
+            <p class="text-slate-500 text-sm">You have no flights assigned. Check back soon.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

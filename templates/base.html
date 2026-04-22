@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyStream — {% block title %}{% endblock %}</title>
+  <meta name="description" content="SkyStream Airlines – Pakistan's premier digital airline.">
+  <script>if(localStorage.getItem('ss-theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy:  { DEFAULT:'#050d1f', 900:'#050d1f', 800:'#0a1628', 700:'#0d1f3c', 600:'#112850', 500:'#1a3a6b' },
+            sky:   { DEFAULT:'#0ea5e9', light:'#38bdf8', dark:'#0284c7' },
+            gold:  { DEFAULT:'#c9922a', light:'#e8b84b', pale:'#fdf3dc', dark:'#a07020' },
+          },
+          fontFamily: {
+            display: ["'Inter'","'Sora'","sans-serif"],
+            body:    ["'Inter'","'DM Sans'","sans-serif"],
+          },
+          animation: {
+            'fade-up':   'fadeUp .5s cubic-bezier(.16,1,.3,1) both',
+            'fade-in':   'fadeIn .35s ease both',
+            'float':     'float 6s ease-in-out infinite',
+            'shimmer':   'shimmer 2.5s linear infinite',
+            'pulse-slow':'pulseSlow 3s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeUp:    { from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+            fadeIn:    { from:{opacity:'0'}, to:{opacity:'1'} },
+            float:     { '0%,100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-12px)'} },
+            shimmer:   { from:{backgroundPosition:'-200% 0'}, to:{backgroundPosition:'200% 0'} },
+            pulseSlow: { '0%,100%':{opacity:'1'}, '50%':{opacity:'.5'} },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:   #050d1f;
+      --navy2:  #0a1628;
+      --blue:   #0ea5e9;
+      --blue2:  #38bdf8;
+      --gold:   #c9922a;
+      --gold2:  #e8b84b;
+      --surface:#0d1f3c;
+      --glass:  rgba(255,255,255,.06);
+      --glass-border: rgba(255,255,255,.10);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+
+    /* ── Fixed full-page background ── */
+    html, body {
+      min-height: 100%;
+    }
+    body {
+      font-family:'Inter',sans-serif;
+      color:#e2e8f0;
+      min-height:100vh;
+      background: #050d1f;
+      background-attachment: fixed;
+    }
+    /* Subtle animated gradient orbs fixed behind everything */
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(14,165,233,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(201,146,42,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 60% at 50% 50%, rgba(10,30,60,.8) 0%, transparent 100%),
+        linear-gradient(160deg, #050d1f 0%, #0a1e3d 50%, #050d1f 100%);
+      pointer-events:none;
+    }
+    h1,h2,h3,h4,h5{font-family:'Inter',sans-serif;font-weight:800;}
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-thumb{background:linear-gradient(#0ea5e9,#c9922a);border-radius:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+
+    /* ── Glass morphism ── */
+    .glass{
+      background:var(--glass);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border:1px solid var(--glass-border);
+    }
+    .glass-dark{
+      background:rgba(5,13,31,.7);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    /* ── Cards ── */
+    .card{
+      background:rgba(255,255,255,.06);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.09);
+      box-shadow:0 4px 24px rgba(0,0,0,.3);
+    }
+    .ss-card{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:20px;
+      box-shadow:0 8px 32px rgba(0,0,0,.25);
+    }
+    .card-hover{transition:transform .25s ease,box-shadow .25s ease;}
+    .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.4);}
+
+    /* ── Buttons ── */
+    .btn-primary{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      background:linear-gradient(135deg,#0ea5e9,#0284c7);
+      color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;
+      transition:all .2s ease;border-radius:14px;
+    }
+    .btn-primary:hover{filter:brightness(1.12);box-shadow:0 8px 28px rgba(14,165,233,.45);transform:translateY(-2px);}
+
+    .btn-gold{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      background:linear-gradient(135deg,#c9922a,#e8b84b);
+      color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;
+      transition:all .2s ease;border-radius:14px;
+    }
+    .btn-gold:hover{filter:brightness(1.1);box-shadow:0 8px 28px rgba(201,146,42,.4);transform:translateY(-2px);}
+
+    .btn-ghost{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+      color:#fff;font-weight:600;cursor:pointer;text-decoration:none;
+      transition:all .2s ease;border-radius:14px;
+    }
+    .btn-ghost:hover{background:rgba(255,255,255,.13);border-color:rgba(14,165,233,.4);transform:translateY(-1px);}
+
+    /* ── Shimmer text ── */
+    .text-shimmer{
+      background:linear-gradient(90deg,#0ea5e9,#38bdf8,#e8b84b,#38bdf8,#0ea5e9);
+      background-size:200% 100%;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:shimmer 3s linear infinite;
+    }
+    .text-gold-gradient{
+      background:linear-gradient(135deg,#c9922a,#e8b84b,#c9922a);
+      background-size:200% 100%;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    /* ── Pills / Badges ── */
+    .pill{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;}
+    .pill-blue {background:rgba(14,165,233,.15);color:#38bdf8;}
+    .pill-gold {background:rgba(201,146,42,.15);color:#e8b84b;}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399;}
+    .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.3px;}
+
+    /* ── Form ── */
+    .ss-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;margin-bottom:6px;}
+    .ss-input{
+      width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;padding:11px 14px;font-size:14px;color:#fff;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    .ss-input::placeholder{color:#475569;}
+    .ss-input:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.18);}
+
+    /* ── Flash ── */
+    .flash-msg{animation:fadeUp .35s cubic-bezier(.16,1,.3,1) both;}
+
+    /* ── Page enter ── */
+    main{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
+
+    /* ── Navbar ── */
+    #navbar{
+      position:fixed;top:0;left:0;right:0;z-index:1000;
+      transition:background .3s,backdrop-filter .3s,box-shadow .3s;
+    }
+    #navbar.scrolled{
+      background:rgba(5,13,31,.88);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 32px rgba(0,0,0,.3);
+    }
+    .nav-link{
+      position:relative;color:rgba(255,255,255,.7);font-size:14px;font-weight:500;
+      padding:6px 14px;border-radius:10px;text-decoration:none;
+      transition:color .2s,background .2s;
+    }
+    .nav-link:hover{color:#fff;background:rgba(255,255,255,.07);}
+    .nav-link.active{color:#38bdf8;}
+
+    /* ── Dark mode ── */
+    .dark-mode{
+      --dm-bg:#020810;--dm-surface:#050d1f;--dm-surface2:#0a1628;
+      --dm-border:#1e3a5f;--dm-text:#e2e8f0;--dm-muted:#94a3b8;
+      --dm-card-bg:rgba(255,255,255,.05);--dm-card-bdr:rgba(255,255,255,.09);
+    }
+    .dark-mode body{background:var(--dm-bg);color:var(--dm-text);}
+    .dark-mode body::before{
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(14,165,233,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(201,146,42,.05) 0%, transparent 60%),
+        linear-gradient(160deg, #020810 0%, #050d1f 100%);
+    }
+    .dark-mode .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+    .dark-mode .text-slate-900,.dark-mode .text-slate-800{color:#e2e8f0!important;}
+    .dark-mode .text-slate-700,.dark-mode .text-slate-600{color:#94a3b8!important;}
+    .dark-mode .text-slate-500{color:#64748b!important;}
+    .dark-mode .bg-white{background:rgba(255,255,255,.05)!important;}
+    .dark-mode .bg-slate-50,.dark-mode .bg-slate-100{background:rgba(255,255,255,.04)!important;}
+    .dark-mode .border-slate-100,.dark-mode .border-slate-200{border-color:rgba(255,255,255,.08)!important;}
+    .dark-mode input:not([type=radio]):not([type=checkbox]),.dark-mode select,.dark-mode textarea{
+      background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.12)!important;color:#e2e8f0!important;
+    }
+    .dark-mode footer{background:#020810;}
+    .dark-mode .flash-msg.bg-emerald-50{background:#052e16;border-color:#166534;color:#86efac;}
+    .dark-mode .flash-msg.bg-red-50{background:#2d0a0a;border-color:#991b1b;color:#fca5a5;}
+    .dark-mode .flash-msg.bg-amber-50{background:#2d1a00;border-color:#92400e;color:#fcd34d;}
+    .dark-mode .flash-msg.bg-blue-50{background:#0c1a2e;border-color:#1e40af;color:#93c5fd;}
+
+    /* ── DM toggle ── */
+    #dm-toggle{
+      display:flex;align-items:center;justify-content:center;
+      width:36px;height:36px;border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);
+      color:#e2e8f0;cursor:pointer;transition:all .2s;flex-shrink:0;
+    }
+    #dm-toggle:hover{background:rgba(255,255,255,.12);border-color:rgba(232,184,75,.4);}
+    #dm-toggle svg{width:16px;height:16px;}
+
+    /* ── Orb ── */
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+
+<body class="min-h-screen">
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav id="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-[68px]">
+
+      <!-- Brand -->
+      <a href="{{ url_for('home') }}" class="flex items-center gap-3 group flex-shrink-0">
+        <div class="relative w-9 h-9 flex-shrink-0">
+          <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+          <div class="absolute inset-0 rounded-xl flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="white" class="w-5 h-5">
+              <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1l3.5 1v-1.5L13 19v-5.5z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="leading-none">
+          <span class="text-white font-black text-lg tracking-tight">SkyStream</span>
+          <span class="block text-[10px] font-semibold tracking-[.2em] uppercase text-gold-light mt-0.5" style="color:#e8b84b;">Airlines</span>
+        </div>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-1">
+        {% if current_user.is_authenticated %}
+          {% if current_user.role == 'customer' %}
+            <a href="{{ url_for('search_flights') }}" class="nav-link">Search Flights</a>
+            <a href="{{ url_for('my_bookings') }}" class="nav-link">My Bookings</a>
+          {% elif current_user.role == 'staff' %}
+            <a href="{{ url_for('staff_dashboard') }}" class="nav-link">Staff Dashboard</a>
+          {% elif current_user.role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Admin Dashboard</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('search_flights') }}" class="nav-link">Flights</a>
+          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+        {% endif %}
+      </div>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-2.5">
+        {% if current_user.is_authenticated %}
+          <div class="hidden md:flex items-center gap-2.5">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl glass">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white" style="background:linear-gradient(135deg,#0ea5e9,#c9922a);">
+                {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+              </div>
+              <span class="text-white text-sm font-medium">{{ current_user.first_name }}</span>
+            </div>
+            <a href="{{ url_for('logout') }}" class="flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 px-3 py-1.5 rounded-xl hover:bg-red-500/10 transition-all border border-red-500/20">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              Logout
+            </a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('register') }}" class="hidden md:inline-flex btn-gold text-sm px-5 py-2">Register Free</a>
+        {% endif %}
+
+        <button id="dm-toggle" onclick="toggleDarkMode()" title="Toggle theme">
+          <svg id="dm-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+          <svg id="dm-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        </button>
+
+        <!-- Mobile hamburger -->
+        <button class="md:hidden text-white/70 hover:text-white p-2 rounded-xl hover:bg-white/08 transition-all" onclick="document.getElementById('mob-menu').classList.toggle('hidden')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mob-menu" class="hidden md:hidden border-t border-white/08 px-4 py-3 space-y-1" style="background:rgba(5,13,31,.95);backdrop-filter:blur(20px);">
+    {% if current_user.is_authenticated %}
+      <div class="flex items-center gap-2 px-3 py-2.5 mb-2 border-b border-white/08">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white" style="background:linear-gradient(135deg,#0ea5e9,#c9922a);">{{ current_user.first_name[0] }}</div>
+        <span class="text-white text-sm font-semibold">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+      </div>
+      {% if current_user.role == 'customer' %}
+        <a href="{{ url_for('search_flights') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Search Flights</a>
+        <a href="{{ url_for('my_bookings') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">My Bookings</a>
+      {% elif current_user.role == 'staff' %}
+        <a href="{{ url_for('staff_dashboard') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Staff Dashboard</a>
+      {% elif current_user.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Admin Dashboard</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="block text-red-400 px-3 py-2.5 rounded-xl text-sm">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl text-sm">Login</a>
+      <a href="{{ url_for('register') }}" class="block text-yellow-400 font-semibold px-3 py-2.5 rounded-xl text-sm">Register Free</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2">
+  {% for category, message in messages %}
+  <div class="flash-msg flex items-start gap-3 px-5 py-3.5 rounded-2xl border text-sm font-medium shadow-xl
+    {% if category=='success'%}bg-emerald-50 border-emerald-200 text-emerald-800
+    {% elif category=='danger'%}bg-red-50 border-red-200 text-red-800
+    {% elif category=='warning'%}bg-amber-50 border-amber-200 text-amber-800
+    {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+    <span class="flex-shrink-0 mt-0.5">{% if category=='success'%}✓{% elif category=='danger'%}✕{% elif category=='warning'%}!{% else %}i{% endif %}</span>
+    <span class="flex-1">{{ message }}</span>
+    <button onclick="this.parentElement.remove()" class="opacity-40 hover:opacity-80 text-lg leading-none font-bold">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Main content -->
+<main class="pt-[68px]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="background:transparent;">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer style="background:linear-gradient(180deg,#050d1f 0%,#020810 100%);border-top:1px solid rgba(255,255,255,.06);" class="mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-14">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+      <!-- Brand col -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+            <svg viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1l3.5 1v-1.5L13 19v-5.5z"/></svg>
+          </div>
+          <div>
+            <span class="text-white font-black text-lg">SkyStream</span>
+            <span class="block text-[10px] tracking-[.2em] uppercase font-semibold" style="color:#e8b84b;">Airlines</span>
+          </div>
+        </div>
+        <p class="text-slate-500 text-sm leading-relaxed max-w-xs">Pakistan's premier digital airline. Book flights, manage bookings, and fly in style — all from one platform.</p>
+      </div>
+      <!-- Links -->
+      <div>
+        <p class="text-white font-bold text-sm mb-4">Quick Links</p>
+        <div class="space-y-2.5">
+          <a href="{{ url_for('search_flights') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Search Flights</a>
+          <a href="{{ url_for('login') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Login</a>
+          <a href="{{ url_for('register') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Register</a>
+        </div>
+      </div>
+      <div>
+        <p class="text-white font-bold text-sm mb-4">Legal</p>
+        <div class="space-y-2.5">
+          <a href="{{ url_for('privacy') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Privacy Policy</a>
+          <a href="{{ url_for('terms') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Terms of Service</a>
+          <a href="{{ url_for('contact') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Contact Us</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/06 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-slate-600 text-xs">© 2025 SkyStream Airlines. All rights reserved.</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-600 text-xs">All systems operational</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  }, {passive:true});
+  // Init scrolled state
+  if(window.scrollY > 20) navbar.classList.add('scrolled');
+
+  // Dark mode
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark-mode', dark);
+    document.getElementById('dm-moon').style.display = dark ? 'none' : 'block';
+    document.getElementById('dm-sun').style.display  = dark ? 'block' : 'none';
+  }
+  function toggleDarkMode() {
+    const isDark = document.documentElement.classList.contains('dark-mode');
+    localStorage.setItem('ss-theme', isDark ? 'light' : 'dark');
+    applyTheme(!isDark);
+  }
+  applyTheme(document.documentElement.classList.contains('dark-mode'));
+</script>
+</body>
+</html>
