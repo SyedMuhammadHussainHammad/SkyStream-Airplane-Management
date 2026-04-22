@@ -11,15 +11,51 @@
         box-shadow: 0 32px 64px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
     }
 
-    .perforation::before { left: -14px; }
-    .perforation::after  { right: -14px; }
+    /* Perforation tear line */
+    .perforation {
+        position: relative;
+        height: 0;
+        border-top: 2px dashed rgba(255,255,255,.25);
+        margin: 0;
+        background: #0d1f3c;
+    }
+    .perforation::before,
+    .perforation::after {
+        content: '';
+        position: absolute;
+        top: -14px;
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        background: #050d1f;
+        z-index: 2;
+    }
+    .perforation::before { left: -13px; }
+    .perforation::after  { right: -13px; }
+    html:not(.dark-mode) .perforation::before,
+    html:not(.dark-mode) .perforation::after { background: #3a6686; }
 
-    /* Boarding pass body — dark always (authentic ticket look) */
+    /* Boarding pass body — always dark for authentic ticket look */
     .bp-body { background: #0d1f3c; }
 
-    /* Perforation notch blends with page bg */
-    html:not(.dark-mode) .perforation::before,
-    html:not(.dark-mode) .perforation::after { background: #c8dff0; }
+    /* Info row dividers — more visible */
+    .bp-divider { border-color: rgba(255,255,255,.12) !important; }
+
+    /* Info label */
+    .bp-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    /* Info value */
+    .bp-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f1f5f9;
+        letter-spacing: .01em;
+    }
 
     /* Color themes */
     .bp-header-green  { background: linear-gradient(135deg,#065f46,#059669); }
@@ -113,77 +149,90 @@
         <!-- BODY section -->
         <div class="bp-body p-6 sm:p-8">
 
-            <!-- Date & Time row -->
-            <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/06">
+            <!-- ── Key flight info — 4 columns ── -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-6 pb-6" style="border-bottom:1px solid rgba(255,255,255,.12);">
                 <div>
-                    <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Departure Date</p>
-                    <p class="text-white font-display font-bold text-base">{{ fl.departure_time.strftime('%d %b %Y') }}</p>
+                    <p class="bp-label">Date</p>
+                    <p class="bp-value">{{ fl.departure_time.strftime('%d %b %Y') }}</p>
                 </div>
                 <div>
-                    <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Departure Time</p>
-                    <p class="text-white font-display font-bold text-base">{{ fl.departure_time.strftime('%I:%M %p') }}</p>
+                    <p class="bp-label">Departure</p>
+                    <p class="bp-value">{{ fl.departure_time.strftime('%I:%M %p') }}</p>
+                </div>
+                <div>
+                    <p class="bp-label">Duration</p>
+                    <p class="bp-value">{{ fl.duration }}</p>
+                </div>
+                <div>
+                    <p class="bp-label">Flight</p>
+                    <p class="bp-value">FL-{{ fl.id }}</p>
+                </div>
+            </div>
+
+            <!-- ── Package / Payment / Trip ── -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-5 mb-6 pb-6" style="border-bottom:1px solid rgba(255,255,255,.12);">
+                <div>
+                    <p class="bp-label">Class</p>
+                    <p class="bp-value">{{ bk.package_tier }}</p>
+                </div>
+                <div>
+                    <p class="bp-label">Payment</p>
+                    <p class="bp-value">{{ (bk.payment_method or 'card') | replace('_',' ') | title }}</p>
+                </div>
+                <div>
+                    <p class="bp-label">Trip Type</p>
+                    <p class="bp-value">{{ 'Return' if bk.trip_type == 'return' else 'One Way' }}</p>
                 </div>
             </div>
 
             {% if bk.trip_type == 'return' and bk.return_date %}
-            <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/06">
-                <div>
-                    <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Return Date</p>
-                    <p class="text-white font-display font-bold text-base">{{ bk.return_date }}</p>
-                </div>
-                <div>
-                    <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Trip Type</p>
-                    <span class="pill pill-blue text-xs px-3 py-1.5">Return Flight</span>
-                </div>
+            <div class="mb-6 pb-6" style="border-bottom:1px solid rgba(255,255,255,.12);">
+                <p class="bp-label">Return Date</p>
+                <p class="bp-value">{{ bk.return_date }}</p>
             </div>
             {% endif %}
 
-            <div class="mb-6 pb-6 border-b border-white/06">
-                <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Payment Method</p>
-                <span class="pill pill-blue text-xs px-3 py-1.5">
-                    {{ (bk.payment_method or 'card') | replace('_', ' ') | title }}
-                </span>
-            </div>
-
-            <!-- Passengers -->
-            <div class="space-y-4 mb-6">
+            <!-- ── Passengers ── -->
+            <div class="space-y-3 mb-6">
                 {% for p in bk.passengers %}
-                <div class="glass rounded-2xl p-4 border border-white/08">
-                    <div class="flex flex-wrap gap-4 items-start sm:items-center justify-between">
+                <div class="rounded-2xl p-4" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);">
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
                         <div>
-                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Passenger</p>
-                            <p class="text-white font-display font-bold text-lg">{{ p.first_name }} {{ p.last_name }}</p>
+                            <p class="bp-label">Passenger {{ loop.index }}</p>
+                            <p class="text-white font-bold text-base">{{ p.first_name }} {{ p.last_name }}</p>
                         </div>
-                        <div class="text-center">
-                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Seat</p>
-                            <span class="pill pill-blue font-display font-black text-base px-4 py-2">{{ p.seat_number }}</span>
+                        <div>
+                            <p class="bp-label">Seat</p>
+                            <span class="inline-block font-mono font-black text-sky-300 text-lg">{{ p.seat_number }}</span>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Luggage</p>
-                            <p class="text-white font-bold">{{ p.luggage_allowance }} kg</p>
+                        <div>
+                            <p class="bp-label">Luggage</p>
+                            <p class="text-white font-semibold">{{ p.luggage_allowance }} kg</p>
                         </div>
+                        {% if p.meal_preference != 'None' %}
+                        <div>
+                            <p class="bp-label">Meal</p>
+                            <p class="text-amber-300 font-semibold text-sm">{{ p.meal_preference }}</p>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% if p.meal_preference != 'None' %}
-                    <div class="mt-3 pt-3 border-t border-white/06">
-                        <span class="pill pill-gold text-xs px-3 py-1">🍽️ {{ p.meal_preference }}</span>
-                    </div>
-                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
 
-            <!-- Barcode -->
+            <!-- ── Barcode ── -->
             <div class="text-center">
-                <div class="barcode-wrap inline-block rounded-xl overflow-hidden" style="background:rgba(255,255,255,.03);padding:12px 20px;">
+                <div class="barcode-wrap inline-block rounded-xl overflow-hidden" style="background:rgba(255,255,255,.04);padding:14px 24px;border:1px solid rgba(255,255,255,.08);">
                     <div class="scan-line"></div>
-                    <svg style="width:240px;height:56px;" viewBox="0 0 300 56">
+                    <svg style="width:240px;height:52px;" viewBox="0 0 300 52">
                         {% for i in range(60) %}
-                        <rect x="{{ i*5 }}" y="0" width="{{ [2,3,4,1.5,3.5,2.5,1]|random }}" height="56"
+                        <rect x="{{ i*5 }}" y="0" width="{{ [2,3,4,1.5,3.5,2.5,1]|random }}" height="52"
                               fill="{{ '#0ea5e9' if i % 3 != 0 else '#38bdf8' }}" opacity="{{ 0.5 + (i % 4) * 0.1 }}"/>
                         {% endfor %}
                     </svg>
                 </div>
-                <p class="text-slate-500 text-xs mt-2 font-mono tracking-[0.3em]">TKT-{{ ticket.id }}-{{ bk.id }}</p>
+                <p class="text-slate-500 text-xs mt-3 font-mono tracking-[0.3em]">TKT-{{ ticket.id }}-{{ bk.id }}</p>
+                <p class="text-slate-600 text-[10px] mt-1">Issued {{ ticket.issue_date.strftime('%d %b %Y, %I:%M %p') }}</p>
             </div>
         </div>
     </div>
@@ -191,11 +240,11 @@
     <!-- Action buttons -->
     <div class="flex flex-col sm:flex-row gap-3">
         <button onclick="window.print()" id="print-btn"
-                class="flex-1 flex items-center justify-center gap-2 border border-slate-200 hover:border-ss-blue/40 text-slate-600 hover:text-navy font-semibold py-3.5 rounded-xl text-sm transition-all">
+                class="flex-1 flex items-center justify-center gap-2 btn-ghost py-3.5 rounded-xl text-sm font-semibold transition-all">
             🖨️ Print Boarding Pass
         </button>
         <a href="{{ url_for('home') }}" id="home-btn"
-           class="flex-1 btn-primary py-3.5 rounded-xl text-sm font-display font-bold text-center">
+           class="flex-1 btn-primary py-3.5 rounded-xl text-sm font-bold text-center">
             ✈️ Back to Home
         </a>
     </div>
