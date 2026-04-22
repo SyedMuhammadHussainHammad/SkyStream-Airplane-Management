@@ -1,7 +1,7 @@
 import os
 from flask import (
     render_template, url_for, flash, redirect,
-    request, jsonify, abort
+    request, jsonify, abort, send_from_directory
 )
 from functools import wraps
 from sqlalchemy import text
@@ -17,7 +17,7 @@ from forms import (
     FlightSearchForm
 )
 
-from models import User, Flight, Seat
+from models import User, Flight, Seat, Plane, Booking, StaffProfile
 
 # ── UTILS ──
 def utc_now():
@@ -69,9 +69,17 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        login_type = form.login_type.data
+
+        if login_type == 'staff':
+            user = User.query.filter_by(staff_id=form.staff_id.data, role='staff').first()
+        else:
+            user = User.query.filter_by(email=form.email.data).first()
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            if login_type == 'admin' and user.role != 'admin':
+                flash("Access denied: not an admin account.", "danger")
+                return render_template('login.html', form=form)
             login_user(user)
             return redirect(url_for('home'))
 
@@ -96,21 +104,31 @@ def health():
         return jsonify({"status": "error", "db": str(e)})
 
 # ── FLIGHTS ──
-@app.route('/flights/search')
+@app.route('/flights/search', methods=['GET', 'POST'])
 def search_flights():
-    source = request.args.get('source')
-    destination = request.args.get('destination')
+    form = FlightSearchForm()
+    flights = []
 
-    query = Flight.query
+    if request.method == 'POST' and form.validate_on_submit():
+        query = Flight.query
+        if form.origin.data:
+            query = query.filter(Flight.origin.ilike(f"%{form.origin.data}%"))
+        if form.destination.data:
+            query = query.filter(Flight.destination.ilike(f"%{form.destination.data}%"))
+        if form.date.data:
+            query = query.filter(db.func.date(Flight.departure_time) == form.date.data)
+        flights = query.all()
+    elif request.method == 'GET':
+        source = request.args.get('source')
+        destination = request.args.get('destination')
+        query = Flight.query
+        if source:
+            query = query.filter(Flight.origin.ilike(f"%{source}%"))
+        if destination:
+            query = query.filter(Flight.destination.ilike(f"%{destination}%"))
+        flights = query.all()
 
-    if source:
-        query = query.filter(Flight.origin.ilike(f"%{source}%"))
-    if destination:
-        query = query.filter(Flight.destination.ilike(f"%{destination}%"))
-
-    flights = query.all()
-
-    return render_template("flights.html", flights=flights)
+    return render_template("search.html", flights=flights, form=form)
 
 # ── SEATS API ──
 @app.route('/api/flights/<int:flight_id>/seats')
@@ -128,3 +146,216 @@ def api_seats(flight_id):
         }
         for s in seats
     ])
+
+
+# ── MY BOOKINGS ──
+@app.route('/my-bookings')
+@login_required
+def my_bookings():
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    return render_template('my_bookings.html', bookings=bookings)
+
+# ── STAFF DASHBOARD ──
+@app.route('/staff/dashboard')
+@login_required
+def staff_dashboard():
+    if current_user.role != 'staff':
+        return redirect(url_for('home'))
+    profile = current_user.staff_profile
+    rosters = profile.rosters if profile else []
+    return render_template('staff_dashboard.html', profile=profile, rosters=rosters)
+
+# ── ADMIN DASHBOARD ──
+@app.route('/admin/dashboard')
+@login_required
+@admin_required
+def admin_dashboard():
+    planes = Plane.query.all()
+    staff_members = User.query.filter_by(role='staff').all()
+    customers = User.query.filter_by(role='customer').all()
+    admins = User.query.filter_by(role='admin').all()
+    flights = Flight.query.all()
+
+    in_flight   = sum(1 for p in planes if p.status == 'in_flight')
+    on_ground   = sum(1 for p in planes if p.status == 'on_ground')
+    maintenance = sum(1 for p in planes if p.status == 'maintenance')
+    total_revenue = sum(b.total_price for b in Booking.query.all())
+
+    kpis = {
+        'planes':        len(planes),
+        'in_flight':     in_flight,
+        'on_ground':     on_ground,
+        'maintenance':   maintenance,
+        'flights':       len(flights),
+        'staff':         len(staff_members),
+        'customers':     len(customers),
+        'total_revenue': total_revenue,
+    }
+
+    return render_template(
+        'admin_dashboard.html',
+        planes=planes,
+        staff_members=staff_members,
+        customers=customers,
+        admins=admins,
+        flights=flights,
+        kpis=kpis,
+        now=utc_now(),
+    )
+
+# ── ADMIN ADD FLIGHT ──
+@app.route('/admin/flights/add', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_add_flight():
+    planes = Plane.query.all()
+    if request.method == 'POST':
+        origin       = request.form.get('origin')
+        destination  = request.form.get('destination')
+        duration     = request.form.get('duration')
+        departure    = request.form.get('departure_time')
+        plane_id     = request.form.get('plane_id')
+
+        try:
+            dep_dt = datetime.strptime(departure, '%Y-%m-%dT%H:%M')
+        except (ValueError, TypeError):
+            flash("Invalid departure time format.", "danger")
+            return render_template('admin_add_flight.html', planes=planes)
+
+        flight = Flight(
+            origin=origin,
+            destination=destination,
+            duration=duration,
+            departure_time=dep_dt,
+            plane_id=int(plane_id) if plane_id else None,
+        )
+        db.session.add(flight)
+        db.session.commit()
+        flash("Flight added successfully.", "success")
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('admin_add_flight.html', planes=planes)
+
+# ── ADMIN STAFF DETAIL ──
+@app.route('/admin/staff/<int:user_id>')
+@login_required
+@admin_required
+def admin_staff_detail(user_id):
+    staff = User.query.get_or_404(user_id)
+    return render_template('admin_staff_detail.html', staff=staff)
+
+# ── VIEW TICKET ──
+@app.route('/ticket/<int:ticket_id>')
+@login_required
+def view_ticket(ticket_id):
+    from models import Ticket
+    ticket = Ticket.query.get_or_404(ticket_id)
+    if ticket.booking.user_id != current_user.id and current_user.role not in ('admin', 'staff'):
+        abort(403)
+    return render_template('ticket.html', ticket=ticket, booking=ticket.booking)
+
+# ── STATIC PAGES ──
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+# ── FAVICON ──
+@app.route('/favicon.ico')
+@app.route('/favicon.png')
+def favicon():
+    return send_from_directory(
+        app.static_folder, 'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
+
+# ── BOOKING FLOW ──
+from forms import PackageSelectionForm, PassengerDetailsForm
+from models import Booking, Passenger, Ticket
+
+@app.route('/flights/<int:flight_id>/package', methods=['GET', 'POST'])
+@login_required
+def select_package(flight_id):
+    flight = Flight.query.get_or_404(flight_id)
+    form = PackageSelectionForm()
+    if form.validate_on_submit():
+        return redirect(url_for('passenger_details', flight_id=flight_id, tier=form.package_tier.data))
+    return render_template('packages.html', flight=flight, form=form)
+
+
+@app.route('/flights/<int:flight_id>/passengers', methods=['GET', 'POST'])
+@login_required
+def passenger_details(flight_id):
+    flight = Flight.query.get_or_404(flight_id)
+    tier = request.args.get('tier', 'Economy')
+    form = PassengerDetailsForm()
+    if form.validate_on_submit():
+        return redirect(url_for('checkout', flight_id=flight_id, tier=tier))
+    return render_template('passengers.html', flight=flight, form=form, tier=tier)
+
+
+PACKAGE_PRICES = {'Economy': 24000, 'Basic': 35000, 'Premium': 55000}
+
+@app.route('/flights/<int:flight_id>/checkout', methods=['GET', 'POST'])
+@login_required
+def checkout(flight_id):
+    flight = Flight.query.get_or_404(flight_id)
+    tier = request.args.get('tier', 'Economy')
+    payment_method_choices = {
+        'card': 'Credit / Debit Card',
+        'easypaisa': 'EasyPaisa',
+        'jazzcash': 'JazzCash',
+        'bank_transfer': 'Bank Transfer',
+    }
+
+    if request.method == 'POST':
+        payment_method = request.form.get('payment_method', 'card')
+        trip_type = request.form.get('trip_type', 'one_way')
+        return_date = request.form.get('return_date')
+        passengers_count = int(request.form.get('passengers_count', 1))
+
+        price_per_pax = PACKAGE_PRICES.get(tier, 24000)
+        multiplier = 2 if trip_type == 'return' else 1
+        total = price_per_pax * passengers_count * multiplier
+
+        booking = Booking(
+            user_id=current_user.id,
+            flight_id=flight_id,
+            package_tier=tier,
+            trip_type=trip_type,
+            return_date=return_date,
+            payment_method=payment_method,
+            status='confirmed',
+            total_price=total,
+        )
+        db.session.add(booking)
+        db.session.flush()
+
+        for i in range(passengers_count):
+            fn = request.form.get(f'passenger_{i}_first_name', f'Passenger {i+1}')
+            ln = request.form.get(f'passenger_{i}_last_name', '')
+            seat = request.form.get(f'passenger_{i}_seat', f'{i+1}A')
+            p = Passenger(booking_id=booking.id, first_name=fn, last_name=ln, seat_number=seat)
+            db.session.add(p)
+
+        ticket = Ticket(booking_id=booking.id)
+        db.session.add(ticket)
+        db.session.commit()
+
+        flash("Booking confirmed! Your ticket has been issued.", "success")
+        return redirect(url_for('view_ticket', ticket_id=ticket.id))
+
+    return render_template(
+        'checkout.html',
+        flight=flight,
+        tier=tier,
+        payment_method_choices=payment_method_choices,
+        prices=PACKAGE_PRICES,
+    )
