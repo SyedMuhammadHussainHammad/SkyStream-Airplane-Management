@@ -1,21 +1,23 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY requirements.txt .
-
+# Copy backend files
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy everything (templates, static, backend code)
+COPY backend/ ./backend/
+COPY templates/ ./templates/
+COPY static/ ./static/
+
+WORKDIR /app/backend
 
 ENV FLASK_APP=app.py
-ENV DATABASE_URL=postgresql://skystream_user:skystream_password@db:5432/skystream_db
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD gunicorn app:app --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120

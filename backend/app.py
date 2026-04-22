@@ -98,9 +98,14 @@ _sys.modules['app'] = _sys.modules[__name__]
 import models  # noqa: E402 — registers user_loader and ORM classes
 import routes  # noqa: E402 — registers all @app.route decorators
 
+# 5. AUTO-CREATE TABLES on first run (safe — skips existing tables)
+with app.app_context():
+    db.create_all()
+
 @app.route('/health')
 def health():
     return "SkyStream running 🚀"
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
