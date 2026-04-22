@@ -134,27 +134,50 @@ def db_status():
 def search_flights():
     form = FlightSearchForm()
     flights = []
+    searched = False
 
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == 'POST':
+        searched = True
+        # Use raw form data as fallback in case WTForms validation is strict
+        origin      = request.form.get('origin', '').strip()
+        destination = request.form.get('destination', '').strip()
+        date_str    = request.form.get('date', '').strip()
+
         query = Flight.query
-        if form.origin.data:
-            query = query.filter(Flight.origin.ilike(f"%{form.origin.data}%"))
-        if form.destination.data:
-            query = query.filter(Flight.destination.ilike(f"%{form.destination.data}%"))
-        if form.date.data:
-            query = query.filter(db.func.date(Flight.departure_time) == form.date.data)
-        flights = query.all()
-    elif request.method == 'GET':
-        source = request.args.get('source')
-        destination = request.args.get('destination')
-        query = Flight.query
-        if source:
-            query = query.filter(Flight.origin.ilike(f"%{source}%"))
+        if origin:
+            query = query.filter(Flight.origin.ilike(f"%{origin}%"))
         if destination:
             query = query.filter(Flight.destination.ilike(f"%{destination}%"))
+        if date_str:
+            try:
+                from datetime import date as date_type
+                search_date = date_type.fromisoformat(date_str)
+                query = query.filter(db.func.date(Flight.departure_time) == search_date)
+            except ValueError:
+                pass  # ignore invalid date format
         flights = query.all()
 
-    return render_template("search.html", flights=flights, form=form)
+    elif request.method == 'GET':
+        source      = request.args.get('source', '').strip()
+        destination = request.args.get('destination', '').strip()
+        date_str    = request.args.get('date', '').strip()
+        if source or destination or date_str:
+            searched = True
+            query = Flight.query
+            if source:
+                query = query.filter(Flight.origin.ilike(f"%{source}%"))
+            if destination:
+                query = query.filter(Flight.destination.ilike(f"%{destination}%"))
+            if date_str:
+                try:
+                    from datetime import date as date_type
+                    search_date = date_type.fromisoformat(date_str)
+                    query = query.filter(db.func.date(Flight.departure_time) == search_date)
+                except ValueError:
+                    pass
+            flights = query.all()
+
+    return render_template("search.html", flights=flights, form=form, searched=searched)
 
 # ── SEATS API ──
 @app.route('/api/flights/<int:flight_id>/seats')
