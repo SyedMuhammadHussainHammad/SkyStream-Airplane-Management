@@ -1,11 +1,19 @@
 from app import app, db, bcrypt
-from models import User, StaffProfile, Flight, StaffRoster, Plane
+from models import User, StaffProfile, Flight, Roster, Plane
 from datetime import datetime, timedelta
 
 def seed_database():
     with app.app_context():
-        # Drop and recreate all tables (fresh seed)
-        db.drop_all()
+        # Drop and recreate all tables (fresh seed) — use CASCADE for PostgreSQL FK constraints
+        from sqlalchemy import text as _text
+        with db.engine.connect() as conn:
+            conn.execute(_text("""
+                DROP TABLE IF EXISTS
+                    ticket, passenger, booking, roster, staff_profile,
+                    seat, flight, plane, "user"
+                CASCADE
+            """))
+            conn.commit()
         db.create_all()
 
         # ----------------------------------------------------------------
@@ -208,7 +216,7 @@ def seed_database():
         rosters = []
         for i, profile in enumerate(profiles):
             if i < len(all_flights):
-                rosters.append(StaffRoster(
+                rosters.append(Roster(
                     staff_profile_id=profile.id,
                     flight_id=all_flights[i].id,
                     hotel=hotels[i],

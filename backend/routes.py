@@ -103,6 +103,32 @@ def health():
     except Exception as e:
         return jsonify({"status": "error", "db": str(e)})
 
+# ── DB STATUS (row counts per table) ──
+@app.route('/db-status')
+def db_status():
+    try:
+        from models import User, Flight, Plane, Booking, StaffProfile, Seat, Roster, Passenger, Ticket
+        return jsonify({
+            "status": "ok",
+            "tables": {
+                "users":          User.query.count(),
+                "flights":        Flight.query.count(),
+                "planes":         Plane.query.count(),
+                "bookings":       Booking.query.count(),
+                "staff_profiles": StaffProfile.query.count(),
+                "seats":          Seat.query.count(),
+                "rosters":        Roster.query.count(),
+                "passengers":     Passenger.query.count(),
+                "tickets":        Ticket.query.count(),
+            },
+            "admins":  [{"id": u.id, "name": f"{u.first_name} {u.last_name}", "email": u.email}
+                        for u in User.query.filter_by(role='admin').all()],
+            "staff_count":    User.query.filter_by(role='staff').count(),
+            "customer_count": User.query.filter_by(role='customer').count(),
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "detail": str(e)}), 500
+
 # ── FLIGHTS ──
 @app.route('/flights/search', methods=['GET', 'POST'])
 def search_flights():
