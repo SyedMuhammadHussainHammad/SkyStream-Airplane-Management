@@ -1,10 +1,14 @@
 import sys
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# ── Load .env only if it exists (safe for Vercel + local)
-if os.path.exists(".env"):
-    load_dotenv()
+# ── Load .env safely (FIXED + ALWAYS LOAD FIRST) ──
+BASE_DIR = Path(__file__).resolve().parent  # backend folder
+env_path = BASE_DIR.parent / ".env"         # project root .env
+
+# IMPORTANT: always load (not conditional)
+load_dotenv(dotenv_path=env_path)
 
 _backend_dir = os.path.abspath(os.path.dirname(__file__))
 if _backend_dir not in sys.path:
@@ -33,15 +37,19 @@ login_manager = LoginManager()
 # ── Configuration ──
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skystream-secret-key-dev')
 
-database_url = os.environ.get('DATABASE_URL', '')
+database_url = os.environ.get('DATABASE_URL')
 
-# Neon/Heroku/Render use postgres:// — SQLAlchemy needs postgresql://
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-# STRICT: must exist in production
+# SAFETY CHECK (no silent failure)
 if not database_url:
-    raise ValueError("DATABASE_URL is missing. Set it in environment variables.")
+    raise ValueError(
+        f"DATABASE_URL is missing.\n"
+        f"Checked path: {env_path}\n"
+        f"Make sure .env exists in project root."
+    )
+
+# Fix old postgres format
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -65,11 +73,10 @@ _sys.modules['app'] = _sys.modules[__name__]
 import models  # noqa
 import routes  # noqa
 
-# ── SAFE TABLE CREATION (FIXED VERSION) ──
+# ── SAFE TABLE CREATION ──
 _tables_created = False
 
 def init_db():
-    """Create tables once safely"""
     global _tables_created
     if not _tables_created:
         try:
@@ -79,7 +86,6 @@ def init_db():
         except Exception as e:
             app.logger.error(f"DB init error: {e}")
 
-# Call once at startup (safe for Vercel + local)
 init_db()
 
 @app.route('/health')
