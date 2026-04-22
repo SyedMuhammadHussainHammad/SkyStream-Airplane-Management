@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from datetime import datetime, timedelta, timezone
 
 from app import app, db, bcrypt
-from flask_login import login_user, current_user, login_required
+from flask_login import login_user, current_user, login_required, logout_user
 
 from forms import (
     CustomerRegistrationForm,
@@ -90,24 +90,33 @@ def contact():
 
 
 # ---------------------------------------------------------------------------
-# HEALTH CHECK (FIXED - single endpoint only)
+# AUTH FIX (REGISTER ADDED → FIXES YOUR BUILD ERROR)
 # ---------------------------------------------------------------------------
-@app.route('/health')
-def health():
-    try:
-        db.session.execute(text("SELECT 1"))
-        db_status = "connected"
-    except Exception as e:
-        db_status = f"error: {str(e)}"
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = CustomerRegistrationForm()
 
-    return jsonify({
-        "status": "running",
-        "db_status": db_status
-    })
+    if form.validate_on_submit():
+        hashed_pw = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=hashed_pw,
+            role='customer'
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        flash("Account created successfully", "success")
+        return redirect(url_for('login'))
+
+    return render_template('register.html', form=form)
 
 
 # ---------------------------------------------------------------------------
-# LOGIN (FIXED - WAS MISSING → CAUSED BUILD ERROR)
+# LOGIN
 # ---------------------------------------------------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -126,7 +135,18 @@ def login():
 
 
 # ---------------------------------------------------------------------------
-# STAFF DASHBOARD (FIXED - WAS MISSING)
+# LOGOUT (PREVENT TEMPLATE CRASH)
+# ---------------------------------------------------------------------------
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out successfully", "info")
+    return redirect(url_for('home'))
+
+
+# ---------------------------------------------------------------------------
+# STAFF DASHBOARD
 # ---------------------------------------------------------------------------
 @app.route('/staff/dashboard')
 @login_required
@@ -138,7 +158,24 @@ def staff_dashboard():
 
 
 # ---------------------------------------------------------------------------
-# FLIGHT SEARCH (FIXED ENDPOINT NAME SAFE)
+# HEALTH CHECK (SAFE)
+# ---------------------------------------------------------------------------
+@app.route('/health')
+def health():
+    try:
+        db.session.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    return jsonify({
+        "status": "running",
+        "db_status": db_status
+    })
+
+
+# ---------------------------------------------------------------------------
+# FLIGHT SEARCH
 # ---------------------------------------------------------------------------
 @app.route('/flights/search')
 def search_flights():

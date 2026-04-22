@@ -3,10 +3,9 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-# ── Load .env safely (FIXED + ALWAYS LOAD FIRST) ──
+# ── Load .env safely (ALWAYS FIRST) ──
 BASE_DIR = Path(__file__).resolve().parent
 env_path = BASE_DIR.parent / ".env"
-
 load_dotenv(dotenv_path=env_path)
 
 _backend_dir = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +32,7 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 
-# ── Configuration ──
+# ── CONFIG ──
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skystream-secret-key-dev')
 
 database_url = os.environ.get('DATABASE_URL')
@@ -55,7 +54,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 300,
 }
 
-# ── Init extensions ──
+# ── INIT EXTENSIONS ──
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
@@ -63,19 +62,17 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# ── IMPORTANT FIX (SAFE IMPORT GUARD FOR VERCEL) ──
-# Prevents Flask re-registering routes on hot-reload / serverless re-import
+# ── VERCEL IMPORT SAFETY ──
 import sys as _sys
 _sys.modules.setdefault('app', _sys.modules[__name__])
 
-# ── Register models & routes (SAFE GUARD ADDED) ──
-# prevents double-import issues on Vercel cold start
+# ── PREVENT DOUBLE ROUTE REGISTRATION ──
 if not getattr(app, "_routes_loaded", False):
     import models  # noqa
     import routes  # noqa
     app._routes_loaded = True
 
-# ── SAFE TABLE CREATION ──
+# ── SAFE DB INIT ──
 _tables_created = False
 
 def init_db():
@@ -90,10 +87,36 @@ def init_db():
 
 init_db()
 
-# ── VERCEL COMPATIBILITY FIX (IMPORTANT) ──
+# ── FIX: SAFE FALLBACK ROUTES (PREVENT JINJA BuildError CRASHES) ──
+# These only run if routes.py did NOT define them already
+
+def _route_exists(endpoint):
+    return endpoint in app.view_functions
+
+if not _route_exists("login"):
+    @app.route("/login")
+    def login():
+        return jsonify({"error": "Login route not implemented"}), 501
+
+if not _route_exists("register"):
+    @app.route("/register")
+    def register():
+        return jsonify({"error": "Register route not implemented"}), 501
+
+if not _route_exists("staff_dashboard"):
+    @app.route("/staff/dashboard")
+    def staff_dashboard():
+        return jsonify({"error": "Staff dashboard not implemented"}), 501
+
+if not _route_exists("health"):
+    @app.route("/health")
+    def health():
+        return jsonify({"status": "ok"}), 200
+
+# ── VERCEL ENTRYPOINT ──
 application = app
 
-# ── ENTRY POINT ──
+# ── RUN LOCALLY ──
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
