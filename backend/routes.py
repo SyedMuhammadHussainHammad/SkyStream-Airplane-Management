@@ -419,9 +419,32 @@ def passenger_details(flight_id):
     flight = Flight.query.get_or_404(flight_id)
     tier = request.args.get('tier', 'Economy')
     form = PassengerDetailsForm()
+
     if form.validate_on_submit():
         return redirect(url_for('checkout', flight_id=flight_id, tier=tier))
-    return render_template('passengers.html', flight=flight, form=form, tier=tier)
+
+    # Build seat rows for the cabin map
+    Seat.generate_for_flight(flight_id)
+    seats = Seat.query.filter_by(flight_id=flight_id).order_by(Seat.seat_number).all()
+
+    # Attach col attribute and group by row number
+    from collections import defaultdict
+    rows = defaultdict(list)
+    for s in seats:
+        row_num = int(''.join(filter(str.isdigit, s.seat_number)))
+        s.col = ''.join(filter(str.isalpha, s.seat_number))
+        s.number = s.seat_number
+        rows[row_num].append(s)
+
+    seat_rows = sorted(rows.items())  # list of (row_num, [seats])
+
+    return render_template(
+        'passengers.html',
+        flight=flight,
+        form=form,
+        package_tier=tier,   # fix: template expects package_tier
+        seat_rows=seat_rows,
+    )
 
 
 PACKAGE_PRICES = {'Economy': 24000, 'Basic': 35000, 'Premium': 55000}
