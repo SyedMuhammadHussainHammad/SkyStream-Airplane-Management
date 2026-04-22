@@ -4,10 +4,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 # ── Load .env safely (FIXED + ALWAYS LOAD FIRST) ──
-BASE_DIR = Path(__file__).resolve().parent  # backend folder
-env_path = BASE_DIR.parent / ".env"         # project root .env
+BASE_DIR = Path(__file__).resolve().parent
+env_path = BASE_DIR.parent / ".env"
 
-# IMPORTANT: always load (not conditional)
 load_dotenv(dotenv_path=env_path)
 
 _backend_dir = os.path.abspath(os.path.dirname(__file__))
@@ -39,7 +38,6 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skystream-secret-key-de
 
 database_url = os.environ.get('DATABASE_URL')
 
-# SAFETY CHECK (no silent failure)
 if not database_url:
     raise ValueError(
         f"DATABASE_URL is missing.\n"
@@ -47,7 +45,6 @@ if not database_url:
         f"Make sure .env exists in project root."
     )
 
-# Fix old postgres format
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -66,10 +63,11 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# ── Register models & routes ──
+# ── IMPORTANT FIX: ensure app is import-safe for routes (prevents BuildError in Vercel) ──
 import sys as _sys
 _sys.modules['app'] = _sys.modules[__name__]
 
+# ── Register models & routes ──
 import models  # noqa
 import routes  # noqa
 
@@ -88,24 +86,10 @@ def init_db():
 
 init_db()
 
-@app.route('/health')
-def health():
-    db_url = app.config.get('SQLALCHEMY_DATABASE_URI', 'not set')
-    db_type = 'postgresql' if 'postgresql' in db_url else 'sqlite' if 'sqlite' in db_url else 'unknown'
+# ── VERCEL COMPATIBILITY FIX (IMPORTANT) ──
+application = app
 
-    try:
-        db.session.execute(db.text('SELECT 1'))
-        db_status = 'connected'
-    except Exception as ex:
-        db_status = f'error: {ex}'
-
-    return jsonify({
-        'status': 'running',
-        'db_type': db_type,
-        'db_status': db_status,
-        'tables_created': _tables_created,
-    })
-
+# ── ENTRY POINT ──
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

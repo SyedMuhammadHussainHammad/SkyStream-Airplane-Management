@@ -12,7 +12,7 @@ from models import (
 )
 from flask_login import login_user, current_user, logout_user, login_required
 from urllib.parse import urlparse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 # ---------------------------------------------------------------------------
@@ -48,10 +48,10 @@ LOYALTY_TIERS = [
 
 
 # ---------------------------------------------------------------------------
-# FIX: timezone-safe datetime (replaces deprecated utcnow)
+# FIXED: timezone-safe datetime
 # ---------------------------------------------------------------------------
 def utc_now():
-    return datetime.now(datetime.UTC)
+    return datetime.now(timezone.utc)
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +177,7 @@ def contact():
 
 
 # ---------------------------------------------------------------------------
-# FIX: safer DB query execution in health check
+# Health check
 # ---------------------------------------------------------------------------
 @app.route('/health')
 def health():
@@ -194,7 +194,36 @@ def health():
 
 
 # ---------------------------------------------------------------------------
-# API — FIX: safer seat route
+# FIXED: Flight search route (resolved BuildError)
+# ---------------------------------------------------------------------------
+@app.route('/flights/search', endpoint='search_flights')
+def search_flights():
+    try:
+        form = FlightSearchForm()
+
+        source = request.args.get('source')
+        destination = request.args.get('destination')
+
+        flights = Flight.query
+
+        if source:
+            flights = flights.filter(Flight.source.ilike(f"%{source}%"))
+        if destination:
+            flights = flights.filter(Flight.destination.ilike(f"%{destination}%"))
+
+        flights = flights.all()
+
+        return render_template(
+            'flights.html',
+            form=form,
+            flights=flights
+        )
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+
+# ---------------------------------------------------------------------------
+# API — Seats
 # ---------------------------------------------------------------------------
 @app.route('/api/flights/<int:flight_id>/seats')
 def api_flight_seats(flight_id):
