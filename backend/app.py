@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-# ── Load .env safely (ALWAYS FIRST) ──
+# ── LOAD ENV ──
 BASE_DIR = Path(__file__).resolve().parent
 env_path = BASE_DIR.parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -17,10 +17,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 
+# ── PATHS ──
 _project_root = os.path.abspath(os.path.join(_backend_dir, os.pardir))
 _templates_dir = os.path.join(_project_root, "templates")
 _static_dir = os.path.join(_project_root, "static")
 
+# ── APP ──
 app = Flask(
     __name__,
     template_folder=_templates_dir,
@@ -28,6 +30,7 @@ app = Flask(
     static_url_path="/static",
 )
 
+# ── EXTENSIONS ──
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -38,85 +41,40 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'skystream-secret-key-de
 database_url = os.environ.get('DATABASE_URL')
 
 if not database_url:
-    raise ValueError(
-        f"DATABASE_URL is missing.\n"
-        f"Checked path: {env_path}\n"
-        f"Make sure .env exists in project root."
-    )
+    raise ValueError("DATABASE_URL is missing")
 
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-}
 
-# ── INIT EXTENSIONS ──
+# ── INIT ──
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
 
 login_manager.login_view = 'login'
-login_manager.login_message_category = 'info'
 
-# ── VERCEL IMPORT SAFETY ──
-import sys as _sys
-_sys.modules.setdefault('app', _sys.modules[__name__])
+# ── IMPORT SAFETY (Vercel fix) ──
+sys.modules.setdefault('app', sys.modules[__name__])
 
-# ── PREVENT DOUBLE ROUTE REGISTRATION ──
-if not getattr(app, "_routes_loaded", False):
-    import models  # noqa
-    import routes  # noqa
-    app._routes_loaded = True
+# ── IMPORT ROUTES ONLY ONCE ──
+with app.app_context():
+    import models
+    import routes
 
-# ── SAFE DB INIT ──
-_tables_created = False
-
-def init_db():
-    global _tables_created
-    if not _tables_created:
-        try:
-            with app.app_context():
-                db.create_all()
-            _tables_created = True
-        except Exception as e:
-            app.logger.error(f"DB init error: {e}")
-
-init_db()
-
-# ── FIX: SAFE FALLBACK ROUTES (PREVENT JINJA BuildError CRASHES) ──
-# These only run if routes.py did NOT define them already
-
-def _route_exists(endpoint):
-    return endpoint in app.view_functions
-
-if not _route_exists("login"):
-    @app.route("/login")
-    def login():
-        return jsonify({"error": "Login route not implemented"}), 501
-
-if not _route_exists("register"):
-    @app.route("/register")
-    def register():
-        return jsonify({"error": "Register route not implemented"}), 501
-
-if not _route_exists("staff_dashboard"):
-    @app.route("/staff/dashboard")
-    def staff_dashboard():
-        return jsonify({"error": "Staff dashboard not implemented"}), 501
-
-if not _route_exists("health"):
-    @app.route("/health")
-    def health():
-        return jsonify({"status": "ok"}), 200
+# ── DB INIT SAFE ──
+with app.app_context():
+    try:
+        db.create_all()
+    except Exception as e:
+        print("DB init error:", e)
 
 # ── VERCEL ENTRYPOINT ──
 application = app
 
-# ── RUN LOCALLY ──
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+# ── LOCAL RUN ──
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)

@@ -1,4 +1,4 @@
 from app import app
 
-# Vercel serverless entry point
-application = app
+# Vercel expects "app"
+app = app
