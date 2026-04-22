@@ -24,8 +24,8 @@ class User(db.Model, UserMixin):
     role = db.Column(db.String(20), default="customer")
     staff_id = db.Column(db.String(20), unique=True, nullable=True)
 
-    staff_profile = db.relationship("StaffProfile", backref="user", uselist=False)
-    bookings = db.relationship("Booking", backref="customer")
+    staff_profile = db.relationship("StaffProfile", backref="user", uselist=False, cascade="all, delete-orphan")
+    bookings = db.relationship("Booking", backref="customer", cascade="all, delete-orphan")
 
 
 class Flight(db.Model):

@@ -196,11 +196,29 @@ def staff_dashboard():
 @login_required
 @admin_required
 def admin_dashboard():
-    planes = Plane.query.all()
+    planes        = Plane.query.all()
     staff_members = User.query.filter_by(role='staff').all()
-    customers = User.query.filter_by(role='customer').all()
-    admins = User.query.filter_by(role='admin').all()
-    flights = Flight.query.all()
+    admin_users   = User.query.filter_by(role='admin').all()
+    flights       = Flight.query.all()
+
+    # Build enriched customer list with booking stats (what the template expects)
+    raw_customers = User.query.filter_by(role='customer').all()
+    customers = []
+    for u in raw_customers:
+        spent = sum(b.total_price for b in u.bookings)
+        count = len(u.bookings)
+        if spent >= 100000:
+            loyalty = 'Gold'
+        elif spent >= 40000:
+            loyalty = 'Silver'
+        else:
+            loyalty = 'Bronze'
+        customers.append({
+            'user':          u,
+            'booking_count': count,
+            'total_spent':   spent,
+            'loyalty':       loyalty,
+        })
 
     in_flight   = sum(1 for p in planes if p.status == 'in_flight')
     on_ground   = sum(1 for p in planes if p.status == 'on_ground')
@@ -214,19 +232,22 @@ def admin_dashboard():
         'maintenance':   maintenance,
         'flights':       len(flights),
         'staff':         len(staff_members),
-        'customers':     len(customers),
+        'customers':     len(raw_customers),
         'total_revenue': total_revenue,
     }
+
+    # Use naive UTC now so it compares correctly with naive departure_time in DB
+    now = datetime.utcnow()
 
     return render_template(
         'admin_dashboard.html',
         planes=planes,
         staff_members=staff_members,
         customers=customers,
-        admins=admins,
+        admin_users=admin_users,
         flights=flights,
         kpis=kpis,
-        now=utc_now(),
+        now=now,
     )
 
 # ── ADMIN ADD FLIGHT ──
@@ -269,6 +290,59 @@ def admin_add_flight():
 def admin_staff_detail(user_id):
     staff = User.query.get_or_404(user_id)
     return render_template('admin_staff_detail.html', staff=staff)
+
+# ── ADMIN CREATE USER (staff or admin) ──
+@app.route('/admin/users/create', methods=['POST'])
+@login_required
+@admin_required
+def admin_create_user():
+    role       = request.form.get('role', 'staff')
+    first_name = request.form.get('first_name', '').strip()
+    last_name  = request.form.get('last_name', '').strip()
+    email      = request.form.get('email', '').strip()
+    phone      = request.form.get('phone', '').strip()
+    staff_id   = request.form.get('staff_id', '').strip() or None
+    password   = request.form.get('password', 'changeme123').strip()
+    age        = int(request.form.get('age', 25))
+    job_role   = request.form.get('job_role', 'Cabin Crew')
+    salary     = float(request.form.get('salary', 0) or 0)
+
+    if User.query.filter_by(email=email).first():
+        flash(f'Email {email} is already registered.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+    user = User(
+        first_name=first_name, last_name=last_name,
+        email=email, phone_number=phone,
+        age=age, password=hashed_pw,
+        role=role, staff_id=staff_id if role == 'staff' else None
+    )
+    db.session.add(user)
+    db.session.flush()
+
+    if role == 'staff':
+        from models import StaffProfile
+        profile = StaffProfile(user_id=user.id, role=job_role, salary=salary)
+        db.session.add(profile)
+
+    db.session.commit()
+    flash(f'{role.capitalize()} account for {first_name} {last_name} created successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+# ── ADMIN DELETE USER ──
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == current_user.id:
+        flash('You cannot delete your own account.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Account for {user.first_name} {user.last_name} deleted.', 'success')
+    return redirect(url_for('admin_dashboard'))
 
 # ── VIEW TICKET ──
 @app.route('/ticket/<int:ticket_id>')
