@@ -825,8 +825,15 @@ def not_found(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    db.session.rollback()
+    try:
+        db.session.rollback()
+    except Exception:
+        pass
     app.logger.error(f'Server error: {e}')
     if request.path.startswith('/api/'):
-        return jsonify(error='server error'), 500
-    return render_template('errors/500.html'), 500
+        return jsonify(error='server error', detail=str(e)), 500
+    # Show actual error in production to help diagnose
+    try:
+        return render_template('errors/500.html'), 500
+    except Exception:
+        return f"<h1>500 Internal Server Error</h1><pre>{e}</pre>", 500

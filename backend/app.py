@@ -6,7 +6,7 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
@@ -66,16 +66,35 @@ import models  # noqa
 import routes  # noqa
 
 # ── Create tables lazily (safe on serverless) ──
+_tables_created = False
+
 @app.before_request
 def _create_tables():
-    # Only runs once per cold start — idempotent
-    db.create_all()
-    # Remove itself after first call so it doesn't run on every request
-    app.before_request_funcs[None].remove(_create_tables)
+    global _tables_created
+    if _tables_created:
+        return
+    try:
+        db.create_all()
+        _tables_created = True
+    except Exception as e:
+        app.logger.error(f"DB init error: {e}")
+        # Don't crash — let individual routes handle DB errors
 
 @app.route('/health')
 def health():
-    return "SkyStream running 🚀"
+    db_url = app.config.get('SQLALCHEMY_DATABASE_URI', 'not set')
+    db_type = 'postgresql' if 'postgresql' in db_url else 'sqlite' if 'sqlite' in db_url else 'unknown'
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        db_status = 'connected'
+    except Exception as ex:
+        db_status = f'error: {ex}'
+    return jsonify({
+        'status': 'running',
+        'db_type': db_type,
+        'db_status': db_status,
+        'tables_created': _tables_created,
+    })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
