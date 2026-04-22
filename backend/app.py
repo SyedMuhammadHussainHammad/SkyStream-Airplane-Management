@@ -63,13 +63,17 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# ── IMPORTANT FIX: ensure app is import-safe for routes (prevents BuildError in Vercel) ──
+# ── IMPORTANT FIX (SAFE IMPORT GUARD FOR VERCEL) ──
+# Prevents Flask re-registering routes on hot-reload / serverless re-import
 import sys as _sys
-_sys.modules['app'] = _sys.modules[__name__]
+_sys.modules.setdefault('app', _sys.modules[__name__])
 
-# ── Register models & routes ──
-import models  # noqa
-import routes  # noqa
+# ── Register models & routes (SAFE GUARD ADDED) ──
+# prevents double-import issues on Vercel cold start
+if not getattr(app, "_routes_loaded", False):
+    import models  # noqa
+    import routes  # noqa
+    app._routes_loaded = True
 
 # ── SAFE TABLE CREATION ──
 _tables_created = False
