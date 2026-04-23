@@ -177,7 +177,8 @@ def search_flights():
                     pass
             flights = query.all()
 
-    return render_template("search.html", flights=flights, form=form, searched=searched)
+    return render_template("search.html", flights=flights, form=form, searched=searched,
+                           now_date=utc_now().date().isoformat())
 
 # ── SEATS API ──
 @app.route('/api/flights/<int:flight_id>/seats')
@@ -311,8 +312,10 @@ def admin_add_flight():
 @login_required
 @admin_required
 def admin_staff_detail(user_id):
-    staff = User.query.get_or_404(user_id)
-    return render_template('admin_staff_detail.html', staff=staff)
+    staff_user = User.query.get_or_404(user_id)
+    profile = staff_user.staff_profile
+    rosters = profile.rosters if profile else []
+    return render_template('admin_staff_detail.html', staff_user=staff_user, profile=profile, rosters=rosters)
 
 # ── ADMIN CREATE USER (staff or admin) ──
 @app.route('/admin/users/create', methods=['POST'])
@@ -541,3 +544,16 @@ def checkout(flight_id):
         selected_payment_method='card',
         payment_method_choices=payment_method_choices,
     )
+
+# ── ERROR HANDLERS ──
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('errors/403.html'), 403
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('errors/500.html'), 500
