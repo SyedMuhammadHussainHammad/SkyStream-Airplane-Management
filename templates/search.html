@@ -500,7 +500,7 @@ document.getElementById('search-form').addEventListener('submit',function(e){
   if(!ok) e.preventDefault();
 });
 
-/* ── Close on outside click ── */
+/* Close on outside click ── */
 document.addEventListener('click',function(e){
   ['origin','dest'].forEach(w=>{
     const dd=document.getElementById(w+'-dd');
@@ -516,5 +516,15 @@ document.addEventListener('click',function(e){
 
 /* ── Set today as min date ── */
 document.getElementById('date-field').min = new Date().toISOString().split('T')[0];
+
+/* ── Auto-scroll to results after search ── */
+{% if searched %}
+window.addEventListener('load', function() {
+    const results = document.querySelector('.results-wrap');
+    if (results) {
+        setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    }
+});
+{% endif %}
 </script>
 {% endblock %}
