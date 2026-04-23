@@ -172,6 +172,7 @@
             </div>
             <div class="panel-body">
                 <form method="POST" action="{{ url_for('checkout', flight_id=flight.id, tier=package_tier) }}" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="trip_type" value="{{ trip_type }}">
                     {% if return_date %}<input type="hidden" name="return_date" value="{{ return_date }}">{% endif %}
                     {% for method_key, method_label in payment_method_choices.items() %}
