@@ -177,7 +177,16 @@ def search_flights():
                     pass
             flights = query.all()
 
-    return render_template("search.html", flights=flights, form=form, searched=searched,
+    # Attach available seat count to each flight
+    flight_data = []
+    for f in flights:
+        Seat.generate_for_flight(f.id)
+        taken = Seat.query.filter_by(flight_id=f.id, is_available=False).count()
+        total = Seat.query.filter_by(flight_id=f.id).count()
+        available = total - taken
+        flight_data.append({'flight': f, 'available': available, 'total': total, 'sold_out': available == 0})
+
+    return render_template("search.html", flights=flight_data, form=form, searched=searched,
                            now_date=utc_now().date().isoformat())
 
 # ── SEATS API ──
@@ -485,6 +494,14 @@ from models import Booking, Passenger, Ticket
 @login_required
 def select_package(flight_id):
     flight = Flight.query.get_or_404(flight_id)
+
+    # Block if fully booked
+    Seat.generate_for_flight(flight_id)
+    available = Seat.query.filter_by(flight_id=flight_id, is_available=True).count()
+    if available == 0:
+        flash('Sorry, this flight is fully booked.', 'danger')
+        return redirect(url_for('search_flights'))
+
     form = PackageSelectionForm()
     if form.validate_on_submit():
         return redirect(url_for('passenger_details', flight_id=flight_id, tier=form.package_tier.data))
