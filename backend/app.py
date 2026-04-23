@@ -66,10 +66,13 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     },
 }
 
+from flask_wtf.csrf import CSRFProtect
+
 # ── INIT EXTENSIONS ──
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
+CSRFProtect(app)  # makes csrf_token() available in all templates
 login_manager.login_view = "login"
 
 # ── Register 'app' module alias so sub-modules can do 'from app import ...' ──
