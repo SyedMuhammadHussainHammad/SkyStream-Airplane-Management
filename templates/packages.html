@@ -3,39 +3,93 @@
 
 {% block head %}
 <style>
-    /* ── Package card flip ── */
+    /* ── Card grid: equal height columns ── */
+    .pkg-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        align-items: stretch;
+    }
+    @media (max-width: 768px) {
+        .pkg-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Wrapper ── */
     .pkg-wrapper {
-        perspective: 900px;
         cursor: pointer;
-    }
-    .pkg-inner {
+        display: flex;
+        flex-direction: column;
         position: relative;
+        /* reserve space at top for badge so all cards start at same baseline */
+        padding-top: 20px;
+    }
+
+    /* ── Inner card ── */
+    .pkg-inner {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
         border-radius: 20px;
-        border: 2px solid rgba(255,255,255,.08);
+        border: 2px solid rgba(255,255,255,.10);
         overflow: hidden;
-        transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
-        transform-style: preserve-3d;
+        transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+                    border-color .25s ease,
+                    box-shadow .25s ease;
+        will-change: transform;
     }
+
+    /* ── HOVER: scale up ── */
     .pkg-wrapper:hover .pkg-inner {
-        transform: translateY(-6px) rotateX(3deg);
+        transform: scale(1.045) translateY(-4px);
+        box-shadow: 0 24px 56px rgba(0,0,0,.45);
+        border-color: rgba(255,255,255,.25);
     }
-    /* selected ring */
+
+    /* ── SELECTED ring ── */
     input:checked ~ .pkg-inner {
         border-color: #0ea5e9;
-        box-shadow: 0 0 0 4px rgba(14,165,233,.2), 0 20px 40px rgba(0,0,0,.3);
-        transform: translateY(-8px);
+        box-shadow: 0 0 0 4px rgba(14,165,233,.22), 0 20px 48px rgba(0,0,0,.35);
+        transform: scale(1.03) translateY(-4px);
     }
-    /* gold ring for premium */
     .pkg-premium input:checked ~ .pkg-inner {
         border-color: #f59e0b;
-        box-shadow: 0 0 0 4px rgba(245,158,11,.2), 0 20px 40px rgba(0,0,0,.3);
+        box-shadow: 0 0 0 4px rgba(245,158,11,.22), 0 20px 48px rgba(0,0,0,.35);
     }
-    /* Header gradient per tier */
+
+    /* ── Header gradients ── */
     .tier-basic   { background: linear-gradient(135deg,#1e3a5f,#1a3a8a); }
     .tier-economy { background: linear-gradient(135deg,#0369a1,#0ea5e9); }
     .tier-premium { background: linear-gradient(135deg,#92400e,#d97706); }
 
-    /* shimmer on premium badge */
+    /* ── Badge ── */
+    .pkg-badge {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        white-space: nowrap;
+        background: linear-gradient(135deg,#0ea5e9,#0284c7);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 14px;
+        border-radius: 100px;
+        border: 2px solid #050d1f;
+        box-shadow: 0 4px 12px rgba(14,165,233,.4);
+        letter-spacing: .3px;
+    }
+
+    /* ── Body ── */
+    .pkg-body {
+        flex: 1;
+        background: #0d1f3c;
+        display: flex;
+        flex-direction: column;
+    }
+    html:not(.dark-mode) .pkg-body { background: rgba(47,84,112,.75); }
+
+    /* ── Shimmer on premium price ── */
     .shimmer-badge {
         background: linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b);
         background-size: 200% 100%;
@@ -46,31 +100,18 @@
     }
     @keyframes shimmer { from{background-position:-200% 0} to{background-position:200% 0} }
 
-    /* Feature check/cross */
     .f-yes { color:#4ade80; }
     .f-no  { color:#475569; }
+    html:not(.dark-mode) .f-no { color:#1e4a6e; }
 
-    /* Package card body — dark in dark mode, tinted in light mode */
-    .pkg-body {
-        background: #0d1f3c;
-        transition: background .3s;
-    }
-    html:not(.dark-mode) .pkg-body {
-        background: rgba(47,84,112,.75);
-    }
-    /* step upcoming in light mode */
-    html:not(.dark-mode) .step-upcoming {
-        background: rgba(14,165,233,.1);
-        color: #1e4a6e;
-        border-color: rgba(14,165,233,.25);
-    }
-    html:not(.dark-mode) .step-line { background: rgba(14,165,233,.2); }
-    html:not(.dark-mode) .f-no { color: #1e4a6e; }
+    /* ── Step indicators ── */
     .step-active   { background:#0ea5e9; color:#fff; box-shadow:0 0 12px rgba(14,165,233,.5); }
     .step-done     { background:rgba(34,197,94,.2); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
     .step-upcoming { background:rgba(255,255,255,.05); color:#475569; border:1px solid rgba(255,255,255,.08); }
     .step-line     { flex:1; height:2px; background:rgba(255,255,255,.07); }
     .step-line.done { background:linear-gradient(90deg,#22c55e,#0ea5e9); }
+    html:not(.dark-mode) .step-upcoming { background:rgba(14,165,233,.1); color:#1e4a6e; border-color:rgba(14,165,233,.25); }
+    html:not(.dark-mode) .step-line { background:rgba(14,165,233,.2); }
 </style>
 {% endblock %}
 
@@ -107,10 +148,10 @@
 <form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}">
     {{ form.hidden_tag() }}
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="pkg-grid mb-10">
 
         <!-- ═══ BASIC ═══ -->
-        <label class="pkg-wrapper block" for="pkg-basic">
+        <label class="pkg-wrapper" for="pkg-basic">
             <input type="radio" id="pkg-basic" name="{{ form.package_tier.name }}" value="Basic"
                    class="peer sr-only" {% if form.package_tier.data == 'Basic' %}checked{% endif %}>
             <div class="pkg-inner">
@@ -124,13 +165,13 @@
                         <span class="text-4xl font-display font-black text-white">Rs 19,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="space-y-3 text-sm mb-6">
-                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 20 kg hand-carryon luggage</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 20 kg hand-carry luggage</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Seat selection included</li>
                         <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Meals (not included)</li>
                         <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
                     </ul>
-                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all" style="border:1px solid rgba(14,165,233,.3);">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all mt-auto" style="border:1px solid rgba(14,165,233,.3);">
                         Choose Basic
                     </div>
                 </div>
@@ -138,14 +179,11 @@
         </label>
 
         <!-- ═══ ECONOMY ═══ -->
-        <label class="pkg-wrapper block relative" for="pkg-economy">
-            <!-- badge -->
-            <span class="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-white text-[10px] font-extrabold px-4 py-1 rounded-full border-2 shadow-lg tracking-wide" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border-color:#050d1f;">
-                ⭐ Most Popular
-            </span>
+        <label class="pkg-wrapper" for="pkg-economy">
+            <span class="pkg-badge">⭐ Most Popular</span>
             <input type="radio" id="pkg-economy" name="{{ form.package_tier.name }}" value="Economy"
                    class="peer sr-only" {% if form.package_tier.data == 'Economy' %}checked{% endif %}>
-            <div class="pkg-inner mt-3">
+            <div class="pkg-inner">
                 <div class="tier-economy px-6 py-8 text-center">
                     <div class="text-4xl mb-3">🧳</div>
                     <h3 class="text-white font-display font-bold text-2xl">Economy</h3>
@@ -156,13 +194,13 @@
                         <span class="text-4xl font-display font-black text-white">Rs 24,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="space-y-3 text-sm mb-6">
-                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 23 kg Checked luggage</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 23 kg checked luggage</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Seat selection included</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Select free meal from list</li>
                         <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
                     </ul>
-                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all" style="border:1px solid rgba(14,165,233,.3);">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all mt-auto" style="border:1px solid rgba(14,165,233,.3);">
                         Choose Economy
                     </div>
                 </div>
@@ -170,7 +208,7 @@
         </label>
 
         <!-- ═══ PREMIUM ═══ -->
-        <label class="pkg-wrapper pkg-premium block" for="pkg-premium">
+        <label class="pkg-wrapper pkg-premium" for="pkg-premium">
             <input type="radio" id="pkg-premium" name="{{ form.package_tier.name }}" value="Premium"
                    class="peer sr-only" {% if form.package_tier.data == 'Premium' %}checked{% endif %}>
             <div class="pkg-inner">
@@ -184,13 +222,13 @@
                         <span class="text-4xl font-display font-black shimmer-badge">Rs 30,000</span>
                         <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="space-y-3 text-sm mb-6">
-                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 56 kg Luggage capacity</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 56 kg luggage capacity</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> All gourmet meals included</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Premium drinks included</li>
                         <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Any seat — priority boarding</li>
                     </ul>
-                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white border border-amber-500/30 peer-checked:bg-amber-500/10 transition-all">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white border border-amber-500/30 transition-all mt-auto">
                         Choose Premium
                     </div>
                 </div>
