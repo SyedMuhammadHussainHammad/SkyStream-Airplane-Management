@@ -520,6 +520,17 @@ def passenger_details(flight_id):
     Seat.generate_for_flight(flight_id)
     seats = Seat.query.filter_by(flight_id=flight_id).order_by(Seat.seat_number).all()
 
+    # Mark seats already taken by confirmed bookings on this flight
+    taken_seats = set(
+        p.seat_number
+        for b in Booking.query.filter_by(flight_id=flight_id).all()
+        for p in b.passengers
+        if p.seat_number
+    )
+    for s in seats:
+        if s.seat_number in taken_seats:
+            s.is_available = False
+
     from collections import defaultdict
     rows = defaultdict(list)
     for s in seats:
@@ -585,6 +596,14 @@ def checkout(flight_id):
                 last_name=p['last_name'],
                 seat_number=p['seat_number'],
             ))
+            # Mark seat as taken in the Seat table
+            if p['seat_number']:
+                seat = Seat.query.filter_by(
+                    flight_id=flight_id,
+                    seat_number=p['seat_number']
+                ).first()
+                if seat:
+                    seat.is_available = False
 
         ticket = Ticket(booking_id=booking.id)
         db.session.add(ticket)
