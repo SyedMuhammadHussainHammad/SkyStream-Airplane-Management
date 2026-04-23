@@ -55,6 +55,10 @@ if not database_url:
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
+# Strip channel_binding parameter — psycopg2-binary does not support it
+import re
+database_url = re.sub(r'[&?]channel_binding=[^&]*', '', database_url)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {

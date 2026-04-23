@@ -5,7 +5,7 @@ from flask import (
 )
 from functools import wraps
 from sqlalchemy import text
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from flask_login import login_user, current_user, login_required, logout_user
 
@@ -22,6 +22,77 @@ from models import User, Flight, Seat, Plane, Booking, StaffProfile
 # ── UTILS ──
 def utc_now():
     return datetime.now(timezone.utc)
+
+# ── ROLLING 30-DAY FLIGHT SCHEDULE ──
+_last_schedule_refresh = None
+
+def ensure_30_day_schedule():
+    """
+    Rolling 30-day flight schedule.
+    - Marks past flights as 'landed'
+    - For each route, ensures daily flights exist for the next 30 days
+    """
+    global _last_schedule_refresh
+    now = datetime.utcnow()
+
+    # Throttle: run at most once per hour
+    if _last_schedule_refresh and (now - _last_schedule_refresh).total_seconds() < 3600:
+        return 0
+
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # 1) Mark past on_time flights as 'landed'
+    Flight.query.filter(
+        Flight.departure_time < now,
+        Flight.status == 'on_time'
+    ).update({'status': 'landed'}, synchronize_session=False)
+    db.session.flush()
+
+    # 2) Collect route templates from existing flights
+    #    Group by (origin, destination) → pick up to 2 daily time-slots
+    all_flights = Flight.query.all()
+    route_map = {}  # (origin, dest) -> set of (hour, minute, duration, plane_id)
+
+    for f in all_flights:
+        key = (f.origin, f.destination)
+        tmpl = (f.departure_time.hour, f.departure_time.minute, f.duration, f.plane_id)
+        route_map.setdefault(key, set()).add(tmpl)
+
+    # 3) For each route keep max 2 unique departure hours, fill 30 days
+    created = 0
+    for (origin, dest), templates in route_map.items():
+        # Deduplicate by hour, keep first 2
+        seen_hours = {}
+        for h, m, dur, pid in sorted(templates):
+            if h not in seen_hours and len(seen_hours) < 2:
+                seen_hours[h] = (m, dur, pid)
+
+        for hour, (minute, duration, plane_id) in seen_hours.items():
+            for day_offset in range(31):
+                dep = today + timedelta(days=day_offset, hours=hour, minutes=minute)
+                if dep <= now:
+                    continue  # don't create flights in the past
+
+                exists = db.session.query(Flight.id).filter_by(
+                    origin=origin,
+                    destination=dest,
+                    departure_time=dep,
+                ).first()
+
+                if not exists:
+                    db.session.add(Flight(
+                        origin=origin,
+                        destination=dest,
+                        duration=duration,
+                        departure_time=dep,
+                        plane_id=plane_id,
+                        status='on_time',
+                    ))
+                    created += 1
+
+    db.session.commit()
+    _last_schedule_refresh = now
+    return created
 
 # ── DECORATORS ──
 def admin_required(f):
@@ -449,9 +520,14 @@ def admin_delete_user(user_id):
         flash('You cannot delete your own account.', 'danger')
         return redirect(url_for('admin_dashboard'))
     user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    flash(f'Account for {user.first_name} {user.last_name} deleted.', 'success')
+    name = f'{user.first_name} {user.last_name}'
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Account for {name} deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Could not delete {name}: {str(e)}', 'danger')
     return redirect(url_for('admin_dashboard'))
 
 # ── VIEW TICKET ──
