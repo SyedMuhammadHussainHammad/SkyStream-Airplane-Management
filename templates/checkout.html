@@ -171,7 +171,9 @@
                 <h2 class="text-xl font-display font-bold text-slate-900">Choose Payment Method</h2>
             </div>
             <div class="panel-body">
-                <form method="POST" action="{{ url_for('checkout', flight_id=flight.id) }}" class="space-y-4">
+                <form method="POST" action="{{ url_for('checkout', flight_id=flight.id, tier=package_tier) }}" class="space-y-4">
+                    <input type="hidden" name="trip_type" value="{{ trip_type }}">
+                    {% if return_date %}<input type="hidden" name="return_date" value="{{ return_date }}">{% endif %}
                     {% for method_key, method_label in payment_method_choices.items() %}
                     <label class="payment-option flex items-center justify-between">
                         <div class="flex items-center gap-3">

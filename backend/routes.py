@@ -420,14 +420,28 @@ def passenger_details(flight_id):
     tier = request.args.get('tier', 'Economy')
     form = PassengerDetailsForm()
 
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # validate CSRF token
+        form.validate()  # runs CSRF check; ignore other field errors
+        passengers_count = int(request.form.get('passengers_count', 1))
+        passengers = []
+        for i in range(passengers_count):
+            passengers.append({
+                'first_name':      request.form.get(f'first_name_{i}', f'Passenger {i+1}'),
+                'last_name':       request.form.get(f'last_name_{i}', ''),
+                'seat_number':     request.form.get(f'seat_number_{i}', ''),
+                'meal_preference': request.form.get(f'meal_preference_{i}', 'None'),
+            })
+        # Store in session so checkout can read it
+        from flask import session
+        session['booking_passengers'] = passengers
+        session['booking_tier'] = tier
         return redirect(url_for('checkout', flight_id=flight_id, tier=tier))
 
     # Build seat rows for the cabin map
     Seat.generate_for_flight(flight_id)
     seats = Seat.query.filter_by(flight_id=flight_id).order_by(Seat.seat_number).all()
 
-    # Attach col attribute and group by row number
     from collections import defaultdict
     rows = defaultdict(list)
     for s in seats:
@@ -436,13 +450,13 @@ def passenger_details(flight_id):
         s.number = s.seat_number
         rows[row_num].append(s)
 
-    seat_rows = sorted(rows.items())  # list of (row_num, [seats])
+    seat_rows = sorted(rows.items())
 
     return render_template(
         'passengers.html',
         flight=flight,
         form=form,
-        package_tier=tier,   # fix: template expects package_tier
+        package_tier=tier,
         seat_rows=seat_rows,
     )
 
@@ -452,8 +466,11 @@ PACKAGE_PRICES = {'Economy': 24000, 'Basic': 35000, 'Premium': 55000}
 @app.route('/flights/<int:flight_id>/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout(flight_id):
+    from flask import session
     flight = Flight.query.get_or_404(flight_id)
-    tier = request.args.get('tier', 'Economy')
+    tier = request.args.get('tier', session.get('booking_tier', 'Economy'))
+    passengers = session.get('booking_passengers', [])
+
     payment_method_choices = {
         'card': 'Credit / Debit Card',
         'easypaisa': 'EasyPaisa',
@@ -465,11 +482,10 @@ def checkout(flight_id):
         payment_method = request.form.get('payment_method', 'card')
         trip_type = request.form.get('trip_type', 'one_way')
         return_date = request.form.get('return_date')
-        passengers_count = int(request.form.get('passengers_count', 1))
 
         price_per_pax = PACKAGE_PRICES.get(tier, 24000)
         multiplier = 2 if trip_type == 'return' else 1
-        total = price_per_pax * passengers_count * multiplier
+        total = price_per_pax * len(passengers) * multiplier
 
         booking = Booking(
             user_id=current_user.id,
@@ -484,24 +500,44 @@ def checkout(flight_id):
         db.session.add(booking)
         db.session.flush()
 
-        for i in range(passengers_count):
-            fn = request.form.get(f'passenger_{i}_first_name', f'Passenger {i+1}')
-            ln = request.form.get(f'passenger_{i}_last_name', '')
-            seat = request.form.get(f'passenger_{i}_seat', f'{i+1}A')
-            p = Passenger(booking_id=booking.id, first_name=fn, last_name=ln, seat_number=seat)
-            db.session.add(p)
+        for p in passengers:
+            db.session.add(Passenger(
+                booking_id=booking.id,
+                first_name=p['first_name'],
+                last_name=p['last_name'],
+                seat_number=p['seat_number'],
+            ))
 
         ticket = Ticket(booking_id=booking.id)
         db.session.add(ticket)
         db.session.commit()
 
+        session.pop('booking_passengers', None)
+        session.pop('booking_tier', None)
+
         flash("Booking confirmed! Your ticket has been issued.", "success")
         return redirect(url_for('view_ticket', ticket_id=ticket.id))
+
+    # Build simple passenger objects for the template preview
+    class PaxPreview:
+        def __init__(self, d):
+            self.first_name = d['first_name']
+            self.last_name = d['last_name']
+            self.seat_number = d['seat_number']
+            self.meal_preference = d['meal_preference']
+
+    pax_preview = [PaxPreview(p) for p in passengers]
+    price_per_pax = PACKAGE_PRICES.get(tier, 24000)
+    total_price = price_per_pax * max(len(pax_preview), 1)
 
     return render_template(
         'checkout.html',
         flight=flight,
-        tier=tier,
+        package_tier=tier,
+        passengers=pax_preview,
+        trip_type='one_way',
+        return_date=None,
+        total_price=total_price,
+        selected_payment_method='card',
         payment_method_choices=payment_method_choices,
-        prices=PACKAGE_PRICES,
     )
