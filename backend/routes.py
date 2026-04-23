@@ -461,7 +461,7 @@ def passenger_details(flight_id):
     )
 
 
-PACKAGE_PRICES = {'Economy': 24000, 'Basic': 35000, 'Premium': 55000}
+PACKAGE_PRICES = {'Economy': 19000, 'Basic': 24000, 'Premium': 30000}
 
 @app.route('/flights/<int:flight_id>/checkout', methods=['GET', 'POST'])
 @login_required
