@@ -398,28 +398,37 @@ def admin_create_user():
         flash(f'Email {email} is already registered.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
+    if User.query.filter_by(phone_number=phone).first():
+        flash(f'Phone number {phone} is already registered.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
     if role == 'staff' and staff_id and User.query.filter_by(staff_id=staff_id).first():
         flash(f'Staff ID {staff_id} is already taken.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
-    user = User(
-        first_name=first_name, last_name=last_name,
-        email=email, phone_number=phone,
-        age=age, password=hashed_pw,
-        role=role,
-        staff_id=staff_id if role == 'staff' else None,
-    )
-    db.session.add(user)
-    db.session.flush()
+    try:
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        user = User(
+            first_name=first_name, last_name=last_name,
+            email=email, phone_number=phone,
+            age=age, password=hashed_pw,
+            role=role,
+            staff_id=staff_id if role == 'staff' else None,
+        )
+        db.session.add(user)
+        db.session.flush()
 
-    if role == 'staff':
-        from models import StaffProfile
-        profile = StaffProfile(user_id=user.id, role=job_role, salary=salary)
-        db.session.add(profile)
+        if role == 'staff':
+            from models import StaffProfile
+            profile = StaffProfile(user_id=user.id, role=job_role, salary=salary)
+            db.session.add(profile)
 
-    db.session.commit()
-    flash(f'{role.capitalize()} account for {first_name} {last_name} created successfully.', 'success')
+        db.session.commit()
+        flash(f'{role.capitalize()} account for {first_name} {last_name} created successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating account: {str(e)}', 'danger')
+
     return redirect(url_for('admin_dashboard'))
 
 # ── ADMIN DELETE USER ──
