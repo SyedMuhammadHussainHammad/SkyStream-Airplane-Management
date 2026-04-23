@@ -120,6 +120,13 @@
 
         <!-- ══ SEAT MAP ══ -->
         <div>
+            {% if package_tier == 'Basic' %}
+            <div class="card p-6 text-center">
+                <p class="text-3xl mb-3">🎲</p>
+                <p class="font-bold text-white text-sm mb-1">Seat Auto-Assigned</p>
+                <p class="text-slate-400 text-xs">Basic tier does not include seat selection. Your seat will be randomly assigned at check-in.</p>
+            </div>
+            {% else %}
             <div class="card overflow-hidden">
                 <!-- Map header -->
                 <div class="bg-navy px-6 py-5 text-center" class="pax-card-header">
@@ -182,13 +189,14 @@
 
                         {% for s in left %}
                         {% set locked = is_biz and package_tier != 'Premium' %}
-                        {% set disabled = not s.is_available or locked %}
+                        {% set no_select = package_tier == 'Basic' %}
+                        {% set disabled = not s.is_available or locked or no_select %}
                         <button type="button"
-                            class="seat {% if not s.is_available %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
-                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}" {% if disabled %}disabled
-                            data-locked="{{ 'business' if locked else 'booked' }}" {% endif %}
+                            class="seat {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
+                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
+                            {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
                             onclick="selectSeat(this,event)">
-                            {{ s.number if not s.is_available else s.col }}
+                            {{ s.number if (not s.is_available or no_select) else s.col }}
                         </button>
                         {% endfor %}
 
@@ -196,13 +204,14 @@
 
                         {% for s in right %}
                         {% set locked = is_biz and package_tier != 'Premium' %}
-                        {% set disabled = not s.is_available or locked %}
+                        {% set no_select = package_tier == 'Basic' %}
+                        {% set disabled = not s.is_available or locked or no_select %}
                         <button type="button"
-                            class="seat {% if not s.is_available %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
-                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}" {% if disabled %}disabled
-                            data-locked="{{ 'business' if locked else 'booked' }}" {% endif %}
+                            class="seat {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
+                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
+                            {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
                             onclick="selectSeat(this,event)">
-                            {{ s.number if not s.is_available else s.col }}
+                            {{ s.number if (not s.is_available or no_select) else s.col }}
                         </button>
                         {% endfor %}
                     </div>
@@ -215,6 +224,7 @@
                 <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Selected seats</p>
                 <div id="selected-tags" class="flex flex-wrap gap-2"></div>
             </div>
+            {% endif %}
         </div>
 
         <!-- ══ PASSENGER FORMS ══ -->
@@ -300,6 +310,7 @@
 
     function selectSeat(btn, event) {
         event.preventDefault();
+        if (btn.dataset.locked === 'basic') { toast('Seat selection is not available for Basic tier. A seat will be assigned automatically.'); return; }
         if (btn.dataset.locked === 'business') { toast('Business seats are reserved for Premium passengers.'); return; }
         if (btn.disabled) return;
 
@@ -387,7 +398,7 @@
     }
 
     document.getElementById('passengerForm').addEventListener('submit', e => {
-        if (selectedSeats.slice(0, passengerCount).some(s => !s)) {
+        if (PACKAGE !== 'Basic' && selectedSeats.slice(0, passengerCount).some(s => !s)) {
             e.preventDefault(); toast('Please select a seat for every passenger before continuing.');
         }
     });
