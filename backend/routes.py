@@ -329,12 +329,24 @@ def admin_create_user():
     phone      = request.form.get('phone', '').strip()
     staff_id   = request.form.get('staff_id', '').strip() or None
     password   = request.form.get('password', 'changeme123').strip()
-    age        = int(request.form.get('age', 25))
+    age        = int(request.form.get('age') or 30)
     job_role   = request.form.get('job_role', 'Cabin Crew')
-    salary     = float(request.form.get('salary', 0) or 0)
+    salary     = float(request.form.get('salary') or 0)
+
+    if not first_name or not last_name or not email or not phone:
+        flash('Please fill in all required fields.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    if len(phone) != 11 or not phone.isdigit():
+        flash('Phone number must be exactly 11 digits.', 'danger')
+        return redirect(url_for('admin_dashboard'))
 
     if User.query.filter_by(email=email).first():
         flash(f'Email {email} is already registered.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    if role == 'staff' and staff_id and User.query.filter_by(staff_id=staff_id).first():
+        flash(f'Staff ID {staff_id} is already taken.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -342,7 +354,8 @@ def admin_create_user():
         first_name=first_name, last_name=last_name,
         email=email, phone_number=phone,
         age=age, password=hashed_pw,
-        role=role, staff_id=staff_id if role == 'staff' else None
+        role=role,
+        staff_id=staff_id if role == 'staff' else None,
     )
     db.session.add(user)
     db.session.flush()
