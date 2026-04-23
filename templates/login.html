@@ -265,16 +265,21 @@ function toggleAdminMode() {
 }
 
 document.getElementById('login-form').addEventListener('submit', function() {
-  if (currentTab === 'crew') {
-    // Copy the crew password into the WTForms password field so Flask receives it
-    const crewPass = document.getElementById('crew-password').value;
-    document.getElementById('pax-password').value = crewPass;
+  const realPw = document.getElementById('real-password');
 
-    // For admin mode, also copy staff_id input into the email field
+  if (currentTab === 'passenger') {
+    // Copy visible passenger password into the WTForms password field
+    realPw.value = document.getElementById('pax-password').value;
+  } else {
+    // Crew / Admin tab
+    realPw.value = document.getElementById('crew-password').value;
+
+    const staffVal = document.getElementById('crew-staffid').value.trim();
     if (adminMode) {
-      const staffVal = document.getElementById('crew-staffid').value.trim();
-      document.getElementById('pax-email').value = staffVal;
+      // Admin logs in with email — copy into the email field
+      document.querySelector('input[name="email"]').value = staffVal;
     }
+    // staff_id field already has the right name so Flask reads it directly
   }
 });
 

@@ -73,13 +73,13 @@ def login():
 
         if login_type == 'staff':
             user = User.query.filter_by(staff_id=form.staff_id.data, role='staff').first()
+        elif login_type == 'admin':
+            # admin enters email (copied into email field by JS)
+            user = User.query.filter_by(email=form.email.data, role='admin').first()
         else:
             user = User.query.filter_by(email=form.email.data).first()
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            if login_type == 'admin' and user.role != 'admin':
-                flash("Access denied: not an admin account.", "danger")
-                return render_template('login.html', form=form)
             login_user(user)
             return redirect(url_for('home'))
 
