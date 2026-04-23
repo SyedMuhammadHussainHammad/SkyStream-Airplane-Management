@@ -307,7 +307,60 @@ def admin_add_flight():
 
     return render_template('admin_add_flight.html', planes=planes)
 
-# ── ADMIN STAFF DETAIL ──
+# ── ADMIN ASSIGN STAFF TO FLIGHT ──
+@app.route('/admin/staff/<int:user_id>/assign', methods=['POST'])
+@login_required
+@admin_required
+def admin_assign_flight(user_id):
+    from models import Roster, StaffProfile
+    staff_user = User.query.get_or_404(user_id)
+    flight_id  = request.form.get('flight_id', type=int)
+    hotel      = request.form.get('hotel', '').strip() or None
+    travel_id  = request.form.get('travel_id', '').strip() or None
+
+    if not flight_id:
+        flash('Please select a flight.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    flight = Flight.query.get_or_404(flight_id)
+
+    profile = staff_user.staff_profile
+    if not profile:
+        profile = StaffProfile(user_id=staff_user.id, role='Cabin Crew', salary=0)
+        db.session.add(profile)
+        db.session.flush()
+
+    # Remove existing roster for this staff on this flight if duplicate
+    existing = Roster.query.filter_by(
+        staff_profile_id=profile.id, flight_id=flight_id
+    ).first()
+    if existing:
+        flash(f'{staff_user.first_name} is already assigned to that flight.', 'warning')
+        return redirect(url_for('admin_dashboard'))
+
+    roster = Roster(
+        staff_profile_id=profile.id,
+        flight_id=flight_id,
+        hotel=hotel or f'Hotel — {flight.destination.split("(")[0].strip()}',
+        travel_id=travel_id or f'TRV-{profile.id:04d}',
+    )
+    db.session.add(roster)
+    db.session.commit()
+    flash(f'{staff_user.first_name} {staff_user.last_name} assigned to Flight #{flight_id} successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
+# ── ADMIN UNASSIGN STAFF FROM FLIGHT ──
+@app.route('/admin/roster/<int:roster_id>/remove', methods=['POST'])
+@login_required
+@admin_required
+def admin_remove_roster(roster_id):
+    from models import Roster
+    roster = Roster.query.get_or_404(roster_id)
+    db.session.delete(roster)
+    db.session.commit()
+    flash('Roster assignment removed.', 'success')
+    return redirect(url_for('admin_dashboard'))
 @app.route('/admin/staff/<int:user_id>')
 @login_required
 @admin_required
