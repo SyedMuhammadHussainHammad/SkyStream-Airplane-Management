@@ -572,11 +572,29 @@ def admin_delete_user(user_id):
 @app.route('/ticket/<int:ticket_id>')
 @login_required
 def view_ticket(ticket_id):
-    from models import Ticket
     ticket = Ticket.query.get_or_404(ticket_id)
     if ticket.booking.user_id != current_user.id and current_user.role not in ('admin', 'staff'):
         abort(403)
-    return render_template('ticket.html', ticket=ticket, booking=ticket.booking)
+
+    # For return trips, find the paired return ticket (same user, created within a few seconds)
+    return_ticket = None
+    if ticket.booking.trip_type == 'return':
+        # Look for another booking by same user on a different flight created around the same time
+        from datetime import timedelta
+        window_start = ticket.booking.created_at - timedelta(seconds=10)
+        window_end   = ticket.booking.created_at + timedelta(seconds=10)
+        paired = (Booking.query
+                  .filter(Booking.user_id == current_user.id)
+                  .filter(Booking.id != ticket.booking.id)
+                  .filter(Booking.created_at >= window_start)
+                  .filter(Booking.created_at <= window_end)
+                  .first())
+        if paired and paired.ticket:
+            return_ticket = paired.ticket
+
+    return render_template('ticket.html', ticket=ticket, booking=ticket.booking,
+                           return_ticket=return_ticket,
+                           return_booking=return_ticket.booking if return_ticket else None)
 
 # ── STATIC PAGES ──
 @app.route('/privacy')

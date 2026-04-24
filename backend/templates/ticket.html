@@ -147,19 +147,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="bp-wrap animate-fade-up">
+<div class="bp-wrap animate-fade-up" style="max-width:{% if return_booking %}1100px{% else %}720px{% endif %};">
 
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div>
       <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#c9922a;">Booking Confirmed</p>
-      <h1 class="text-2xl font-black text-white">Your Boarding Pass</h1>
+      <h1 class="text-2xl font-black text-white">Your Boarding Pass{% if return_booking %}es{% endif %}</h1>
     </div>
     <span class="tier-badge tier-{{ booking.package_tier }}">
       {% if booking.package_tier == 'Premium' %}✦{% elif booking.package_tier == 'Basic' %}●{% else %}○{% endif %}
       {{ booking.package_tier }}
     </span>
   </div>
+
+  <div class="{% if return_booking %}grid grid-cols-1 lg:grid-cols-2 gap-6{% endif %}">
+
+  {# ── OUTBOUND BOARDING PASS ── #}
+  {% if return_booking %}<div>
+  <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#0ea5e9;">✈ Outbound</p>{% endif %}
 
   <!-- Boarding pass card -->
   <div class="bp-card mb-6">
@@ -277,12 +283,104 @@
     </div>
   </div>
 
+  {% if return_booking %}</div>
+
+  {# ── RETURN BOARDING PASS ── #}
+  <div>
+  <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#f59e0b;">↩ Return</p>
+  <div class="bp-card mb-6" style="background:linear-gradient(145deg,#1a0a0a,#2d1a00);">
+    <div class="bp-accent" style="background:linear-gradient(90deg,#f59e0b,#c9922a,#f59e0b);"></div>
+    <div class="p-7">
+      <div class="flex items-center justify-between mb-8">
+        <div class="text-center">
+          <p class="route-code">{{ return_booking.flight.origin.split('(')[-1].replace(')','') if '(' in return_booking.flight.origin else return_booking.flight.origin[:3].upper() }}</p>
+          <p class="text-xs text-white/50 mt-1 font-medium">{{ return_booking.flight.origin.split('(')[0].strip() }}</p>
+        </div>
+        <div class="flex-1 flex flex-col items-center px-4">
+          <p class="text-xs text-white/40 mb-2 font-semibold">{{ return_booking.flight.duration }}</p>
+          <div class="w-full flex items-center gap-1">
+            <div class="flex-1 h-px" style="background:linear-gradient(90deg,transparent,rgba(245,158,11,.6))"></div>
+            <svg viewBox="0 0 24 24" fill="rgba(245,158,11,.9)" class="w-6 h-6 flex-shrink-0">
+              <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1l3.5 1v-1.5L13 19v-5.5z"/>
+            </svg>
+            <div class="flex-1 h-px" style="background:linear-gradient(90deg,rgba(245,158,11,.6),transparent)"></div>
+          </div>
+          <p class="text-xs text-white/40 mt-2 font-semibold">Direct</p>
+        </div>
+        <div class="text-center">
+          <p class="route-code">{{ return_booking.flight.destination.split('(')[-1].replace(')','') if '(' in return_booking.flight.destination else return_booking.flight.destination[:3].upper() }}</p>
+          <p class="text-xs text-white/50 mt-1 font-medium">{{ return_booking.flight.destination.split('(')[0].strip() }}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-5">
+        <div class="bp-cell">
+          <p class="bp-label">Date</p>
+          <p class="bp-value">{{ return_booking.flight.departure_time.strftime('%d %b %Y') }}</p>
+        </div>
+        <div class="bp-cell">
+          <p class="bp-label">Departure</p>
+          <p class="bp-value">{{ return_booking.flight.departure_time.strftime('%I:%M %p') }}</p>
+        </div>
+        <div class="bp-cell">
+          <p class="bp-label">Flight</p>
+          <p class="bp-value font-mono">SK-{{ '%04d' % return_booking.flight.id }}</p>
+        </div>
+        <div class="bp-cell">
+          <p class="bp-label">Status</p>
+          <span class="tier-badge status-{{ return_booking.status }} text-xs">✓ Confirmed</span>
+        </div>
+      </div>
+    </div>
+    <div class="tear-line px-0">
+      <div class="tear-circle left"></div>
+      <div class="flex-1" style="border-top:2px dashed rgba(255,255,255,.12);"></div>
+      <div class="tear-circle right"></div>
+    </div>
+    <div class="p-7">
+      <p class="bp-label mb-4">Passengers</p>
+      <div>
+        {% for p in return_booking.passengers %}
+        <div class="pax-row">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                 style="background:linear-gradient(135deg,#f59e0b,#c9922a);">
+              {{ p.first_name[0] }}{{ p.last_name[0] if p.last_name else '' }}
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">{{ p.first_name }} {{ p.last_name }}</p>
+              <p class="text-xs text-white/40">Passenger {{ loop.index }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="seat-badge" style="background:linear-gradient(135deg,#f59e0b,#c9922a);">{{ p.seat_number }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex items-center justify-between mt-6 pt-5" style="border-top:1px solid rgba(255,255,255,.07);">
+        <div>
+          <p class="bp-label">Booking Ref</p>
+          <p class="font-mono text-white font-bold text-sm tracking-widest">SS{{ '%06d' % return_booking.id }}</p>
+        </div>
+        <div class="barcode" aria-hidden="true">
+          {% for w in [3,5,1,4,2,5,1,3,4,2,1,5,3,2,4,1,5,2,3,4,1,2,5,3] %}
+          <span style="height:{{ (w * 8) + 16 }}px;opacity:{{ 0.4 + w * 0.12 }};background:rgba(245,158,11,.7);"></span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  {% endif %}{# end return_booking #}
+  </div>{# end grid #}
+
   <!-- Actions -->
   <div class="flex flex-col sm:flex-row gap-3 no-print">
     <button onclick="window.print()"
       class="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:brightness-110"
       style="background:linear-gradient(135deg,#0a1628,#1a3a6b);">
-      🖨️ Print Boarding Pass
+      🖨️ Print Boarding Pass{% if return_booking %}es{% endif %}
     </button>
     <a href="{{ url_for('home') }}" id="home-btn"
        class="flex-1 btn-primary py-3.5 rounded-xl text-sm font-bold text-center">
