@@ -59,8 +59,8 @@
         /* ── KPI 3D cards ── */
         .kpi-card {
             border-radius: 18px;
-            border: 1px solid rgba(255,255,255,.2);
-            background: rgba(255,255,255,.13);
+            border: 1px solid #334155;
+            background: #1f2a3d;
             padding: 20px;
             box-shadow: 0 4px 16px rgba(0,0,0,.2);
             transition: transform .25s ease, box-shadow .25s ease;
@@ -72,7 +72,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,.3);
         }
         
-        /* ── Light mode KPI cards ── */
+        /* ── Light mode KPI cards (Refined) ── */
         html:not(.dark-mode) .kpi-card {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
             border: 1px solid rgba(0,0,0,0.12) !important;
@@ -84,43 +84,22 @@
             transform: translateY(-2px);
         }
         
-        /* ── Add colored left border accents to KPI cards ── */
+        /* ── Subtle left border accent (refined) ── */
         html:not(.dark-mode) .kpi-card::before {
             content: '';
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            width: 3px;
+            background: linear-gradient(180deg, #c9922a, #a07020);
             border-radius: 18px 0 0 18px;
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(2)::before {
-            background: linear-gradient(180deg, #10b981, #059669);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(3)::before {
-            background: linear-gradient(180deg, #8b5cf6, #7c3aed);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(4)::before {
-            background: linear-gradient(180deg, #f59e0b, #d97706);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(5)::before {
-            background: linear-gradient(180deg, #ef4444, #dc2626);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(6)::before {
-            background: linear-gradient(180deg, #06b6d4, #0891b2);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(7)::before {
-            background: linear-gradient(180deg, #84cc16, #65a30d);
-        }
-        html:not(.dark-mode) .kpi-card:nth-child(8)::before {
-            background: linear-gradient(180deg, #f97316, #ea580c);
         }
         /* ── Table ── */
         .card {
-            background: rgba(255,255,255,.13);
+            background: #1f2a3d;
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,.2);
+            border: 1px solid #334155;
             box-shadow: 0 2px 12px rgba(0,0,0,.2);
         }
         
@@ -157,22 +136,16 @@
             transform: translateY(-2px);
         }
         
-        /* ── Add subtle top border accent to fleet cards ── */
+        /* ── Subtle top border accent (refined gold) ── */
         html:not(.dark-mode) .fleet-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            height: 2px;
+            background: linear-gradient(90deg, #c9922a, #a07020);
             border-radius: 16px 16px 0 0;
-        }
-        html:not(.dark-mode) .fleet-card:nth-child(2)::before {
-            background: linear-gradient(90deg, #10b981, #059669);
-        }
-        html:not(.dark-mode) .fleet-card:nth-child(3)::before {
-            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
         }
         
         /* ── Light mode inner elements ── */
@@ -376,7 +349,7 @@
 
         /* ── Shimmer table header ── */
         .tbl-head {
-            background: linear-gradient(135deg, #0a1628, #112850);
+            background: linear-gradient(135deg, #0a1628, #1f2a3d);
         }
 
         /* ── Page transition ── */
@@ -384,12 +357,45 @@
             animation: fadeIn .4s ease both;
         }
 
-        /* ── Dark Mode ── */
-        .dark-mode body { background: #0f172a !important; color: #e2e8f0; }
-        .dark-mode .card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 2px 12px rgba(0,0,0,.4) !important; }
-        .dark-mode .kpi-card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 4px 16px rgba(0,0,0,.4) !important; }
-        .dark-mode .fleet-card { background: #1e293b !important; border-color: #334155 !important; }
-        .dark-mode .bg-white { background: #1e293b !important; }
+        /* ── Dark Mode (Refined Luxury Airline) ── */
+        .dark-mode body { background: #162245 !important; color: #ffffff; }
+        .dark-mode .card { 
+            background: #1f2a3d !important; 
+            border-color: #334155 !important; 
+            box-shadow: 0 2px 12px rgba(0,0,0,.4) !important; 
+        }
+        .dark-mode .kpi-card { 
+            background: #1f2a3d !important; 
+            border-color: #334155 !important; 
+            box-shadow: 0 4px 16px rgba(0,0,0,.4) !important; 
+        }
+        .dark-mode .fleet-card { 
+            background: #1f2a3d !important; 
+            border-color: #334155 !important; 
+        }
+        .dark-mode .bg-white { 
+            background: #1f2a3d !important; 
+        }
+        
+        /* ── Dark Mode Text Hierarchy ── */
+        .dark-mode .text-slate-400,
+        .dark-mode .text-secondary {
+            color: #cbd5e1 !important;
+        }
+        .dark-mode .text-slate-500 {
+            color: #cbd5e1 !important;
+        }
+        .dark-mode .text-slate-600 {
+            color: #ffffff !important;
+        }
+        
+        /* ── Dark Mode Sidebar ── */
+        .dark-mode #sidebar {
+            background: #0a1628 !important;
+        }
+        .dark-mode #topnav {
+            background: #0a1628 !important;
+        }
         .dark-mode .bg-slate-50 { background: #263348 !important; }
         .dark-mode .bg-slate-100 { background: #263348 !important; }
         .dark-mode .border-slate-100,
