@@ -1,7 +1,7 @@
 import os
 from flask import (
     render_template, url_for, flash, redirect,
-    request, jsonify, abort, send_from_directory
+    request, jsonify, abort, send_from_directory, session
 )
 from functools import wraps
 from sqlalchemy import text
@@ -59,6 +59,44 @@ def diagnostic():
         diagnostics['database'] = f'error: {str(e)}'
     
     return jsonify(diagnostics)
+
+@app.route('/api/debug/checkout/<int:flight_id>')
+@login_required
+def debug_checkout(flight_id):
+    import traceback
+    try:
+        flight = Flight.query.get_or_404(flight_id)
+        tier = request.args.get('tier', 'Economy')
+        passengers = session.get('booking_passengers', [])
+        trip_type = session.get('trip_type', 'one_way')
+        return_flight_id = session.get('return_flight_id')
+        return_passengers = session.get('return_passengers', [])
+        return_flight = Flight.query.get(return_flight_id) if return_flight_id else None
+
+        class PaxPreview:
+            def __init__(self, d):
+                self.first_name = d.get('first_name', '')
+                self.last_name = d.get('last_name', '')
+                self.seat_number = d.get('seat_number', '')
+                self.meal_preference = d.get('meal_preference', 'None')
+
+        pax_preview = [PaxPreview(p) for p in passengers]
+        return_pax_preview = [PaxPreview(p) for p in return_passengers] if return_passengers else []
+        price_per_pax = {'Basic': 19000, 'Economy': 24000, 'Premium': 30000}.get(tier, 24000)
+        total_price = price_per_pax * max(len(pax_preview), 1) * (2 if trip_type == 'return' else 1)
+
+        return jsonify({
+            'status': 'ok',
+            'flight_id': flight_id,
+            'flight_origin': flight.origin,
+            'tier': tier,
+            'trip_type': trip_type,
+            'passengers_count': len(pax_preview),
+            'return_flight_id': return_flight_id,
+            'total_price': total_price,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 # ── HOME ──
 @app.route('/')
