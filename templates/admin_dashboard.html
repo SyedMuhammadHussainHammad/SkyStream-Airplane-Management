@@ -116,6 +116,97 @@
             background: rgba(248,250,252,0.8) !important;
             border-color: rgba(0,0,0,0.1) !important;
         }
+        
+        /* ── Light mode text visibility ── */
+        html:not(.dark-mode) .card .text-slate-400,
+        html:not(.dark-mode) .fleet-card .text-slate-400 {
+            color: #64748b !important;
+        }
+        html:not(.dark-mode) .card .text-slate-500,
+        html:not(.dark-mode) .fleet-card .text-slate-500 {
+            color: #475569 !important;
+        }
+        html:not(.dark-mode) .card .text-slate-600,
+        html:not(.dark-mode) .fleet-card .text-slate-600 {
+            color: #334155 !important;
+        }
+        html:not(.dark-mode) .card .text-slate-700,
+        html:not(.dark-mode) .fleet-card .text-slate-700 {
+            color: #1e293b !important;
+        }
+        html:not(.dark-mode) .card .text-navy,
+        html:not(.dark-mode) .fleet-card .text-navy {
+            color: #0a1628 !important;
+        }
+        
+        /* ── Light mode status pills ── */
+        html:not(.dark-mode) .status-pill {
+            font-weight: 600 !important;
+        }
+        
+        /* ── Light mode plane IDs and important text ── */
+        html:not(.dark-mode) .card .font-mono,
+        html:not(.dark-mode) .fleet-card .font-mono {
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
+        
+        /* ── Light mode headings and labels ── */
+        html:not(.dark-mode) .card .font-bold,
+        html:not(.dark-mode) .fleet-card .font-bold,
+        html:not(.dark-mode) .card .font-extrabold,
+        html:not(.dark-mode) .fleet-card .font-extrabold {
+            color: #0f172a !important;
+        }
+        
+        /* ── Airport city codes and plane badges ── */
+        html:not(.dark-mode) .card .text-navy {
+            color: #0a1628 !important;
+            font-weight: 700 !important;
+        }
+        html:not(.dark-mode) .bg-navy {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+        }
+        
+        /* ── General text improvements for light mode ── */
+        html:not(.dark-mode) .card p,
+        html:not(.dark-mode) .fleet-card p,
+        html:not(.dark-mode) .card span,
+        html:not(.dark-mode) .fleet-card span {
+            color: inherit;
+        }
+        
+        /* ── Ensure all text in cards is visible ── */
+        html:not(.dark-mode) .card,
+        html:not(.dark-mode) .fleet-card {
+            color: #1e293b !important;
+        }
+        
+        /* ── Override any inherited light colors ── */
+        html:not(.dark-mode) .card *,
+        html:not(.dark-mode) .fleet-card *,
+        html:not(.dark-mode) .kpi-card * {
+            color: inherit !important;
+        }
+        
+        /* ── Specific overrides for very light text ── */
+        html:not(.dark-mode) .text-white {
+            color: #1e293b !important;
+        }
+        html:not(.dark-mode) .card .text-white,
+        html:not(.dark-mode) .fleet-card .text-white {
+            color: #1e293b !important;
+        }
+        
+        /* ── Make sure badges and pills are visible ── */
+        html:not(.dark-mode) .bg-slate-100 {
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+        }
+        html:not(.dark-mode) .text-slate-600 {
+            color: #334155 !important;
+        }
 
         .hidden-row {
             display: none !important;
@@ -260,7 +351,9 @@
         html:not(.dark-mode) .text-slate-400 { color: rgba(255,255,255,.54) !important; }
         
         /* ── KPI cards need dark text on light backgrounds ── */
-        html:not(.dark-mode) .kpi-card .text-slate-400 { color: #94a3b8 !important; }
+        html:not(.dark-mode) .kpi-card .text-slate-400 { 
+            color: #64748b !important; 
+        }
         html:not(.dark-mode) .kpi-card [style*="color:#1d4ed8"],
         html:not(.dark-mode) .kpi-card [style*="color:#4338ca"],
         html:not(.dark-mode) .kpi-card [style*="color:#16a34a"],
@@ -268,8 +361,18 @@
         html:not(.dark-mode) .kpi-card [style*="color:#7c3aed"],
         html:not(.dark-mode) .kpi-card [style*="color:#d97706"],
         html:not(.dark-mode) .kpi-card [style*="color:#0f766e"] {
-            /* Keep the inline colors as-is for KPI cards */
+            /* Keep the inline colors as-is for KPI cards but make them darker */
+            filter: brightness(0.8) !important;
+        }
+        
+        /* ── KPI card numbers and text ── */
+        html:not(.dark-mode) .kpi-card .font-extrabold {
             color: inherit !important;
+            text-shadow: none !important;
+        }
+        html:not(.dark-mode) .kpi-card .text-xs {
+            color: #475569 !important;
+            font-weight: 600 !important;
         }
         html:not(.dark-mode) .bg-white       { background: rgba(255,255,255,.14) !important; }
         html:not(.dark-mode) .bg-slate-50    { background: rgba(255,255,255,.10) !important; }

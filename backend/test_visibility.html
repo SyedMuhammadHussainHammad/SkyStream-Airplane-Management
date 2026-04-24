@@ -49,6 +49,17 @@
             background: #f8fafc !important;
             color: #1e293b !important;
         }
+        
+        /* ── Force all card content to be dark in light mode ── */
+        html:not(.dark-mode) .card *:not(.status-pill):not([class*="bg-"]):not([class*="text-emerald"]):not([class*="text-blue"]):not([class*="text-orange"]):not([class*="text-red"]) {
+            color: #1e293b !important;
+        }
+        html:not(.dark-mode) .fleet-card *:not(.status-pill):not([class*="bg-"]):not([class*="text-emerald"]):not([class*="text-blue"]):not([class*="text-orange"]):not([class*="text-red"]) {
+            color: #1e293b !important;
+        }
+        html:not(.dark-mode) .kpi-card .text-xs {
+            color: #475569 !important;
+        }
     </style>
 </head>
 <body>
