@@ -30,9 +30,18 @@ from flask_wtf.csrf import CSRFProtect
 # ── APP ──
 _project_root = os.path.abspath(os.path.join(_backend_dir, os.pardir))
 
+# For Vercel serverless, check if templates exist at expected location
+_template_folder = os.path.join(_project_root, "templates")
+if not os.path.exists(_template_folder):
+    # Fallback for Vercel deployment structure
+    _template_folder = os.path.join("/var/task", "templates")
+    if not os.path.exists(_template_folder):
+        # Last resort - check current directory
+        _template_folder = os.path.abspath("templates")
+
 app = Flask(
     __name__,
-    template_folder=os.path.join(_project_root, "templates"),
+    template_folder=_template_folder,
     static_folder=os.path.join(_project_root, "static"),
     static_url_path="/static",
 )
