@@ -44,9 +44,9 @@
             color: #ffffff;
         }
         
-        /* ── Light Mode Body ── */
+        /* ── Light Mode Body (Lightened version of dark mode) ── */
         html:not(.dark-mode) body { 
-            background: #f8fafc !important; 
+            background: #e2e8f0 !important; 
             color: #1e293b !important; 
         }
 
@@ -72,28 +72,15 @@
             box-shadow: 0 20px 40px rgba(0,0,0,.3);
         }
         
-        /* ── Light mode KPI cards (Refined) ── */
+        /* ── Light mode KPI cards (Clean - no accent lines) ── */
         html:not(.dark-mode) .kpi-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-            border: 1px solid rgba(0,0,0,0.12) !important;
+            background: #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-            position: relative;
         }
         html:not(.dark-mode) .kpi-card:hover {
             box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
             transform: translateY(-2px);
-        }
-        
-        /* ── Subtle left border accent (refined) ── */
-        html:not(.dark-mode) .kpi-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: linear-gradient(180deg, #c9922a, #a07020);
-            border-radius: 18px 0 0 18px;
         }
         /* ── Table ── */
         .card {
@@ -103,20 +90,14 @@
             box-shadow: 0 2px 12px rgba(0,0,0,.2);
         }
         
-        /* ── Light mode cards ── */
+        /* ── Light mode cards (Clean - matching dark mode structure) ── */
         html:not(.dark-mode) .card {
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
-            border: 1px solid rgba(0,0,0,0.12) !important;
+            background: #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
         }
         
-        /* ── Add subtle color variations for different card types ── */
-        html:not(.dark-mode) .card:nth-child(odd) {
-            background: linear-gradient(135deg, #fefefe 0%, #f8fafc 100%) !important;
-        }
-        html:not(.dark-mode) .card:nth-child(even) {
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
-        }
+        /* ── Remove alternating variations ── */
         
         /* ── Fleet cards specific styling ── */
         .fleet-card {
@@ -126,26 +107,13 @@
             transform: translateY(-2px);
         }
         html:not(.dark-mode) .fleet-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-            border: 1px solid rgba(0,0,0,0.1) !important;
+            background: #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             box-shadow: 0 3px 12px rgba(0,0,0,0.06) !important;
-            position: relative;
         }
         html:not(.dark-mode) .fleet-card:hover {
             box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
             transform: translateY(-2px);
-        }
-        
-        /* ── Subtle top border accent (refined gold) ── */
-        html:not(.dark-mode) .fleet-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #c9922a, #a07020);
-            border-radius: 16px 16px 0 0;
         }
         
         /* ── Light mode inner elements ── */
@@ -395,6 +363,14 @@
         }
         .dark-mode #topnav {
             background: #0a1628 !important;
+        }
+        
+        /* ── Light Mode Sidebar (Lightened version) ── */
+        html:not(.dark-mode) #sidebar {
+            background: #cbd5e1 !important;
+        }
+        html:not(.dark-mode) #topnav {
+            background: #cbd5e1 !important;
         }
         .dark-mode .bg-slate-50 { background: #263348 !important; }
         .dark-mode .bg-slate-100 { background: #263348 !important; }
