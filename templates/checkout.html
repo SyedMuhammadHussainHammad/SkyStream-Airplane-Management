@@ -24,11 +24,16 @@
 
     .checkout-grid {
         display: grid;
-        grid-template-columns: 1.45fr 1fr;
         gap: 20px;
     }
+    .checkout-grid.one-way {
+        grid-template-columns: 1.45fr 1fr;
+    }
+    .checkout-grid.return-trip {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
     @media (max-width: 980px) {
-        .checkout-grid { grid-template-columns: 1fr; }
+        .checkout-grid { grid-template-columns: 1fr !important; }
     }
     .panel {
         background: rgba(74,120,152,.6);
@@ -100,11 +105,12 @@
         </div>
     </div>
 
-    <div class="checkout-grid">
+    <div class="checkout-grid {% if trip_type == 'return' %}return-trip{% else %}one-way{% endif %}">
+        <!-- Outbound Flight Panel -->
         <section class="panel">
             <div class="panel-head flex items-center justify-between">
                 <div>
-                    <p class="subtle">Flight Summary</p>
+                    <p class="subtle">{% if trip_type == 'return' %}Outbound Flight{% else %}Flight Summary{% endif %}</p>
                     <h2 class="text-xl font-display font-bold text-slate-900">Flight #{{ flight.id }}</h2>
                 </div>
                 <span class="badge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">{{ package_tier }}</span>
@@ -117,24 +123,15 @@
                             <span class="route-code">{{ flight.origin[:3].upper() }}</span>
                             <span class="text-sky-600 text-xl">✈</span>
                             <span class="route-code">{{ flight.destination[:3].upper() }}</span>
-                            {% if trip_type == 'return' %}
-                            <span class="text-sky-600 text-xl">✈</span>
-                            <span class="route-code">{{ flight.origin[:3].upper() }}</span>
-                            {% endif %}
                         </div>
                         <p class="text-xs text-slate-500 mt-1">
                             {{ flight.origin }} → {{ flight.destination }}
-                            {% if trip_type == 'return' %} → {{ flight.origin }} (Return){% endif %}
                         </p>
                     </div>
                     <div class="text-right">
                         <p class="subtle">Departure</p>
                         <p class="font-semibold text-slate-900 mt-1">{{ flight.departure_time.strftime('%d %b %Y') }}</p>
                         <p class="text-sm text-slate-600">{{ flight.departure_time.strftime('%I:%M %p') }}</p>
-                        {% if trip_type == 'return' and return_date %}
-                        <p class="subtle mt-2">Return</p>
-                        <p class="font-semibold text-slate-900">{{ return_date }}</p>
-                        {% endif %}
                     </div>
                 </div>
 
@@ -164,6 +161,64 @@
                 </div>
             </div>
         </section>
+
+        <!-- Return Flight Panel (only for return trips) -->
+        {% if trip_type == 'return' and return_flight %}
+        <section class="panel">
+            <div class="panel-head flex items-center justify-between">
+                <div>
+                    <p class="subtle">Return Flight</p>
+                    <h2 class="text-xl font-display font-bold text-slate-900">Flight #{{ return_flight.id }}</h2>
+                </div>
+                <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">{{ package_tier }}</span>
+            </div>
+            <div class="panel-body">
+                <div class="flex items-center justify-between gap-4 mb-5">
+                    <div>
+                        <p class="subtle">Route</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="route-code">{{ return_flight.origin[:3].upper() }}</span>
+                            <span class="text-amber-600 text-xl">↩</span>
+                            <span class="route-code">{{ return_flight.destination[:3].upper() }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ return_flight.origin }} → {{ return_flight.destination }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="subtle">Departure</p>
+                        <p class="font-semibold text-slate-900 mt-1">{{ return_flight.departure_time.strftime('%d %b %Y') }}</p>
+                        <p class="text-sm text-slate-600">{{ return_flight.departure_time.strftime('%I:%M %p') }}</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#78350f,#92400e);">
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">#</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Passenger</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Seat</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Meal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in return_passengers if return_passengers else passengers %}
+                            <tr class="table-row">
+                                <td class="px-4 py-3 text-slate-500">{{ loop.index }}</td>
+                                <td class="px-4 py-3 font-semibold text-slate-900">{{ p.first_name }} {{ p.last_name }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">{{ p.seat_number }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">{{ p.meal_preference }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% endif %}
 
         <aside class="panel">
             <div class="panel-head">

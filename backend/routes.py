@@ -805,6 +805,7 @@ def checkout(flight_id):
             self.meal_preference = d.get('meal_preference', 'None')
 
     pax_preview = [PaxPreview(p) for p in passengers]
+    return_pax_preview = [PaxPreview(p) for p in return_passengers] if return_passengers else []
     price_per_pax = PACKAGE_PRICES.get(tier, 24000)
     
     # Calculate total price
@@ -824,6 +825,7 @@ def checkout(flight_id):
         return_flight=return_flight,
         package_tier=tier,
         passengers=pax_preview,
+        return_passengers=return_pax_preview,
         trip_type=trip_type,
         return_date=session.get('return_date'),
         total_price=total_price,
