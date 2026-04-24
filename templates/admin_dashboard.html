@@ -610,7 +610,7 @@
                                                 <i data-lucide="plane" class="w-3 h-3"></i> Assign
                                             </button>
                                         <form method="POST" action="{{ url_for('admin_delete_user', user_id=stf.id) }}"
-                                            onsubmit="return confirm('Delete {{ stf.first_name }} {{ stf.last_name }}?')">
+                                            onsubmit="return confirmStaffDelete('{{ stf.first_name }}', '{{ stf.last_name }}', '{{ stf.staff_id }}')">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit"
                                                 class="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 hover:bg-red-50 px-2.5 py-1 rounded-lg transition font-semibold">
@@ -1142,6 +1142,28 @@
             });
             card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.boxShadow = ''; });
         });
+
+        // ── Professional Staff Delete Confirmation ────────────────────────────────
+        function confirmStaffDelete(firstName, lastName, staffId) {
+            const message = `⚠️ DELETE STAFF MEMBER\n\n` +
+                          `Name: ${firstName} ${lastName}\n` +
+                          `Staff ID: ${staffId}\n\n` +
+                          `This action will:\n` +
+                          `• Remove the staff member from the system\n` +
+                          `• Delete all associated roster assignments\n` +
+                          `• Remove their staff profile and records\n\n` +
+                          `⚠️ This action CANNOT be undone!\n\n` +
+                          `Type "DELETE" to confirm:`;
+            
+            const userInput = prompt(message);
+            
+            if (userInput === 'DELETE') {
+                return true;
+            } else if (userInput !== null) {
+                alert('❌ Deletion cancelled. You must type "DELETE" exactly to confirm.');
+            }
+            return false;
+        }
     </script>
 </body>
 

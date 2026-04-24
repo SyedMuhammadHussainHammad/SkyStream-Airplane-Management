@@ -132,9 +132,13 @@ def db_status():
 # ── FLIGHTS ──
 @app.route('/flights/search', methods=['GET', 'POST'])
 def search_flights():
+    from flask import session
     form = FlightSearchForm()
     flights = []
+    return_flights = []
     searched = False
+    trip_type = 'one_way'
+    return_date_str = None
 
     if request.method == 'POST':
         searched = True
@@ -142,7 +146,16 @@ def search_flights():
         origin      = request.form.get('origin', '').strip()
         destination = request.form.get('destination', '').strip()
         date_str    = request.form.get('date', '').strip()
+        trip_type   = request.form.get('trip_type', 'one_way').strip()
+        return_date_str = request.form.get('return_date', '').strip()
 
+        # Store in session for later use
+        session['search_origin'] = origin
+        session['search_destination'] = destination
+        session['trip_type'] = trip_type
+        session['return_date'] = return_date_str if trip_type == 'return' else None
+
+        # Search outbound flights
         query = Flight.query
         if origin:
             query = query.filter(Flight.origin.ilike(f"%{origin}%"))
@@ -156,6 +169,20 @@ def search_flights():
             except ValueError:
                 pass  # ignore invalid date format
         flights = query.all()
+
+        # Search return flights if return trip
+        if trip_type == 'return' and return_date_str and origin and destination:
+            try:
+                from datetime import date as date_type
+                return_search_date = date_type.fromisoformat(return_date_str)
+                return_query = Flight.query
+                # Swap origin and destination for return
+                return_query = return_query.filter(Flight.origin.ilike(f"%{destination}%"))
+                return_query = return_query.filter(Flight.destination.ilike(f"%{origin}%"))
+                return_query = return_query.filter(db.func.date(Flight.departure_time) == return_search_date)
+                return_flights = return_query.all()
+            except ValueError:
+                pass
 
     elif request.method == 'GET':
         source      = request.args.get('source', '').strip()
@@ -186,7 +213,16 @@ def search_flights():
         available = total - taken
         flight_data.append({'flight': f, 'available': available, 'total': total, 'sold_out': available == 0})
 
-    return render_template("search.html", flights=flight_data, form=form, searched=searched,
+    return_flight_data = []
+    for f in return_flights:
+        Seat.generate_for_flight(f.id)
+        taken = Seat.query.filter_by(flight_id=f.id, is_available=False).count()
+        total = Seat.query.filter_by(flight_id=f.id).count()
+        available = total - taken
+        return_flight_data.append({'flight': f, 'available': available, 'total': total, 'sold_out': available == 0})
+
+    return render_template("search.html", flights=flight_data, return_flights=return_flight_data,
+                           form=form, searched=searched, trip_type=trip_type, return_date=return_date_str,
                            now_date=utc_now().date().isoformat())
 
 # ── SEATS API ──
@@ -205,6 +241,18 @@ def api_seats(flight_id):
         }
         for s in seats
     ])
+
+# ── STORE RETURN FLIGHT API ──
+@app.route('/api/store-return-flight', methods=['POST'])
+@login_required
+def store_return_flight():
+    from flask import session
+    data = request.get_json()
+    return_flight_id = data.get('return_flight_id')
+    if return_flight_id:
+        session['return_flight_id'] = return_flight_id
+        return jsonify({'success': True})
+    return jsonify({'success': False}), 400
 
 
 # ── MY BOOKINGS ──
@@ -493,6 +541,7 @@ from models import Booking, Passenger, Ticket
 @app.route('/flights/<int:flight_id>/package', methods=['GET', 'POST'])
 @login_required
 def select_package(flight_id):
+    from flask import session
     flight = Flight.query.get_or_404(flight_id)
 
     # Block if fully booked
@@ -502,10 +551,19 @@ def select_package(flight_id):
         flash('Sorry, this flight is fully booked.', 'danger')
         return redirect(url_for('search_flights'))
 
+    # Get trip type and return info from session
+    trip_type = session.get('trip_type', 'one_way')
+    return_date = session.get('return_date')
+    return_flight_id = session.get('return_flight_id')
+
     form = PackageSelectionForm()
     if form.validate_on_submit():
+        # Store package tier in session
+        session['package_tier'] = form.package_tier.data
         return redirect(url_for('passenger_details', flight_id=flight_id, tier=form.package_tier.data))
-    return render_template('packages.html', flight=flight, form=form)
+    
+    return render_template('packages.html', flight=flight, form=form, 
+                         trip_type=trip_type, return_date=return_date)
 
 
 @app.route('/flights/<int:flight_id>/passengers', methods=['GET', 'POST'])
@@ -576,6 +634,11 @@ def checkout(flight_id):
     flight = Flight.query.get_or_404(flight_id)
     tier = request.args.get('tier', session.get('booking_tier', 'Economy'))
     passengers = session.get('booking_passengers', [])
+    
+    # Get trip type and return flight from session
+    trip_type = session.get('trip_type', 'one_way')
+    return_flight_id = session.get('return_flight_id')
+    return_passengers = session.get('return_passengers', [])
 
     payment_method_choices = {
         'card': 'Credit / Debit Card',
@@ -586,26 +649,30 @@ def checkout(flight_id):
 
     if request.method == 'POST':
         payment_method = request.form.get('payment_method', 'card')
-        trip_type = request.form.get('trip_type', 'one_way')
-        return_date = request.form.get('return_date')
-
+        
         price_per_pax = PACKAGE_PRICES.get(tier, 24000)
-        multiplier = 2 if trip_type == 'return' else 1
-        total = price_per_pax * len(passengers) * multiplier
+        
+        # Calculate total based on trip type
+        if trip_type == 'return' and return_flight_id:
+            # For return trips: price per passenger * 2 (outbound + return)
+            total = price_per_pax * len(passengers) * 2
+        else:
+            total = price_per_pax * len(passengers)
 
+        # Create outbound booking
         booking = Booking(
             user_id=current_user.id,
             flight_id=flight_id,
             package_tier=tier,
             trip_type=trip_type,
-            return_date=return_date,
             payment_method=payment_method,
             status='confirmed',
-            total_price=total,
+            total_price=price_per_pax * len(passengers),
         )
         db.session.add(booking)
         db.session.flush()
 
+        # Add passengers for outbound flight
         for p in passengers:
             db.session.add(Passenger(
                 booking_id=booking.id,
@@ -613,7 +680,7 @@ def checkout(flight_id):
                 last_name=p['last_name'],
                 seat_number=p['seat_number'],
             ))
-            # Mark seat as taken in the Seat table
+            # Mark seat as taken
             if p['seat_number']:
                 seat = Seat.query.filter_by(
                     flight_id=flight_id,
@@ -622,35 +689,91 @@ def checkout(flight_id):
                 if seat:
                     seat.is_available = False
 
+        # Create outbound ticket
         ticket = Ticket(booking_id=booking.id)
         db.session.add(ticket)
+        
+        # If return trip, create return booking
+        return_ticket = None
+        if trip_type == 'return' and return_flight_id:
+            return_booking = Booking(
+                user_id=current_user.id,
+                flight_id=return_flight_id,
+                package_tier=tier,
+                trip_type='return',
+                payment_method=payment_method,
+                status='confirmed',
+                total_price=price_per_pax * len(passengers),
+            )
+            db.session.add(return_booking)
+            db.session.flush()
+
+            # Add same passengers for return flight
+            for p in return_passengers if return_passengers else passengers:
+                db.session.add(Passenger(
+                    booking_id=return_booking.id,
+                    first_name=p['first_name'],
+                    last_name=p['last_name'],
+                    seat_number=p.get('seat_number', ''),
+                ))
+                # Mark return seat as taken
+                if p.get('seat_number'):
+                    seat = Seat.query.filter_by(
+                        flight_id=return_flight_id,
+                        seat_number=p['seat_number']
+                    ).first()
+                    if seat:
+                        seat.is_available = False
+
+            # Create return ticket
+            return_ticket = Ticket(booking_id=return_booking.id)
+            db.session.add(return_ticket)
+
         db.session.commit()
 
+        # Clear session
         session.pop('booking_passengers', None)
         session.pop('booking_tier', None)
+        session.pop('return_passengers', None)
+        session.pop('return_flight_id', None)
 
-        flash("Booking confirmed! Your ticket has been issued.", "success")
+        if trip_type == 'return' and return_ticket:
+            flash(f"Booking confirmed! Your tickets have been issued (Outbound + Return).", "success")
+        else:
+            flash("Booking confirmed! Your ticket has been issued.", "success")
+        
         return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
-    # Build simple passenger objects for the template preview
+    # Build passenger preview objects
     class PaxPreview:
         def __init__(self, d):
-            self.first_name = d['first_name']
-            self.last_name = d['last_name']
-            self.seat_number = d['seat_number']
-            self.meal_preference = d['meal_preference']
+            self.first_name = d.get('first_name', '')
+            self.last_name = d.get('last_name', '')
+            self.seat_number = d.get('seat_number', '')
+            self.meal_preference = d.get('meal_preference', 'None')
 
     pax_preview = [PaxPreview(p) for p in passengers]
     price_per_pax = PACKAGE_PRICES.get(tier, 24000)
-    total_price = price_per_pax * max(len(pax_preview), 1)
+    
+    # Calculate total price
+    if trip_type == 'return':
+        total_price = price_per_pax * max(len(pax_preview), 1) * 2
+    else:
+        total_price = price_per_pax * max(len(pax_preview), 1)
+    
+    # Get return flight if applicable
+    return_flight = None
+    if trip_type == 'return' and return_flight_id:
+        return_flight = Flight.query.get(return_flight_id)
 
     return render_template(
         'checkout.html',
         flight=flight,
+        return_flight=return_flight,
         package_tier=tier,
         passengers=pax_preview,
-        trip_type='one_way',
-        return_date=None,
+        trip_type=trip_type,
+        return_date=session.get('return_date'),
         total_price=total_price,
         selected_payment_method='card',
         payment_method_choices=payment_method_choices,

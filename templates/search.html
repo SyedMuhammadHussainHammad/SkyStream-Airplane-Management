@@ -337,7 +337,7 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
 <div class="results-wrap">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl font-black text-white">
-      Search Results
+      {% if trip_type == 'return' %}Outbound Flights{% else %}Search Results{% endif %}
       {% if flights %}
         <span class="text-sm font-normal text-slate-400 ml-2">— {{ flights|length }} flight(s) found</span>
       {% endif %}
@@ -401,7 +401,8 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
         </span>
         {% else %}
         <a href="{{ url_for('select_package', flight_id=flight.id) }}" id="select-{{ flight.id }}"
-           class="btn-primary px-5 py-2.5 text-sm rounded-xl">
+           class="btn-primary px-5 py-2.5 text-sm rounded-xl"
+           onclick="{% if trip_type == 'return' %}sessionStorage.setItem('outbound_flight_id', {{ flight.id }});{% endif %}">
           Select →
         </a>
         {% endif %}
@@ -415,6 +416,83 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
     <h3 class="font-black text-xl text-white mb-2">No Flights Found</h3>
     <p class="text-slate-400 text-sm">Try different dates or cities.<br>
       <span class="text-slate-500 text-xs">Hint: search "Karachi" or "Lahore"</span></p>
+  </div>
+  {% endif %}
+
+  <!-- Return Flights Section -->
+  {% if trip_type == 'return' and return_flights %}
+  <div class="mt-16">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-black text-white">
+        Return Flights
+        <span class="text-sm font-normal text-slate-400 ml-2">— {{ return_flights|length }} flight(s) found</span>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {% for item in return_flights %}
+      {% set flight = item.flight %}
+      <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="return-flight-{{ flight.id }}">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.2);">↩ FL-{{ flight.id }}</span>
+          <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
+        </div>
+        <div class="flex items-center justify-between mb-5">
+          <div class="text-center">
+            <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
+          </div>
+          <div class="flex-1 flex flex-col items-center px-4">
+            <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
+            <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
+              <line x1="0" y1="10" x2="85" y2="10" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
+              <text x="88" y="14" font-size="10" fill="#f59e0b">✈</text>
+            </svg>
+            <p class="text-[10px] text-slate-500 mt-1">Direct</p>
+          </div>
+          <div class="text-center">
+            <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
+          </div>
+        </div>
+
+        <!-- Seat availability bar -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+            <span>Seats available</span>
+            <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+              {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
+            </span>
+          </div>
+          <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div class="h-full rounded-full transition-all
+              {% if item.sold_out %}bg-red-500
+              {% elif item.available < 20 %}bg-amber-400
+              {% else %}bg-emerald-400{% endif %}"
+              style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
+          <div>
+            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
+            <p class="text-2xl font-black text-amber-400">Rs 19,000</p>
+          </div>
+          {% if item.sold_out %}
+          <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
+            🚫 Sold Out
+          </span>
+          {% else %}
+          <button onclick="selectReturnFlight({{ flight.id }})" id="select-return-{{ flight.id }}"
+             class="btn-primary px-5 py-2.5 text-sm rounded-xl">
+            Select Return →
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 </div>
@@ -552,5 +630,26 @@ window.addEventListener('load', function() {
     }
 });
 {% endif %}
+
+/* ── Handle return flight selection ── */
+function selectReturnFlight(returnFlightId) {
+    // Store return flight ID in session storage
+    fetch('/api/store-return-flight', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ return_flight_id: returnFlightId })
+    }).then(() => {
+        // Get the outbound flight ID from session storage
+        const outboundId = sessionStorage.getItem('outbound_flight_id');
+        if (outboundId) {
+            window.location.href = `/flights/${outboundId}/package`;
+        } else {
+            alert('Please select an outbound flight first');
+        }
+    });
+}
 </script>
 {% endblock %}

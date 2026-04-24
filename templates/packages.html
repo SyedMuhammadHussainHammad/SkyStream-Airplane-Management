@@ -145,15 +145,14 @@
     </div>
 </div>
 
-<form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}">
+<form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}" style="display:none;">
     {{ form.hidden_tag() }}
+</form>
 
     <div class="pkg-grid mb-10">
 
         <!-- ═══ BASIC ═══ -->
-        <label class="pkg-wrapper" for="pkg-basic">
-            <input type="radio" id="pkg-basic" name="{{ form.package_tier.name }}" value="Basic"
-                   class="peer sr-only" {% if form.package_tier.data == 'Basic' %}checked{% endif %}>
+        <a href="{{ url_for('passenger_details', flight_id=flight.id, tier='Basic') }}" class="pkg-wrapper">
             <div class="pkg-inner">
                 <div class="tier-basic px-6 py-8 text-center">
                     <div class="text-4xl mb-3">🎒</div>
@@ -176,13 +175,11 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
 
         <!-- ═══ ECONOMY ═══ -->
-        <label class="pkg-wrapper" for="pkg-economy">
+        <a href="{{ url_for('passenger_details', flight_id=flight.id, tier='Economy') }}" class="pkg-wrapper">
             <span class="pkg-badge">⭐ Most Popular</span>
-            <input type="radio" id="pkg-economy" name="{{ form.package_tier.name }}" value="Economy"
-                   class="peer sr-only" {% if form.package_tier.data == 'Economy' %}checked{% endif %}>
             <div class="pkg-inner">
                 <div class="tier-economy px-6 py-8 text-center">
                     <div class="text-4xl mb-3">🧳</div>
@@ -205,12 +202,10 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
 
         <!-- ═══ PREMIUM ═══ -->
-        <label class="pkg-wrapper pkg-premium" for="pkg-premium">
-            <input type="radio" id="pkg-premium" name="{{ form.package_tier.name }}" value="Premium"
-                   class="peer sr-only" {% if form.package_tier.data == 'Premium' %}checked{% endif %}>
+        <a href="{{ url_for('passenger_details', flight_id=flight.id, tier='Premium') }}" class="pkg-wrapper pkg-premium">
             <div class="pkg-inner">
                 <div class="tier-premium px-6 py-8 text-center">
                     <div class="text-4xl mb-3">👑</div>
@@ -233,7 +228,7 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
     </div>
 
     {% if form.package_tier.errors %}
@@ -248,7 +243,6 @@
            class="flex items-center justify-center gap-2 text-slate-400 hover:text-white font-semibold px-6 py-3.5 rounded-xl transition-all text-sm" style="border:1px solid rgba(255,255,255,.1);">
             ← Back to Search
         </a>
-        {{ form.submit(class="flex-1 sm:flex-none sm:min-w-[200px] btn-primary py-3.5 px-8 rounded-xl text-sm font-bold", id="pkg-submit-btn") }}
     </div>
-</form>
+</div>
 {% endblock %}
