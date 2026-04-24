@@ -3,22 +3,21 @@
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-12 animate-fade-up">
 
-    <!-- Header -->
     <div class="mb-10">
         <a href="{{ url_for('home') }}" class="text-sm font-medium text-gold hover:text-gold-light transition-colors">← Back to Home</a>
-        <h1 class="text-4xl font-display font-black text-slate-900 dark:text-white mt-4 mb-2">Privacy Policy</h1>
-        <p class="text-slate-500 text-sm">Last updated: April 2025</p>
+        <h1 class="text-4xl font-display font-black text-white mt-4 mb-2">Privacy Policy</h1>
+        <p class="text-white/50 text-sm">Last updated: April 2025</p>
     </div>
 
-    <div class="space-y-8 text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+    <div class="space-y-8 text-white/60 leading-relaxed text-sm">
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">1. Information We Collect</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">1. Information We Collect</h2>
             <p>When you register or book a flight on SkyStream, we collect personal information including your name, email address, phone number, age, and payment details. We also collect usage data such as pages visited, search queries, and booking history to improve our services.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">2. How We Use Your Information</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">2. How We Use Your Information</h2>
             <ul class="list-disc list-inside space-y-2 ml-2">
                 <li>To process flight bookings and issue digital tickets</li>
                 <li>To send booking confirmations and flight updates</li>
@@ -29,38 +28,38 @@
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">3. Data Sharing</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">3. Data Sharing</h2>
             <p>We do not sell your personal data to third parties. We may share data with trusted service providers (payment processors, email services) strictly to operate our platform. All third parties are bound by confidentiality agreements.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">4. Cookies</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">4. Cookies</h2>
             <p>SkyStream uses session cookies to keep you logged in and remember your booking preferences. We do not use third-party advertising cookies. You can disable cookies in your browser settings, though some features may not function correctly.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">5. Data Retention</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">5. Data Retention</h2>
             <p>We retain your account data for as long as your account is active. Booking records are kept for 7 years for financial compliance. You may request deletion of your account at any time by contacting us.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">6. Your Rights</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">6. Your Rights</h2>
             <p>You have the right to access, correct, or delete your personal data. To exercise these rights, contact us at <span class="text-gold font-medium">privacy@skystream.pk</span>. We will respond within 30 days.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">7. Security</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">7. Security</h2>
             <p>We use industry-standard encryption (HTTPS/TLS) and bcrypt password hashing to protect your data. However, no system is 100% secure — please use a strong, unique password for your account.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-display font-bold text-slate-800 dark:text-slate-200 mb-3">8. Changes to This Policy</h2>
+            <h2 class="text-lg font-display font-bold text-white mb-3">8. Changes to This Policy</h2>
             <p>We may update this policy from time to time. Significant changes will be communicated via email or a notice on the platform. Continued use of SkyStream after changes constitutes acceptance.</p>
         </section>
 
     </div>
 
-    <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 flex gap-6 text-xs text-slate-400">
+    <div class="mt-12 pt-8 flex gap-6 text-xs text-white/40" style="border-top:1px solid rgba(255,255,255,.1);">
         <a href="{{ url_for('terms') }}" class="hover:text-gold transition-colors">Terms of Service</a>
         <a href="{{ url_for('contact') }}" class="hover:text-gold transition-colors">Contact Us</a>
     </div>
