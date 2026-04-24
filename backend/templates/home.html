@@ -13,11 +13,18 @@
   pointer-events: none;
 }
 
+/* Kill the base.html body::before gradient on this page so canvas shows */
+body::before { display: none !important; }
+html, body { background: #050d1f !important; }
+
 /* ── Page wrapper sits above canvas ── */
 .home-wrap {
   position: relative;
   z-index: 1;
 }
+
+/* Navbar must sit above canvas */
+#navbar { z-index: 1000 !important; }
 
 main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
@@ -389,10 +396,10 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
     reset(init) {
       this.x  = Math.random() * W;
       this.y  = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
-      this.r  = Math.random() * 1.6 + .2;
+      this.r  = Math.random() * 2 + .4;
       this.vx = (Math.random() - .5) * .3;
       this.vy = (Math.random() - .5) * .3;
-      this.a  = Math.random() * .5 + .08;
+      this.a  = Math.random() * .7 + .2;
       this.pulse = Math.random() * Math.PI * 2;
     }
     tick() {
@@ -412,7 +419,7 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
   function init() {
     resize();
-    pts = Array.from({ length: 160 }, () => new Star());
+    pts = Array.from({ length: 220 }, () => new Star());
   }
 
   function loop() {
@@ -424,8 +431,8 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
         const d  = Math.sqrt(dx * dx + dy * dy);
         if (d < 110) {
           ctx.beginPath();
-          ctx.strokeStyle = `rgba(14,165,233,${.07 * (1 - d / 110)})`;
-          ctx.lineWidth = .5;
+          ctx.strokeStyle = `rgba(14,165,233,${.12 * (1 - d / 110)})`;
+          ctx.lineWidth = .6;
           ctx.moveTo(pts[i].x, pts[i].y);
           ctx.lineTo(pts[j].x, pts[j].y);
           ctx.stroke();
