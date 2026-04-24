@@ -397,8 +397,8 @@
         tags.innerHTML = filled.map(s => `<span class="font-mono text-xs font-bold bg-navy text-white px-3 py-1 rounded-full">${s}</span>`).join('');
     }
 
-    const FLIGHT_ID = {{ flight.id }};
-    const LOCK_MINUTES = {{ lock_minutes }};
+    const FLIGHT_ID = parseInt('{{ flight.id }}', 10);
+    const LOCK_MINUTES = parseInt('{{ lock_minutes }}', 10);
 
     document.getElementById('passengerForm').addEventListener('submit', async function(e) {
         if (PACKAGE !== 'Basic' && selectedSeats.slice(0, passengerCount).some(s => !s)) {
