@@ -1,14 +1,30 @@
+"""
+Safe migration script — adds new columns and tables introduced in the
+real-world constraints update. Uses IF NOT EXISTS / exception guards so
+it can be run multiple times without error.
+
+Run with:
+    python migrate_db.py
+"""
 from app import app, db
 from sqlalchemy import text
-import models
 
 MIGRATIONS = [
+    # ── booking: new columns ──
     "ALTER TABLE booking ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending'",
     "ALTER TABLE booking ADD COLUMN IF NOT EXISTS hold_expires_at TIMESTAMP",
+
+    # ── passenger: meal_preference ──
     "ALTER TABLE passenger ADD COLUMN IF NOT EXISTS meal_preference VARCHAR(50) DEFAULT 'None'",
+
+    # ── ticket: ticket_number + status ──
     "ALTER TABLE ticket ADD COLUMN IF NOT EXISTS ticket_number VARCHAR(20)",
     "ALTER TABLE ticket ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'issued'",
+
+    # ── backfill: existing confirmed bookings should have payment_status = 'confirmed' ──
     "UPDATE booking SET payment_status = 'confirmed' WHERE status = 'confirmed' AND payment_status = 'pending'",
+
+    # ── backfill: existing issued tickets ──
     "UPDATE ticket SET status = 'issued' WHERE status IS NULL",
 ]
 
@@ -39,24 +55,19 @@ CREATE TABLE IF NOT EXISTS payment_transaction (
 """
 
 with app.app_context():
-    # Create any brand-new tables (idempotent)
-    try:
-        db.create_all()
-        print("✅ db.create_all() done.")
-    except Exception as e:
-        print(f"⚠️  db.create_all(): {e}")
-
     conn = db.engine.connect()
     try:
+        # 1. Column migrations
         for sql in MIGRATIONS:
             try:
                 conn.execute(text(sql))
                 conn.commit()
-                print(f"  ✅  {sql[:70]}")
+                print(f"  ✅  {sql[:70]}...")
             except Exception as e:
                 conn.rollback()
-                print(f"  ⚠️  {sql[:50]} → {e}")
+                print(f"  ⚠️  Skipped (already applied?): {e}")
 
+        # 2. New tables
         for name, ddl in [('seat_lock', CREATE_SEAT_LOCK),
                            ('payment_transaction', CREATE_PAYMENT_TRANSACTION)]:
             try:
@@ -67,6 +78,6 @@ with app.app_context():
                 conn.rollback()
                 print(f"  ⚠️  Table '{name}': {e}")
 
-        print("\n✅ Setup complete.")
+        print("\n✅  Migration complete.")
     finally:
         conn.close()

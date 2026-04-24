@@ -88,6 +88,59 @@ with app.app_context():
     import routes   # noqa
     db.create_all()
 
+    # ── Auto-migrate: add new columns/tables if they don't exist yet ──
+    from sqlalchemy import text as _text
+    _MIGRATIONS = [
+        "ALTER TABLE booking ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending'",
+        "ALTER TABLE booking ADD COLUMN IF NOT EXISTS hold_expires_at TIMESTAMP",
+        "ALTER TABLE passenger ADD COLUMN IF NOT EXISTS meal_preference VARCHAR(50) DEFAULT 'None'",
+        "ALTER TABLE ticket ADD COLUMN IF NOT EXISTS ticket_number VARCHAR(20)",
+        "ALTER TABLE ticket ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'issued'",
+        # Backfill existing confirmed bookings
+        "UPDATE booking SET payment_status = 'confirmed' WHERE status = 'confirmed' AND payment_status = 'pending'",
+        "UPDATE ticket SET status = 'issued' WHERE status IS NULL",
+    ]
+    _CREATE_SEAT_LOCK = """
+    CREATE TABLE IF NOT EXISTS seat_lock (
+        id          SERIAL PRIMARY KEY,
+        flight_id   INTEGER NOT NULL REFERENCES flight(id),
+        seat_number VARCHAR(5) NOT NULL,
+        user_id     INTEGER NOT NULL REFERENCES "user"(id),
+        locked_at   TIMESTAMP DEFAULT NOW(),
+        expires_at  TIMESTAMP NOT NULL,
+        CONSTRAINT uq_seat_lock UNIQUE (flight_id, seat_number)
+    )
+    """
+    _CREATE_PAYMENT_TXN = """
+    CREATE TABLE IF NOT EXISTS payment_transaction (
+        id              SERIAL PRIMARY KEY,
+        booking_id      INTEGER NOT NULL REFERENCES booking(id),
+        amount          FLOAT NOT NULL,
+        method          VARCHAR(30) NOT NULL,
+        status          VARCHAR(20) DEFAULT 'pending',
+        gateway_ref     VARCHAR(50),
+        failure_reason  VARCHAR(200),
+        created_at      TIMESTAMP DEFAULT NOW(),
+        updated_at      TIMESTAMP DEFAULT NOW()
+    )
+    """
+    try:
+        with db.engine.connect() as _conn:
+            for _sql in _MIGRATIONS:
+                try:
+                    _conn.execute(_text(_sql))
+                    _conn.commit()
+                except Exception:
+                    _conn.rollback()
+            for _ddl in [_CREATE_SEAT_LOCK, _CREATE_PAYMENT_TXN]:
+                try:
+                    _conn.execute(_text(_ddl))
+                    _conn.commit()
+                except Exception:
+                    _conn.rollback()
+    except Exception:
+        pass  # non-fatal — app still starts
+
 # ── WSGI entry point ──
 application = app
 
