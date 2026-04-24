@@ -3,100 +3,445 @@
 
 {% block head %}
 <style>
+    /* ═══ GLASSMORPHISM & DEPTH ENHANCEMENTS ═══ */
     .checkout-shell {
         max-width: 1120px;
         margin: 0 auto;
     }
+    
     .checkout-hero {
-        background: linear-gradient(140deg, #071529, #102a4d 65%, #1a3a6b);
-        border-radius: 24px;
-        border: 1px solid rgba(148, 163, 184, .2);
-        padding: 26px 28px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 32px 36px;
         color: #fff;
-        box-shadow: 0 20px 50px rgba(10, 22, 40, .28);
-        margin-bottom: 22px;
+        box-shadow: 
+            0 24px 64px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
     }
-    .stepper { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
-    .step-dot { width: 28px; height: 28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-    .step-done { background: #22c55e; color: #fff; }
-    .step-active { background: #0ea5e9; color: #fff; box-shadow: 0 0 0 4px rgba(14,165,233,.2); }
-    .step-line { height: 2px; width: 42px; background: rgba(255,255,255,.2); border-radius: 999px; }
 
+    .checkout-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        pointer-events: none;
+    }
+
+    /* ═══ ENHANCED STEPPER ═══ */
+    .stepper { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        margin-top: 20px; 
+        position: relative;
+        z-index: 10;
+    }
+    
+    .step-dot { 
+        width: 32px; 
+        height: 32px; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 12px; 
+        font-weight: 800;
+        transition: all 0.3s ease;
+    }
+    
+    .step-done { 
+        background: linear-gradient(135deg, #22c55e, #16a34a); 
+        color: #fff;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    }
+    
+    .step-active { 
+        background: linear-gradient(135deg, #0ea5e9, #0284c7); 
+        color: #fff; 
+        box-shadow: 
+            0 0 0 4px rgba(14,165,233,.25),
+            0 0 20px rgba(14,165,233,.4);
+        animation: step-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes step-pulse {
+        0%, 100% { 
+            box-shadow: 
+                0 0 0 4px rgba(14,165,233,.25),
+                0 0 20px rgba(14,165,233,.4);
+        }
+        50% { 
+            box-shadow: 
+                0 0 0 6px rgba(14,165,233,.35),
+                0 0 30px rgba(14,165,233,.6);
+        }
+    }
+    
+    .step-line { 
+        height: 3px; 
+        width: 48px; 
+        background: rgba(255,255,255,.2); 
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .step-line.done {
+        background: linear-gradient(90deg, #22c55e, #0ea5e9);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+    }
+
+    .step-line.done::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: line-shimmer 2s linear infinite;
+    }
+
+    @keyframes line-shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* ═══ ENHANCED GRID & PANELS ═══ */
     .checkout-grid {
         display: grid;
         grid-template-columns: 1.45fr 1fr;
-        gap: 20px;
+        gap: 24px;
     }
     @media (max-width: 980px) {
         .checkout-grid { grid-template-columns: 1fr; }
     }
+    
     .panel {
-        background: rgba(74,120,152,.6);
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,.2);
-        box-shadow: 0 2px 14px rgba(0,0,0,.2);
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
-    .dark-mode .panel { background: #0d1f3c; border-color: #1e3a5f; box-shadow: 0 2px 14px rgba(0,0,0,.3); }
+
+    .panel::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+        pointer-events: none;
+    }
+
+    .panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .dark-mode .panel { 
+        background: rgba(13, 31, 60, 0.8); 
+        border-color: rgba(30, 58, 95, 0.6); 
+    }
+    
     .panel-head {
-        padding: 18px 20px;
-        border-bottom: 1px solid rgba(255,255,255,.15);
+        padding: 24px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        position: relative;
+        z-index: 10;
     }
-    .dark-mode .panel-head { border-bottom-color: #1e3a5f; }
-    .panel-body { padding: 20px; }
+    
+    .dark-mode .panel-head { 
+        border-bottom-color: rgba(30, 58, 95, 0.6); 
+    }
+    
+    .panel-body { 
+        padding: 28px; 
+        position: relative;
+        z-index: 10;
+    }
+
+    /* ═══ ENHANCED ROUTE DISPLAY ═══ */
     .route-code {
         font-family: 'Inter', sans-serif;
-        font-size: 28px;
-        font-weight: 800;
+        font-size: 32px;
+        font-weight: 900;
         line-height: 1;
         color: #ffffff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        position: relative;
     }
-    .dark-mode .route-code { color: #e2e8f0; }
+
+    .route-code::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.5), transparent);
+        border-radius: 1px;
+    }
+
+    .dark-mode .route-code { 
+        color: #e2e8f0; 
+    }
+
+    /* ═══ ENHANCED PAYMENT OPTIONS ═══ */
     .payment-option {
         display: block;
-        border: 1px solid rgba(255,255,255,.2);
-        border-radius: 12px;
-        padding: 12px 14px;
-        transition: all .2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 16px 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
-        background: rgba(47,84,112,.6);
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
     }
-    .dark-mode .payment-option { background: #0a1628; border-color: #1e3a5f; }
+
+    .payment-option::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .payment-option:hover::before {
+        opacity: 1;
+    }
+
+    .dark-mode .payment-option { 
+        background: rgba(10, 22, 40, 0.8); 
+        border-color: rgba(30, 58, 95, 0.6); 
+    }
+    
     .payment-option:hover {
-        border-color: rgba(255,255,255,.5);
-        box-shadow: 0 0 0 3px rgba(255,255,255,.1);
+        border-color: rgba(14, 165, 233, 0.4);
+        box-shadow: 
+            0 0 0 3px rgba(14, 165, 233, 0.1),
+            0 8px 24px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
     }
-    .payment-option input { accent-color: #0ea5e9; }
+
+    .payment-option input:checked + * {
+        color: #0ea5e9;
+    }
+
+    .payment-option input { 
+        accent-color: #0ea5e9;
+        transform: scale(1.2);
+    }
+
+    /* ═══ ENHANCED TOTAL DISPLAY ═══ */
     .total-pill {
-        border-radius: 14px;
-        background: rgba(47,84,112,.7);
-        border: 1px solid rgba(255,255,255,.2);
-        padding: 14px 16px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 20px 24px;
+        position: relative;
+        overflow: hidden;
     }
-    .dark-mode .total-pill { background: linear-gradient(135deg,#0c1a2e,#0a1628); border-color: #1e3a5f; }
-    .subtle {
+
+    .total-pill::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(201, 146, 42, 0.05));
+        pointer-events: none;
+    }
+
+    .dark-mode .total-pill { 
+        background: rgba(12, 26, 46, 0.8); 
+        border-color: rgba(30, 58, 95, 0.6); 
+    }
+
+    /* ═══ ENHANCED TABLE ═══ */
+    .enhanced-table {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, rgba(10, 30, 54, 0.9), rgba(15, 45, 74, 0.9));
+        backdrop-filter: blur(10px);
+    }
+
+    .table-row {
+        transition: all 0.2s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    .table-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .table-row:not(:last-child) { 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+    }
+    
+    .dark-mode .table-row:not(:last-child) { 
+        border-bottom-color: rgba(30, 58, 95, 0.4); 
+    }
+
+    /* ═══ ENHANCED BADGES ═══ */
+    .enhanced-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 4px 12px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: .5px;
-        color: #a8cfe0;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
     }
-    .dark-mode .subtle { color: #64748b; }
-    .table-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,.12); }
-    .dark-mode .table-row:not(:last-child) { border-bottom-color: #1e3a5f; }
+
+    .enhanced-badge::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    }
+
+    /* ═══ ENHANCED BUTTONS ═══ */
+    .btn-enhanced {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        border: none;
+        border-radius: 16px;
+        padding: 16px 24px;
+        font-weight: 800;
+        color: white;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 4px 16px rgba(22, 163, 74, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-enhanced::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 
+            0 8px 28px rgba(22, 163, 74, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-enhanced:hover::before {
+        opacity: 1;
+    }
+
+    .btn-enhanced:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* ═══ ENHANCED TIMER BOX ═══ */
+    .timer-box {
+        border-radius: 16px;
+        padding: 16px 20px;
+        background: rgba(245, 158, 11, 0.1);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #d97706;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .timer-box::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), transparent);
+    }
+
+    .timer-box.expired {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #dc2626;
+    }
+
+    /* ═══ UTILITY CLASSES ═══ */
+    .subtle {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: rgba(168, 207, 224, 0.8);
+        position: relative;
+        z-index: 10;
+    }
+    
+    .dark-mode .subtle { 
+        color: rgba(100, 116, 139, 0.8); 
+    }
+
+    /* ═══ MICRO-INTERACTIONS ═══ */
+    .micro-bounce {
+        transition: transform 0.15s ease;
+    }
+
+    .micro-bounce:active {
+        transform: scale(0.95);
+    }
+
+    /* ═══ FLIGHT ICON ANIMATION ═══ */
+    .flight-icon {
+        animation: flight-float 3s ease-in-out infinite;
+    }
+
+    @keyframes flight-float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-4px) rotate(2deg); }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="checkout-shell animate-fade-up">
     <div class="checkout-hero">
-        <p class="text-xs tracking-[0.2em] uppercase text-sky-200 font-semibold">SkyStream Checkout</p>
-        <h1 class="text-3xl font-display font-black mt-1">Confirm Booking & Payment</h1>
-        <p class="text-sm text-slate-300 mt-2">Review passenger details and select a payment method to finalize your ticket.</p>
-        <div class="stepper" aria-label="Booking progress">
-            <div class="step-dot step-done">1</div><div class="step-line"></div>
-            <div class="step-dot step-done">2</div><div class="step-line"></div>
-            <div class="step-dot step-done">3</div><div class="step-line"></div>
-            <div class="step-dot step-active">4</div>
+        <div class="relative z-10">
+            <p class="text-sm tracking-[0.2em] uppercase text-sky-200 font-semibold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                SkyStream Checkout
+            </p>
+            <h1 class="text-4xl font-display font-black mt-2 leading-tight">Confirm Booking & Payment</h1>
+            <p class="text-base text-slate-300 mt-3 leading-relaxed">Review passenger details and select a payment method to finalize your ticket.</p>
+            <div class="stepper" aria-label="Booking progress">
+                <div class="step-dot step-done">✓</div><div class="step-line done"></div>
+                <div class="step-dot step-done">✓</div><div class="step-line done"></div>
+                <div class="step-dot step-done">✓</div><div class="step-line"></div>
+                <div class="step-dot step-active">4</div>
+            </div>
         </div>
     </div>
 
@@ -105,58 +450,58 @@
             <div class="panel-head flex items-center justify-between">
                 <div>
                     <p class="subtle">Flight Summary</p>
-                    <h2 class="text-xl font-display font-bold text-slate-900">Flight #{{ flight.id }}</h2>
+                    <h2 class="text-2xl font-display font-bold text-white mt-1">Flight #{{ flight.id }}</h2>
                 </div>
-                <span class="badge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">{{ package_tier }}</span>
+                <span class="enhanced-badge" style="color:#0ea5e9;">{{ package_tier }}</span>
             </div>
             <div class="panel-body">
-                <div class="flex items-center justify-between gap-4 mb-5">
+                <div class="flex items-center justify-between gap-6 mb-8">
                     <div>
                         <p class="subtle">Route</p>
-                        <div class="flex items-center gap-3 mt-1">
+                        <div class="flex items-center gap-4 mt-2">
                             <span class="route-code">{{ flight.origin[:3].upper() }}</span>
-                            <span class="text-sky-600 text-xl">✈</span>
+                            <span class="text-sky-400 text-2xl flight-icon">✈</span>
                             <span class="route-code">{{ flight.destination[:3].upper() }}</span>
                             {% if trip_type == 'return' %}
-                            <span class="text-sky-600 text-xl">✈</span>
+                            <span class="text-sky-400 text-2xl flight-icon" style="animation-delay: 1s;">✈</span>
                             <span class="route-code">{{ flight.origin[:3].upper() }}</span>
                             {% endif %}
                         </div>
-                        <p class="text-xs text-slate-500 mt-1">
+                        <p class="text-sm text-slate-400 mt-2 leading-relaxed">
                             {{ flight.origin }} → {{ flight.destination }}
                             {% if trip_type == 'return' %} → {{ flight.origin }} (Return){% endif %}
                         </p>
                     </div>
                     <div class="text-right">
                         <p class="subtle">Departure</p>
-                        <p class="font-semibold text-slate-900 mt-1">{{ flight.departure_time.strftime('%d %b %Y') }}</p>
-                        <p class="text-sm text-slate-600">{{ flight.departure_time.strftime('%I:%M %p') }}</p>
+                        <p class="font-bold text-white text-lg mt-1">{{ flight.departure_time.strftime('%d %b %Y') }}</p>
+                        <p class="text-base text-slate-300">{{ flight.departure_time.strftime('%I:%M %p') }}</p>
                         {% if trip_type == 'return' and return_date %}
-                        <p class="subtle mt-2">Return</p>
-                        <p class="font-semibold text-slate-900">{{ return_date }}</p>
+                        <p class="subtle mt-3">Return</p>
+                        <p class="font-bold text-white text-lg">{{ return_date }}</p>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                <div class="enhanced-table">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr style="background:linear-gradient(135deg,#0a1e36,#0f2d4a);">
-                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">#</th>
-                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Passenger</th>
-                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Seat</th>
-                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Meal</th>
+                            <tr class="table-header">
+                                <th class="text-left px-6 py-4 subtle" style="color:#7ab8d8;">#</th>
+                                <th class="text-left px-6 py-4 subtle" style="color:#7ab8d8;">Passenger</th>
+                                <th class="text-left px-6 py-4 subtle" style="color:#7ab8d8;">Seat</th>
+                                <th class="text-left px-6 py-4 subtle" style="color:#7ab8d8;">Meal</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for p in passengers %}
                             <tr class="table-row">
-                                <td class="px-4 py-3 text-slate-500">{{ loop.index }}</td>
-                                <td class="px-4 py-3 font-semibold text-slate-900">{{ p.first_name }} {{ p.last_name }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">{{ p.seat_number }}</span>
+                                <td class="px-6 py-4 text-slate-400 font-mono">{{ loop.index }}</td>
+                                <td class="px-6 py-4 font-semibold text-white">{{ p.first_name }} {{ p.last_name }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="enhanced-badge" style="color:#1d4ed8;">{{ p.seat_number }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-slate-600">{{ p.meal_preference }}</td>
+                                <td class="px-6 py-4 text-slate-300">{{ p.meal_preference }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -168,16 +513,16 @@
         <aside class="panel">
             <div class="panel-head">
                 <p class="subtle">Payment</p>
-                <h2 class="text-xl font-display font-bold text-slate-900">Choose Payment Method</h2>
+                <h2 class="text-2xl font-display font-bold text-white mt-1">Choose Payment Method</h2>
             </div>
             <div class="panel-body">
-                <form method="POST" action="{{ url_for('checkout', flight_id=flight.id, tier=package_tier) }}" class="space-y-4">
+                <form method="POST" action="{{ url_for('checkout', flight_id=flight.id, tier=package_tier) }}" class="space-y-5">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="trip_type" value="{{ trip_type }}">
                     {% if return_date %}<input type="hidden" name="return_date" value="{{ return_date }}">{% endif %}
                     {% for method_key, method_label in payment_method_choices.items() %}
-                    <label class="payment-option flex items-center justify-between">
-                        <div class="flex items-center gap-3">
+                    <label class="payment-option flex items-center justify-between micro-bounce">
+                        <div class="flex items-center gap-4 relative z-10">
                             <input
                                 type="radio"
                                 name="payment_method"
@@ -186,8 +531,8 @@
                                 required
                             >
                             <div>
-                                <p class="font-semibold text-slate-900">{{ method_label }}</p>
-                                <p class="text-xs text-slate-500">
+                                <p class="font-bold text-white text-base">{{ method_label }}</p>
+                                <p class="text-sm text-slate-400 mt-1">
                                     {% if method_key == 'card' %}Instant secure card payment
                                     {% elif method_key == 'jazzcash' %}Pay directly via JazzCash wallet
                                     {% elif method_key == 'easypaisa' %}Pay directly via EasyPaisa wallet
@@ -195,44 +540,47 @@
                                 </p>
                             </div>
                         </div>
-                        <span class="text-slate-400 text-xs uppercase font-bold">Pay</span>
+                        <span class="text-slate-400 text-sm uppercase font-bold relative z-10">Pay</span>
                     </label>
                     {% endfor %}
 
-                    <div class="total-pill mt-5">
-                        <p class="subtle">Total Amount</p>
-                        <p class="text-3xl font-display font-black text-sky-700 mt-1">Rs {{ "{:,.0f}".format(total_price) }}</p>
-                        <p class="text-xs text-slate-600 mt-1">
-                            {{ passengers|length }} passenger(s) × {{ package_tier }}
-                            {% if trip_type == 'return' %} × 2 (Return Trip){% endif %}
-                        </p>
+                    <div class="total-pill mt-8">
+                        <div class="relative z-10">
+                            <p class="subtle">Total Amount</p>
+                            <p class="text-4xl font-display font-black text-sky-400 mt-2">Rs {{ "{:,.0f}".format(total_price) }}</p>
+                            <p class="text-sm text-slate-400 mt-2">
+                                {{ passengers|length }} passenger(s) × {{ package_tier }}
+                                {% if trip_type == 'return' %} × 2 (Return Trip){% endif %}
+                            </p>
+                        </div>
                     </div>
 
                     {% if lock_expires_at %}
-                    <div id="lock-timer-box" class="rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2"
-                         style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#d97706;">
-                        <span>🔒</span>
-                        <span>Seats held for <span id="lock-countdown" class="font-black tabular-nums">--:--</span></span>
+                    <div id="lock-timer-box" class="timer-box text-base font-semibold flex items-center gap-3">
+                        <span class="text-xl">🔒</span>
+                        <span class="relative z-10">Seats held for <span id="lock-countdown" class="font-black tabular-nums">--:--</span></span>
                     </div>
                     {% endif %}
 
                     <button
                         id="pay-btn"
                         type="submit"
-                        class="w-full py-3.5 rounded-xl font-display font-bold text-sm text-white transition-all hover:brightness-110 active:scale-[0.99]"
-                        style="background: linear-gradient(135deg, #16a34a, #22c55e);"
+                        class="btn-enhanced w-full text-base micro-bounce"
                     >
                         🔐 Confirm Booking &amp; Pay
                     </button>
 
                     <a
                         href="{{ url_for('select_package', flight_id=flight.id) }}"
-                        class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold text-sm transition-all"
+                        class="w-full inline-flex items-center justify-center gap-3 py-4 rounded-2xl border border-white/20 hover:border-white/30 text-slate-300 hover:text-white font-semibold text-base transition-all backdrop-blur-10 bg-white/05 hover:bg-white/08 micro-bounce"
                     >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
                         Back to Package Selection
                     </a>
 
-                    <p class="text-[11px] text-slate-500 text-center">
+                    <p class="text-xs text-slate-500 text-center leading-relaxed relative z-10">
                         By confirming, you agree to SkyStream booking and payment terms.
                         {% if lock_minutes %} Seats are held for {{ lock_minutes }} minutes.{% endif %}
                     </p>
@@ -252,13 +600,12 @@
         const s = String(diff % 60).padStart(2, '0');
         el.textContent = m + ':' + s;
         if (diff === 0) {
-            box.style.background = 'rgba(239,68,68,.12)';
-            box.style.borderColor = 'rgba(239,68,68,.3)';
-            box.style.color = '#dc2626';
-            box.innerHTML = '<span>⚠️</span><span>Seat hold expired — <a href="{{ url_for("passenger_details", flight_id=flight.id, tier=package_tier) }}" class="underline font-bold">go back to re-select seats</a></span>';
+            box.classList.add('expired');
+            box.innerHTML = '<span class="text-2xl">⚠️</span><span class="relative z-10">Seat hold expired — <a href="{{ url_for("passenger_details", flight_id=flight.id, tier=package_tier) }}" class="underline font-bold hover:text-red-300 transition-colors">go back to re-select seats</a></span>';
             btn.disabled = true;
             btn.style.opacity = '0.5';
             btn.style.cursor = 'not-allowed';
+            btn.style.transform = 'none';
         }
     }
     tick();

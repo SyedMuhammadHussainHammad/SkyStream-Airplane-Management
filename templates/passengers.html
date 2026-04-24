@@ -3,112 +3,345 @@
 
 {% block head %}
 <style>
+    /* ═══ GLASSMORPHISM & DEPTH ENHANCEMENTS ═══ */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-card-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card-hover:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 
+            0 20px 48px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ═══ ENHANCED SEAT STYLING ═══ */
     .seat {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-size: 9px;
         font-weight: 700;
         cursor: pointer;
-        transition: all .15s;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         border: 2px solid transparent;
         user-select: none;
         font-family: 'DM Sans', sans-serif;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .seat::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .seat:hover::before {
+        opacity: 1;
     }
 
     .seat-avail {
-        background: #ecfdf5;
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
         color: #059669;
-        border-color: #a7f3d0;
+        border-color: rgba(167, 243, 208, 0.6);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
     }
 
     .seat-avail:hover {
-        background: #d1fae5;
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
         border-color: #6ee7b7;
-        transform: scale(1.12);
+        transform: scale(1.15) translateY(-2px);
+        box-shadow: 
+            0 8px 20px rgba(16, 185, 129, 0.3),
+            0 0 0 3px rgba(16, 185, 129, 0.1);
     }
 
     .seat-taken {
-        background: #f8fafc;
-        color: #cbd5e1;
-        border-color: #e2e8f0;
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        color: #94a3b8;
+        border-color: rgba(226, 232, 240, 0.6);
         cursor: not-allowed;
+        opacity: 0.7;
     }
 
     .seat-sel {
-        background: #0a1628;
+        background: linear-gradient(135deg, #0a1628, #1e3a8a);
         color: #fff;
         border-color: #c9922a;
-        transform: scale(1.08);
-        box-shadow: 0 0 0 2px rgba(201, 146, 42, .35);
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 
+            0 0 0 3px rgba(201, 146, 42, 0.3),
+            0 8px 24px rgba(201, 146, 42, 0.4),
+            0 0 20px rgba(201, 146, 42, 0.2);
+        animation: seat-glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes seat-glow {
+        from { box-shadow: 0 0 0 3px rgba(201, 146, 42, 0.3), 0 8px 24px rgba(201, 146, 42, 0.4), 0 0 20px rgba(201, 146, 42, 0.2); }
+        to { box-shadow: 0 0 0 3px rgba(201, 146, 42, 0.5), 0 8px 24px rgba(201, 146, 42, 0.6), 0 0 30px rgba(201, 146, 42, 0.3); }
     }
 
     .seat-biz {
-        background: #fef9c3;
+        background: linear-gradient(135deg, #fef9c3, #fde68a);
         color: #92400e;
-        border-color: #fde68a;
+        border-color: rgba(253, 230, 138, 0.8);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
     }
 
     .seat-biz:hover {
-        background: #fef08a;
+        background: linear-gradient(135deg, #fde68a, #fcd34d);
         border-color: #fcd34d;
-        transform: scale(1.12);
+        transform: scale(1.15) translateY(-2px);
+        box-shadow: 
+            0 8px 20px rgba(245, 158, 11, 0.3),
+            0 0 0 3px rgba(245, 158, 11, 0.1);
     }
 
     .seat-biz.seat-sel {
-        background: #92400e;
+        background: linear-gradient(135deg, #92400e, #d97706);
         color: #fff;
         border-color: #f59e0b;
+        box-shadow: 
+            0 0 0 3px rgba(245, 158, 11, 0.4),
+            0 8px 24px rgba(245, 158, 11, 0.5),
+            0 0 20px rgba(245, 158, 11, 0.3);
     }
 
-    /* Seat map & passenger card headers */
+    /* ═══ ENHANCED CARD HEADERS ═══ */
     .pax-card-header {
         background: linear-gradient(135deg, #050d1f, #0a2a4a);
+        position: relative;
+        overflow: hidden;
     }
+
+    .pax-card-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0.6;
+    }
+
     html:not(.dark-mode) .pax-card-header {
         background: linear-gradient(135deg, #2f5470, #3a6686);
     }
-    /* Seat map legend & column labels bg */
-    html:not(.dark-mode) .seat-legend {
-        background: #c8dff0 !important;
-        border-color: #8ab4d4 !important;
-    }
-    /* Progress bar track */
-    html:not(.dark-mode) .progress-track { background: #8ab4d4; }
 
+    /* ═══ ENHANCED LEGEND & LABELS ═══ */
+    .seat-legend {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html:not(.dark-mode) .seat-legend {
+        background: rgba(200, 223, 240, 0.3) !important;
+        border-color: rgba(138, 180, 212, 0.4) !important;
+    }
+
+    /* ═══ ENHANCED PROGRESS BAR ═══ */
+    .progress-track { 
+        background: rgba(226, 232, 240, 0.3);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    html:not(.dark-mode) .progress-track { 
+        background: rgba(138, 180, 212, 0.4); 
+    }
+
+    /* ═══ ENHANCED SCROLLBAR ═══ */
     #seat-map-scroll {
         overflow-y: auto;
         max-height: 430px;
         scrollbar-width: thin;
+        scrollbar-color: rgba(201, 146, 42, 0.6) transparent;
+    }
+
+    #seat-map-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #seat-map-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+
+    #seat-map-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #c9922a, #e8b84b);
+        border-radius: 3px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ═══ ENHANCED INPUTS ═══ */
+    .enhanced-input {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+        transition: all 0.25s ease;
+    }
+
+    .enhanced-input:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #c9922a;
+        box-shadow: 
+            0 0 0 3px rgba(201, 146, 42, 0.15),
+            0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+    }
+
+    /* ═══ ENHANCED BUTTONS ═══ */
+    .btn-enhanced {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-enhanced::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 
+            0 8px 20px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.2);
+        border-color: rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-enhanced:hover::before {
+        opacity: 1;
+    }
+
+    .btn-enhanced:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* ═══ ENHANCED SUMMARY CARD ═══ */
+    .summary-card {
+        background: rgba(10, 26, 40, 0.6);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(201, 146, 42, 0.2);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(201, 146, 42, 0.1);
+    }
+
+    /* ═══ AVIATION THEMED ACCENTS ═══ */
+    .flight-path {
+        position: relative;
+    }
+
+    .flight-path::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201, 146, 42, 0.3), transparent);
+        transform: translateY(-50%);
+    }
+
+    .flight-dots {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .flight-dots::before,
+    .flight-dots::after {
+        content: '';
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(201, 146, 42, 0.6);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .flight-dots::after {
+        animation-delay: 1s;
+    }
+
+    /* ═══ MICRO-INTERACTIONS ═══ */
+    .micro-bounce {
+        transition: transform 0.15s ease;
+    }
+
+    .micro-bounce:active {
+        transform: scale(0.95);
+    }
+
+    /* ═══ SKELETON LOADER ═══ */
+    .skeleton {
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+    }
+
+    @keyframes skeleton-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Progress -->
-<div class="mb-7">
-    <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#c9922a;">Step 3 of 4</p>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h1 class="font-black text-3xl text-slate-900">Passenger details</h1>
-        <div class="flex items-center gap-2 flex-wrap">
-            <span class="bg-navy text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+<div class="mb-8">
+    <p class="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2" style="color:#c9922a;">
+        <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+        Step 3 of 4
+    </p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+        <h1 class="font-black text-4xl text-white leading-tight">Passenger Details</h1>
+        <div class="flex items-center gap-3 flex-wrap">
+            <span class="glass px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
                 {{ flight.origin.split('(')[-1].replace(')','') if '(' in flight.origin else flight.origin[:3] }} → {{
                 flight.destination.split('(')[-1].replace(')','') if '(' in flight.destination else
                 flight.destination[:3] }}
             </span>
-            <span class="text-xs font-bold px-3 py-1.5 rounded-full border
-                {% if package_tier == 'Premium' %}bg-amber-50 text-amber-700 border-amber-200
-                {% elif package_tier == 'Economy' %}bg-blue-50 text-blue-800 border-blue-200
-                {% else %}bg-slate-100 text-slate-600 border-slate-200{% endif %}">
+            <span class="text-sm font-bold px-4 py-2 rounded-full border glass
+                {% if package_tier == 'Premium' %}border-amber-400/30 text-amber-300
+                {% elif package_tier == 'Economy' %}border-blue-400/30 text-blue-300
+                {% else %}border-slate-400/30 text-slate-300{% endif %}">
                 {{ package_tier }}
             </span>
         </div>
     </div>
-    <div class="h-1 rounded-full progress-track" style="background:#e2e8f0;">
-        <div class="h-1 rounded-full" style="width:75%;background:linear-gradient(90deg,#0ea5e9,#c9922a);"></div>
+    <div class="h-2 rounded-full progress-track relative overflow-hidden">
+        <div class="h-2 rounded-full relative overflow-hidden" style="width:75%;background:linear-gradient(90deg,#0ea5e9,#c9922a);">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+        </div>
     </div>
 </div>
 
@@ -121,68 +354,64 @@
         <!-- ══ SEAT MAP ══ -->
         <div>
             {% if package_tier == 'Basic' %}
-            <div class="card p-6 text-center">
-                <p class="text-3xl mb-3">🎲</p>
-                <p class="font-bold text-white text-sm mb-1">Seat Auto-Assigned</p>
-                <p class="text-slate-400 text-xs">Basic tier does not include seat selection. Your seat will be randomly assigned at check-in.</p>
+            <div class="glass-card glass-card-hover p-8 text-center">
+                <div class="text-5xl mb-4 animate-float">🎲</div>
+                <p class="font-bold text-white text-lg mb-2">Seat Auto-Assigned</p>
+                <p class="text-slate-400 text-sm leading-relaxed">Basic tier does not include seat selection. Your seat will be randomly assigned at check-in.</p>
+                <div class="flight-dots mt-4 justify-center"></div>
             </div>
             {% else %}
-            <div class="card overflow-hidden">
+            <div class="glass-card overflow-hidden">
                 <!-- Map header -->
-                <div class="bg-navy px-6 py-5 text-center pax-card-header">
-                    <p class="font-bold text-white text-base tracking-wide">Cabin map</p>
-                    <p class="text-slate-400 text-xs mt-1">Flight #{{ flight.id }} · {{ flight.plane.plane_id if
-                        flight.plane else 'TBA' }}</p>
+                <div class="pax-card-header px-6 py-6 text-center relative">
+                    <div class="relative z-10">
+                        <p class="font-bold text-white text-lg tracking-wide mb-1">Cabin Map</p>
+                        <p class="text-slate-300 text-sm">Flight #{{ flight.id }} · {{ flight.plane.plane_id if flight.plane else 'TBA' }}</p>
+                        <div class="flight-path mt-3"></div>
+                    </div>
                 </div>
 
                 <!-- Legend -->
-                <div
-                    class="flex items-center justify-center gap-5 py-3 px-4 bg-slate-50 border-b border-slate-100 text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5"><span
-                            class="w-3.5 h-3.5 rounded bg-emerald-100 border-2 border-emerald-300 inline-block"></span>Available</span>
-                    <span class="flex items-center gap-1.5"><span
-                            class="w-3.5 h-3.5 rounded bg-slate-100 border-2 border-slate-200 inline-block"></span>Taken</span>
-                    <span class="flex items-center gap-1.5"><span
-                            class="w-3.5 h-3.5 rounded bg-navy border-2 border-gold inline-block"></span>Selected</span>
-                    <span class="flex items-center gap-1.5"><span
-                            class="w-3.5 h-3.5 rounded bg-yellow-100 border-2 border-yellow-300 inline-block"></span>Business</span>
+                <div class="seat-legend flex items-center justify-center gap-6 py-4 px-4 text-xs text-slate-400">
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-emerald-100 border-2 border-emerald-300 inline-block shadow-sm"></span>Available</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-100 border-2 border-slate-200 inline-block shadow-sm"></span>Taken</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-navy border-2 border-gold inline-block shadow-sm"></span>Selected</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300 inline-block shadow-sm"></span>Business</span>
                 </div>
 
                 <!-- Column labels -->
-                <div
-                    class="flex items-center justify-center gap-1 py-2 px-5 text-[10px] font-bold text-slate-400 bg-slate-50">
-                    <div style="width:28px"></div>
+                <div class="seat-legend flex items-center justify-center gap-1 py-3 px-5 text-xs font-bold text-slate-400">
+                    <div style="width:32px"></div>
                     {% for col in ['A','B','C'] %}
-                    <div class="w-8 text-center">{{ col }}</div>
+                    <div class="w-9 text-center">{{ col }}</div>
                     {% endfor %}
-                    <div class="aisle"></div>
+                    <div class="aisle flex items-center justify-center text-slate-300">✈</div>
                     {% for col in ['D','E','F'] %}
-                    <div class="w-8 text-center">{{ col }}</div>
+                    <div class="w-9 text-center">{{ col }}</div>
                     {% endfor %}
                 </div>
 
                 <!-- Seat rows -->
-                <div id="seat-map-scroll" class="px-4 pb-4 space-y-1 mt-1">
+                <div id="seat-map-scroll" class="px-5 pb-5 space-y-2 mt-1">
                     {% for row_num, seats in seat_rows %}
                     {% set is_biz = seats[0].class_type == 'Business' %}
 
                     {% if is_biz and row_num == 1 %}
-                    <div class="flex items-center gap-2 mt-2 mb-1">
-                        <div class="flex-1 h-px bg-amber-200"></div>
-                        <span class="text-[10px] text-amber-600 font-bold px-2 uppercase tracking-wider">Business</span>
-                        <div class="flex-1 h-px bg-amber-200"></div>
+                    <div class="flex items-center gap-3 mt-3 mb-2">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
+                        <span class="text-xs text-amber-500 font-bold px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 uppercase tracking-wider">Business Class</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
                     </div>
                     {% elif not is_biz and row_num == 6 %}
-                    <div class="flex items-center gap-2 mt-2 mb-1">
-                        <div class="flex-1 h-px bg-slate-200"></div>
-                        <span class="text-[10px] text-slate-400 font-bold px-2 uppercase tracking-wider">Economy</span>
-                        <div class="flex-1 h-px bg-slate-200"></div>
+                    <div class="flex items-center gap-3 mt-3 mb-2">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                        <span class="text-xs text-slate-400 font-bold px-3 py-1 rounded-full bg-slate-400/10 border border-slate-400/20 uppercase tracking-wider">Economy Class</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
                     </div>
                     {% endif %}
 
-                    <div class="flex items-center gap-1">
-                        <div class="text-[10px] text-slate-300 font-mono w-7 text-right pr-1 flex-shrink-0">{{ row_num
-                            }}</div>
+                    <div class="flex items-center gap-1.5">
+                        <div class="text-xs text-slate-400 font-mono w-8 text-right pr-2 flex-shrink-0 font-bold">{{ row_num }}</div>
 
                         {% set left = seats[:3] %}
                         {% set right = seats[3:] %}
@@ -200,7 +429,7 @@
                         </button>
                         {% endfor %}
 
-                        <div class="aisle flex items-center justify-center text-slate-200 text-xs">|</div>
+                        <div class="aisle flex items-center justify-center text-slate-300 text-sm px-1">│</div>
 
                         {% for s in right %}
                         {% set locked = is_biz and package_tier != 'Premium' %}
@@ -220,8 +449,11 @@
             </div>
 
             <!-- Selected summary -->
-            <div id="selected-summary" class="hidden mt-4 bg-navy/5 border border-navy/10 rounded-xl px-5 py-3">
-                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Selected seats</p>
+            <div id="selected-summary" class="hidden mt-5 summary-card rounded-2xl px-6 py-4">
+                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+                    Selected Seats
+                </p>
                 <div id="selected-tags" class="flex flex-wrap gap-2"></div>
             </div>
             {% endif %}
@@ -230,70 +462,83 @@
         <!-- ══ PASSENGER FORMS ══ -->
         <div>
             <!-- Count control -->
-            <div class="card p-6 mb-5">
-                <p class="text-sm font-bold text-slate-900 mb-3">Number of passengers</p>
-                <div class="flex items-center gap-3">
+            <div class="glass-card glass-card-hover p-7 mb-6">
+                <p class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    Number of Passengers
+                </p>
+                <div class="flex items-center gap-4">
                     <button type="button" onclick="changeCount(-1)"
-                        class="w-10 h-10 rounded-xl border-2 border-slate-200 hover:border-sky-400 text-slate-600 hover:text-sky-600 font-extrabold text-xl transition-all active:scale-95">−</button>
+                        class="btn-enhanced micro-bounce w-12 h-12 rounded-2xl text-slate-300 hover:text-white font-extrabold text-2xl">−</button>
                     <span id="count-display"
-                        class="font-black text-3xl text-slate-900 w-10 text-center">1</span>
+                        class="font-black text-4xl text-white w-12 text-center">1</span>
                     <button type="button" onclick="changeCount(1)"
-                        class="w-10 h-10 rounded-xl border-2 border-slate-200 hover:border-sky-400 text-slate-600 hover:text-sky-600 font-extrabold text-xl transition-all active:scale-95">+</button>
-                    <span class="text-xs text-slate-400 ml-1">max 9</span>
+                        class="btn-enhanced micro-bounce w-12 h-12 rounded-2xl text-slate-300 hover:text-white font-extrabold text-2xl">+</button>
+                    <span class="text-sm text-slate-400 ml-2 font-medium">max 9 passengers</span>
                 </div>
             </div>
 
             <!-- Dynamic cards -->
-            <div id="passengers-container" class="space-y-4"></div>
+            <div id="passengers-container" class="space-y-5"></div>
 
             <!-- Nav -->
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
                 <a href="{{ url_for('select_package', flight_id=flight.id) }}"
-                    class="inline-flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-400 text-slate-500 hover:text-sky-600 font-semibold px-5 py-3 rounded-xl transition-all text-sm">
+                    class="btn-enhanced micro-bounce inline-flex items-center justify-center gap-3 text-slate-300 hover:text-white font-semibold px-6 py-4 rounded-2xl text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    Back
+                    Back to Packages
                 </a>
-                <button type="submit" class="flex-1 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm tracking-wide hover:brightness-110" style="background:linear-gradient(135deg,#050d1f,#1a3a6b);">Continue →</button>
+                <button type="submit" class="flex-1 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] text-sm tracking-wide hover:brightness-110 relative overflow-hidden" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+                    <span class="relative z-10">Continue to Checkout →</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700"></div>
+                </button>
             </div>
         </div>
     </div>
 </form>
 
 <template id="passenger-template">
-    <div class="card overflow-hidden passenger-card">
-        <div class="px-5 py-3.5 flex items-center justify-between pax-card-header">
-            <p class="text-white font-bold text-sm">Passenger <span class="p-num">1</span></p>
-            <span class="seat-label text-slate-400 text-xs font-mono">No seat selected</span>
+    <div class="glass-card overflow-hidden passenger-card glass-card-hover">
+        <div class="px-6 py-4 flex items-center justify-between pax-card-header">
+            <div class="relative z-10">
+                <p class="text-white font-bold text-base flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
+                        <span class="p-num">1</span>
+                    </span>
+                    Passenger <span class="p-num">1</span>
+                </p>
+            </div>
+            <span class="seat-label text-slate-300 text-sm font-mono relative z-10">No seat selected</span>
         </div>
-        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">First name *</label>
+                <label class="block text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">First Name *</label>
                 <input type="text" name="first_name_INDEX"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 transition-all"
+                    class="enhanced-input w-full px-4 py-4 rounded-2xl text-sm text-white transition-all placeholder-slate-400"
                     required placeholder="Ahmed">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Last name *</label>
+                <label class="block text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Last Name *</label>
                 <input type="text" name="last_name_INDEX"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 transition-all"
+                    class="enhanced-input w-full px-4 py-4 rounded-2xl text-sm text-white transition-all placeholder-slate-400"
                     required placeholder="Khan">
             </div>
             <input type="hidden" name="seat_number_INDEX" class="seat-input" required>
             <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Meal preference</label>
+                <label class="block text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Meal Preference</label>
                 {% if package_tier == 'Premium' %}
                 <select name="meal_preference_INDEX"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white transition-all" style="color:#111827;">
-                    <option value="None">No special meal</option>
-                    <option value="Vegetarian">Vegetarian</option>
-                    <option value="Non-Vegetarian">Non-Vegetarian (Halal)</option>
+                    class="enhanced-input w-full px-4 py-4 rounded-2xl text-sm text-white bg-transparent transition-all" style="color:#fff;">
+                    <option value="None" style="color:#111827; background:#fff;">No special meal</option>
+                    <option value="Vegetarian" style="color:#111827; background:#fff;">Vegetarian</option>
+                    <option value="Non-Vegetarian" style="color:#111827; background:#fff;">Non-Vegetarian (Halal)</option>
                 </select>
                 {% else %}
                 <input type="hidden" name="meal_preference_INDEX" value="None">
-                <div class="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-400">
-                    Meal selection available for <span class="font-semibold" style="color:#c9922a;">Premium</span> tier only.
+                <div class="px-4 py-4 bg-slate-500/10 border border-slate-400/20 rounded-2xl text-sm text-slate-400 backdrop-filter backdrop-blur-10">
+                    Meal selection available for <span class="font-semibold text-gold">Premium</span> tier only.
                 </div>
                 {% endif %}
             </div>
@@ -341,11 +586,17 @@
         if (!t) {
             t = document.createElement('div');
             t.id = 'sk-toast';
-            t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-navy text-white text-xs font-semibold px-5 py-3 rounded-xl shadow-xl transition-opacity whitespace-nowrap';
+            t.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 z-50 glass-enhanced text-white text-sm font-semibold px-6 py-4 rounded-2xl shadow-2xl transition-all whitespace-nowrap backdrop-blur-20';
             document.body.appendChild(t);
         }
-        t.textContent = msg; t.style.opacity = '1';
-        clearTimeout(t._t); t._t = setTimeout(() => t.style.opacity = '0', 3000);
+        t.textContent = msg; 
+        t.style.opacity = '1';
+        t.style.transform = 'translateX(-50%) translateY(0)';
+        clearTimeout(t._t); 
+        t._t = setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transform = 'translateX(-50%) translateY(20px)';
+        }, 3500);
     }
 
     function changeCount(d) {
@@ -394,7 +645,7 @@
         const filled = selectedSeats.filter(Boolean);
         if (!filled.length) { sum.classList.add('hidden'); return; }
         sum.classList.remove('hidden');
-        tags.innerHTML = filled.map(s => `<span class="font-mono text-xs font-bold bg-navy text-white px-3 py-1 rounded-full">${s}</span>`).join('');
+        tags.innerHTML = filled.map(s => `<span class="font-mono text-sm font-bold bg-gradient-to-r from-navy to-blue-900 text-white px-4 py-2 rounded-full border border-gold/30 shadow-lg">${s}</span>`).join('');
     }
 
     const FLIGHT_ID = parseInt('{{ flight.id }}', 10);
