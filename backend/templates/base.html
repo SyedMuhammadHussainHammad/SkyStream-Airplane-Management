@@ -52,8 +52,7 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html{scroll-behavior:smooth;}
     html,body{min-height:100%;}
-    html{background:#050d1f;}
-    body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:transparent;}
+    body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:#050d1f;}
     body::before{
       content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
       background:
@@ -71,8 +70,8 @@
     .ss-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
     .card-hover{transition:transform .25s ease,box-shadow .25s ease;}
     .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.4);}
-    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;box-shadow:0 4px 18px rgba(99,102,241,.3);}
-    .btn-primary:hover{filter:brightness(1.12);box-shadow:0 8px 28px rgba(99,102,241,.5);transform:translateY(-2px);}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;}
+    .btn-primary:hover{filter:brightness(1.12);box-shadow:0 8px 28px rgba(14,165,233,.45);transform:translateY(-2px);}
 
     .btn-gold{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#c9922a,#e8b84b);color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;}
     .btn-gold:hover{filter:brightness(1.1);box-shadow:0 8px 28px rgba(201,146,42,.4);transform:translateY(-2px);}
@@ -100,8 +99,7 @@
 
 
     /* LIGHT MODE — #162245 */
-    html:not(.dark-mode){background:#162245;}
-    html:not(.dark-mode) body{background:transparent;color:#fff;}
+    html:not(.dark-mode) body{background:#162245;color:#fff;}
     html:not(.dark-mode) body::before{
       background:
         radial-gradient(ellipse 65% 55% at 8% 4%,  rgba(255,255,255,.13) 0%,transparent 55%),
@@ -119,7 +117,7 @@
     html:not(.dark-mode) .glass-dark{background:rgba(10,26,90,.72);border-color:rgba(255,255,255,.16);}
     html:not(.dark-mode) .btn-ghost{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.32);color:#fff;}
     html:not(.dark-mode) .btn-ghost:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.5);}
-    html:not(.dark-mode) .btn-primary{background:linear-gradient(135deg,#0ea5e9,#6366f1);box-shadow:0 4px 18px rgba(99,102,241,.4);}
+    html:not(.dark-mode) .btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 4px 18px rgba(37,99,235,.45);}
     html:not(.dark-mode) .btn-primary:hover{filter:brightness(1.14);box-shadow:0 8px 28px rgba(37,99,235,.55);}
     html:not(.dark-mode) .btn-gold{background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 18px rgba(217,119,6,.4);}
     html:not(.dark-mode) .ss-input{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);color:#fff;}
@@ -217,17 +215,12 @@
     .animate-fade-in{animation:fadeIn .35s ease both;}
     .animate-float{animation:float 6s ease-in-out infinite;}
     .animate-shimmer{animation:shimmer 2.5s linear infinite;}
-
-    /* ── Shared background canvas ── */
-    #ss-bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;}
   </style>
 
   {% block head %}{% endblock %}
 </head>
 
 <body class="min-h-screen">
-<!-- Shared animated background canvas (all pages) -->
-<canvas id="ss-bg-canvas"></canvas>
 
 <!-- ══════════════ NAVBAR ══════════════ -->
 <nav id="navbar">
@@ -415,191 +408,6 @@
     applyTheme(!isDark);
   }
   applyTheme(document.documentElement.classList.contains('dark-mode'));
-</script>
-</body>
-</html>
-{% block scripts %}{% endblock %}
-<script>
-  // ── Navbar scroll ──────────────────────────────────────
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 20), {passive:true});
-  if(window.scrollY > 20) navbar.classList.add('scrolled');
-
-  // ── Dark mode ──────────────────────────────────────────
-  function applyTheme(dark) {
-    document.documentElement.classList.toggle('dark-mode', dark);
-    document.getElementById('dm-moon').style.display = dark ? 'none' : 'block';
-    document.getElementById('dm-sun').style.display  = dark ? 'block' : 'none';
-  }
-  function toggleDarkMode() {
-    const isDark = document.documentElement.classList.contains('dark-mode');
-    localStorage.setItem('ss-theme', isDark ? 'light' : 'dark');
-    applyTheme(!isDark);
-  }
-  applyTheme(document.documentElement.classList.contains('dark-mode'));
-
-  // ── Shared background canvas (all pages) ──────────────
-  (function () {
-    const cvs = document.getElementById('ss-bg-canvas');
-    if (!cvs) return;
-    const ctx = cvs.getContext('2d');
-    let W, H;
-
-    function resize() { W = cvs.width = window.innerWidth; H = cvs.height = window.innerHeight; }
-
-    function isLight() { return !document.documentElement.classList.contains('dark-mode'); }
-
-    // ── Star ──
-    class Star {
-      constructor() { this.reset(true); }
-      reset(init) {
-        this.x = Math.random() * W;
-        this.y = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
-        this.r = Math.random() * 1.6 + .3;
-        this.vx = (Math.random() - .5) * .22;
-        this.vy = (Math.random() - .5) * .22;
-        this.a = Math.random() * .65 + .2;
-        this.pulse = Math.random() * Math.PI * 2;
-        this.gold = Math.random() < .12;
-      }
-      tick() {
-        this.x += this.vx; this.y += this.vy; this.pulse += .016;
-        if (this.x < -4 || this.x > W + 4 || this.y < -4 || this.y > H + 4) this.reset(false);
-      }
-      draw() {
-        const a = this.a * (.7 + .3 * Math.sin(this.pulse));
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = this.gold ? `rgba(232,184,75,${a})` : `rgba(14,165,233,${a})`;
-        ctx.fill();
-      }
-    }
-
-    // ── Orb ──
-    class Orb {
-      constructor() {
-        this.x = Math.random() * W; this.y = Math.random() * H;
-        this.r = Math.random() * 90 + 50;
-        this.vx = (Math.random() - .5) * .12; this.vy = (Math.random() - .5) * .12;
-        this.a = Math.random() * .04 + .012;
-        this.gold = Math.random() < .3;
-      }
-      tick() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x < -this.r) this.x = W + this.r; if (this.x > W + this.r) this.x = -this.r;
-        if (this.y < -this.r) this.y = H + this.r; if (this.y > H + this.r) this.y = -this.r;
-      }
-      draw(lightMode) {
-        const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
-        const c = lightMode
-          ? (this.gold ? '201,146,42' : '2,132,199')
-          : (this.gold ? '201,146,42' : '14,165,233');
-        const alpha = lightMode ? this.a * 2.5 : this.a;
-        g.addColorStop(0, `rgba(${c},${alpha})`);
-        g.addColorStop(1, `rgba(${c},0)`);
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = g; ctx.fill();
-      }
-    }
-
-    // ── Plane trail ──
-    class Plane {
-      constructor() { this.spawn(); }
-      spawn() {
-        const left = Math.random() < .5;
-        this.x = left ? -60 : W + 60;
-        this.y = Math.random() * H * .65 + H * .05;
-        this.spd = (Math.random() * 1.0 + .5) * (left ? 1 : -1);
-        this.flip = !left; this.trail = []; this.dead = false;
-      }
-      tick() {
-        this.x += this.spd;
-        this.trail.unshift({ x: this.x, y: this.y });
-        if (this.trail.length > 70) this.trail.pop();
-        if (this.x < -130 || this.x > W + 130) this.dead = true;
-      }
-      draw(lightMode) {
-        const trailColor = lightMode ? '2,132,199' : '14,165,233';
-        for (let i = 1; i < this.trail.length; i++) {
-          const a = (1 - i / this.trail.length) * (lightMode ? .25 : .16);
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(${trailColor},${a})`;
-          ctx.lineWidth = 1.2;
-          ctx.moveTo(this.trail[i-1].x, this.trail[i-1].y);
-          ctx.lineTo(this.trail[i].x, this.trail[i].y);
-          ctx.stroke();
-        }
-        ctx.save(); ctx.font = '13px serif'; ctx.globalAlpha = lightMode ? .5 : .3;
-        if (this.flip) { ctx.scale(-1,1); ctx.fillText('✈', -this.x-6, this.y+5); }
-        else { ctx.fillText('✈', this.x-6, this.y+5); }
-        ctx.restore();
-      }
-    }
-
-    let stars = [], orbs = [], planes = [], planeTimer = 0;
-
-    function init() {
-      resize();
-      stars = Array.from({length: 180}, () => new Star());
-      orbs  = Array.from({length: 5},  () => new Orb());
-    }
-
-    function loop() {
-      ctx.clearRect(0, 0, W, H);
-      const light = isLight();
-
-      if (light) {
-        // Daytime sky
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#bae6fd'); sky.addColorStop(.5, '#e0f2fe'); sky.addColorStop(1, '#f0f9ff');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-        // Sun glow
-        const sun = ctx.createRadialGradient(W*.82, H*.1, 0, W*.82, H*.1, W*.3);
-        sun.addColorStop(0, 'rgba(253,224,71,.3)'); sun.addColorStop(.5, 'rgba(251,191,36,.08)'); sun.addColorStop(1, 'rgba(251,191,36,0)');
-        ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
-        // Cloud orbs
-        orbs.forEach(o => { o.tick(); const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r); g.addColorStop(0,`rgba(255,255,255,${o.a*4})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill(); });
-        // Subtle grid
-        ctx.strokeStyle = 'rgba(2,132,199,.035)'; ctx.lineWidth = 1;
-        for (let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-        for (let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      } else {
-        // Night starfield
-        orbs.forEach(o => { o.tick(); o.draw(false); });
-        // Connection lines
-        for (let i=0;i<stars.length;i++) for (let j=i+1;j<stars.length;j++) {
-          const dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y, d=Math.sqrt(dx*dx+dy*dy);
-          if (d<100) { ctx.beginPath(); ctx.strokeStyle=`rgba(14,165,233,${.09*(1-d/100)})`; ctx.lineWidth=.5; ctx.moveTo(stars[i].x,stars[i].y); ctx.lineTo(stars[j].x,stars[j].y); ctx.stroke(); }
-        }
-        stars.forEach(s => { s.tick(); s.draw(); });
-      }
-
-      // Planes in both modes
-      planeTimer++;
-      if (planeTimer > 350 + Math.random()*500) { planes.push(new Plane()); planeTimer = 0; }
-      planes = planes.filter(p => !p.dead);
-      planes.forEach(p => { p.tick(); p.draw(light); });
-
-      requestAnimationFrame(loop);
-    }
-
-    init(); loop();
-    window.addEventListener('resize', () => { resize(); orbs.forEach(o => { o.x=Math.random()*W; o.y=Math.random()*H; }); });
-
-    // Re-render immediately on theme toggle
-    const _orig = window.toggleDarkMode;
-    window.toggleDarkMode = function() { _orig(); };
-  })();
-
-  // ── Scroll reveal for cards ────────────────────────────
-  const _revealObs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } });
-  }, {threshold:0.08});
-  document.querySelectorAll('.card, .ss-card, .booking-card, .feature-card, .route-card').forEach((el,i) => {
-    el.style.opacity='0'; el.style.transform='translateY(20px)';
-    el.style.transition=`opacity .5s ease ${i*.05}s, transform .5s ease ${i*.05}s`;
-    _revealObs.observe(el);
-  });
 </script>
 </body>
 </html>

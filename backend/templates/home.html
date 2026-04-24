@@ -3,189 +3,76 @@
 
 {% block head %}
 <style>
-/* ── Full-page starfield canvas fixed behind everything ── */
-#star-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ── Page wrapper sits above canvas ── */
-.home-wrap {
-  position: relative;
-  z-index: 1;
-}
-
+/* ── Fixed full-page background ── */
 main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
-/* ── Shared section divider line ── */
-.section-divider {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  border: none;
-  border-top: 1px solid rgba(14,165,233,.15);
-}
-
-/* ── HERO ── */
 #hero {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  overflow: hidden;
+  position:relative;min-height:100vh;display:flex;align-items:center;
+  overflow:hidden;width:100vw;margin-left:calc(-50vw + 50%);
 }
-.hero-grid {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(14,165,233,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14,165,233,.04) 1px, transparent 1px);
-  background-size: 60px 60px;
+#hero-bg {
+  position:absolute;inset:-20%;
+  background:transparent;
+  will-change:transform;z-index:0;
 }
-#hero-content { position: relative; z-index: 2; width: 100%; padding: 9rem 1.5rem 8rem; }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: transparent;
-  border: 1px solid rgba(14,165,233,.35);
-  padding: 6px 16px; border-radius: 100px;
-  font-size: 12px; font-weight: 600; color: #38bdf8; margin-bottom: 2rem;
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+.hero-grid{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background-image:linear-gradient(rgba(14,165,233,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.04) 1px,transparent 1px);
+  background-size:60px 60px;
 }
-.hero-headline { font-size: clamp(3rem,8vw,6rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: #fff; }
-.hero-headline .accent {
-  background: linear-gradient(135deg,#38bdf8 0%,#818cf8 50%,#e8b84b 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.cta-primary {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
-  border: none;
-  color: #fff; font-weight: 700; font-size: 16px;
-  padding: 15px 35px; border-radius: 16px; text-decoration: none;
-  box-shadow: 0 4px 24px rgba(99,102,241,.35);
-  transition: all .25s ease;
-}
-.cta-primary:hover {
-  filter: brightness(1.12);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 36px rgba(99,102,241,.5);
-}
-.cta-secondary {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(99,102,241,.35);
-  color: #a5b4fc; font-weight: 600; font-size: 16px;
-  padding: 15px 35px; border-radius: 16px; text-decoration: none;
-  transition: all .25s ease;
-}
-.cta-secondary:hover {
-  border-color: rgba(99,102,241,.65);
-  background: rgba(99,102,241,.12);
-  color: #fff;
-  transform: translateY(-2px);
-}
-.scroll-hint { display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: .3; margin-top: 4rem; }
-.scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom,rgba(255,255,255,.6),transparent); }
-.plane-float { position: absolute; right: 8%; top: 30%; font-size: 5rem; opacity: .06; animation: float 8s ease-in-out infinite; pointer-events: none; z-index: 1; }
-@media(max-width:768px){ .plane-float { display: none; } }
+#hero-content{position:relative;z-index:10;width:100%;padding:9rem 1.5rem 8rem;}
+.plane-float{position:absolute;right:8%;top:30%;font-size:5rem;opacity:.1;animation:float 8s ease-in-out infinite;pointer-events:none;z-index:3;}
+@media(max-width:768px){.plane-float{display:none;}}
+.cloud{position:absolute;border-radius:50px;background:rgba(255,255,255,.025);pointer-events:none;z-index:2;animation:float 10s ease-in-out infinite;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;color:#38bdf8;margin-bottom:2rem;}
+.hero-headline{font-size:clamp(3rem,8vw,6rem);font-weight:900;line-height:1.05;letter-spacing:-0.03em;color:#fff;}
+.hero-headline .accent{background:linear-gradient(135deg,#38bdf8 0%,#818cf8 50%,#e8b84b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.cta-primary{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-weight:700;font-size:16px;padding:16px 36px;border-radius:16px;text-decoration:none;box-shadow:0 8px 32px rgba(14,165,233,.35);transition:all .25s ease;}
+.cta-primary:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(14,165,233,.5);filter:brightness(1.1);}
+.cta-secondary{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:16px;padding:16px 36px;border-radius:16px;text-decoration:none;transition:all .25s ease;}
+.cta-secondary:hover{background:rgba(255,255,255,.13);border-color:rgba(14,165,233,.4);transform:translateY(-2px);}
+.scroll-hint{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.3;margin-top:4rem;}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,rgba(255,255,255,.6),transparent);}
 
-/* ── STATS ── */
-.stats-section {
-  width: 100vw; margin-left: calc(-50vw + 50%);
-  background: transparent;
-  border-top: 1px solid rgba(14,165,233,.15);
-  border-bottom: 1px solid rgba(14,165,233,.15);
-  padding: 3.5rem 1.5rem;
-}
-.stat-card { text-align: center; padding: 1.5rem; border-right: 1px solid rgba(14,165,233,.12); }
-.stat-card:last-child { border-right: none; }
-.stat-num {
-  font-size: 2.75rem; font-weight: 900; line-height: 1;
-  background: linear-gradient(135deg,#38bdf8,#e8b84b);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
+.stats-section{width:100vw;margin-left:calc(-50vw + 50%);background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:3.5rem 1.5rem;}
+.stat-card{text-align:center;padding:1.5rem;border-right:1px solid rgba(255,255,255,.06);}
+.stat-card:last-child{border-right:none;}
+.stat-num{font-size:2.75rem;font-weight:900;line-height:1;background:linear-gradient(135deg,#38bdf8,#e8b84b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
-/* ── SECTIONS ── */
-.section-wrap { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
-.section-label { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #0ea5e9; margin-bottom: 1rem; }
-.section-title { font-size: clamp(2rem,4vw,3rem); font-weight: 900; letter-spacing: -.02em; color: #f1f5f9; line-height: 1.1; }
+.section-wrap{padding:6rem 1.5rem;max-width:1200px;margin:0 auto;}
+.section-label{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#0ea5e9;margin-bottom:1rem;}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:900;letter-spacing:-.02em;color:#f1f5f9;line-height:1.1;}
 
-/* ── FEATURE CARDS — transparent, line border only ── */
-.feature-card {
-  background: transparent;
-  border-radius: 20px;
-  padding: 2rem;
-  border: 1px solid rgba(14,165,233,.18);
-  transition: all .3s ease;
-  position: relative; overflow: hidden;
-}
-.feature-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(14,165,233,.5);
-  box-shadow: 0 0 32px rgba(14,165,233,.1);
-}
-.feature-icon {
-  width: 52px; height: 52px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; margin-bottom: 1.25rem;
-  background: transparent;
-  border: 1px solid rgba(14,165,233,.25);
-}
+.feature-card{background:rgba(255,255,255,.05);border-radius:24px;padding:2rem;border:1px solid rgba(255,255,255,.08);box-shadow:0 4px 24px rgba(0,0,0,.2);transition:all .3s ease;position:relative;overflow:hidden;}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 24px 56px rgba(0,0,0,.4);border-color:rgba(14,165,233,.25);}
+.feature-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:1.25rem;background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(14,165,233,.05));border:1px solid rgba(14,165,233,.2);}
 
-/* ── HOW IT WORKS ── */
-.how-section {
-  width: 100vw; margin-left: calc(-50vw + 50%);
-  background: transparent;
-  border-top: 1px solid rgba(14,165,233,.15);
-  border-bottom: 1px solid rgba(14,165,233,.15);
-  padding: 6rem 1.5rem;
-}
-.step-num {
-  width: 48px; height: 48px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 900; color: #38bdf8; flex-shrink: 0;
-  background: transparent;
-  border: 1px solid rgba(14,165,233,.4);
-}
-.step-connector { width: 1px; height: 40px; background: linear-gradient(to bottom,rgba(14,165,233,.4),transparent); margin: 0 auto; }
+.step-num{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 8px 24px rgba(14,165,233,.35);}
+.step-connector{width:2px;height:40px;background:linear-gradient(to bottom,#0ea5e9,rgba(14,165,233,.1));margin:0 auto;}
 
-/* ── ROUTE CARDS — transparent, line border only ── */
-.route-card {
-  background: transparent;
-  border: 1px solid rgba(14,165,233,.18);
-  border-radius: 18px; padding: 1.5rem;
-  transition: all .3s ease; cursor: pointer;
-}
-.route-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(14,165,233,.5);
-  box-shadow: 0 0 28px rgba(14,165,233,.1);
-}
+.route-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:1.5rem;transition:all .3s ease;cursor:pointer;position:relative;overflow:hidden;}
+.route-card:hover{transform:translateY(-4px);border-color:rgba(14,165,233,.3);box-shadow:0 20px 48px rgba(0,0,0,.4);}
 
-/* ── CTA BANNER ── */
-.cta-banner {
-  width: 100vw; margin-left: calc(-50vw + 50%);
-  background: transparent;
-  border-top: 1px solid rgba(14,165,233,.15);
-  padding: 5rem 1.5rem; text-align: center; position: relative; overflow: hidden;
-}
+.cta-banner{width:100vw;margin-left:calc(-50vw + 50%);background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:5rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Full-page starfield canvas -->
-<canvas id="star-canvas"></canvas>
-
-<div class="home-wrap">
-
-<!-- ── HERO ── -->
+<!-- HERO -->
 <section id="hero">
+  <div id="hero-bg">
+    <div class="orb w-[600px] h-[600px]" style="background:rgba(14,165,233,.12);top:-15%;left:-10%;"></div>
+    <div class="orb w-[400px] h-[400px]" style="background:rgba(99,102,241,.08);bottom:0;right:-5%;"></div>
+    <div class="orb w-[300px] h-[300px]" style="background:rgba(201,146,42,.06);top:40%;right:20%;"></div>
+  </div>
+  <canvas id="hero-canvas"></canvas>
   <div class="hero-grid"></div>
+  <div class="cloud w-64 h-16" style="top:20%;left:5%;animation-delay:-2s;"></div>
+  <div class="cloud w-48 h-12" style="top:60%;right:10%;animation-delay:-5s;animation-duration:12s;"></div>
   <div class="plane-float">✈</div>
+
   <div id="hero-content">
     <div class="max-w-5xl mx-auto text-center">
       <div class="hero-badge animate-fade-in">
@@ -234,7 +121,7 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </section>
 
-<!-- ── STATS ── -->
+<!-- STATS -->
 <section class="stats-section">
   <div class="max-w-4xl mx-auto">
     <div class="grid grid-cols-2 sm:grid-cols-4">
@@ -249,7 +136,7 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </section>
 
-<!-- ── FEATURES ── -->
+<!-- FEATURES -->
 <div class="section-wrap">
   <div class="text-center mb-14">
     <div class="section-label"><span>✦</span> Why SkyStream</div>
@@ -274,8 +161,8 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </div>
 
-<!-- ── HOW IT WORKS ── -->
-<div class="how-section">
+<!-- HOW IT WORKS -->
+<div style="background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:6rem 1.5rem;width:100vw;margin-left:calc(-50vw + 50%);">
   <div class="max-w-3xl mx-auto">
     <div class="text-center mb-14">
       <div class="section-label"><span>✦</span> How It Works</div>
@@ -306,7 +193,7 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </div>
 
-<!-- ── POPULAR ROUTES ── -->
+<!-- POPULAR ROUTES -->
 <div class="section-wrap">
   <div class="text-center mb-12">
     <div class="section-label"><span>✦</span> Popular Routes</div>
@@ -351,10 +238,12 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </div>
 
-<!-- ── CTA BANNER ── -->
+<!-- CTA BANNER -->
 <div class="cta-banner">
+  <div class="orb w-96 h-96" style="background:rgba(14,165,233,.1);top:-50%;left:10%;"></div>
+  <div class="orb w-64 h-64" style="background:rgba(201,146,42,.08);bottom:-30%;right:15%;"></div>
   <div class="relative z-10 max-w-2xl mx-auto">
-    <div class="text-5xl mb-6" style="animation:float 4s ease-in-out infinite;">✈️</div>
+    <div class="text-5xl mb-6 animate-float">✈️</div>
     <h2 class="text-4xl sm:text-5xl font-black text-white mb-4 leading-tight">Ready to take off?</h2>
     <p class="text-slate-400 text-lg mb-10">Join thousands of travellers who book smarter with SkyStream.</p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -368,94 +257,64 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   </div>
 </div>
 
-</div>{# end home-wrap #}
 {% endblock %}
 
 {% block scripts %}
 <script>
-// ── Full-page starfield (fixed, behind all sections) ──
-(function() {
-  const cvs = document.getElementById('star-canvas');
+const heroBg = document.getElementById('hero-bg');
+window.addEventListener('scroll', () => {
+  if(heroBg) heroBg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+}, {passive:true});
+
+const cvs = document.getElementById('hero-canvas');
+if(cvs) {
   const ctx = cvs.getContext('2d');
   let W, H, pts = [];
-
   function resize() {
-    W = cvs.width  = window.innerWidth;
-    H = cvs.height = window.innerHeight;
+    const hero = document.getElementById('hero');
+    W = cvs.width = hero.offsetWidth;
+    H = cvs.height = hero.offsetHeight;
   }
-
-  class Star {
-    constructor() { this.reset(true); }
-    reset(init) {
-      this.x  = Math.random() * W;
-      this.y  = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
-      this.r  = Math.random() * 1.6 + .2;
-      this.vx = (Math.random() - .5) * .3;
-      this.vy = (Math.random() - .5) * .3;
-      this.a  = Math.random() * .5 + .08;
-      this.pulse = Math.random() * Math.PI * 2;
+  class Dot {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.r = Math.random()*1.8+.3;
+      this.vx = (Math.random()-.5)*.35; this.vy = (Math.random()-.5)*.35;
+      this.a = Math.random()*.45+.08;
     }
     tick() {
-      this.x += this.vx;
-      this.y += this.vy;
-      this.pulse += .018;
-      if (this.x < -4 || this.x > W + 4 || this.y < -4 || this.y > H + 4) this.reset(false);
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset();
     }
     draw() {
-      const a = this.a * (.7 + .3 * Math.sin(this.pulse));
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(14,165,233,${a})`;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(14,165,233,${this.a})`; ctx.fill();
     }
   }
-
-  function init() {
-    resize();
-    pts = Array.from({ length: 160 }, () => new Star());
-  }
-
+  function init() { resize(); pts = Array.from({length:120},()=>new Dot()); }
   function loop() {
-    ctx.clearRect(0, 0, W, H);
-    // Draw connection lines first
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < 110) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(14,165,233,${.07 * (1 - d / 110)})`;
-          ctx.lineWidth = .5;
-          ctx.moveTo(pts[i].x, pts[i].y);
-          ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.stroke();
-        }
-      }
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{p.tick();p.draw();});
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){ctx.beginPath();ctx.strokeStyle=`rgba(14,165,233,${.06*(1-d/100)})`;ctx.lineWidth=.6;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}
     }
-    // Draw stars on top
-    pts.forEach(p => { p.tick(); p.draw(); });
     requestAnimationFrame(loop);
   }
-
-  init();
-  loop();
+  init(); loop();
   window.addEventListener('resize', resize);
-})();
+}
 
-// ── Scroll-triggered reveal ──
+// Scroll-triggered reveal
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.style.opacity = '1';
-      e.target.style.transform = 'translateY(0)';
-    }
+    if(e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
   });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.feature-card, .route-card, .stat-card').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity .5s ease, transform .5s ease';
+}, {threshold:0.1});
+document.querySelectorAll('.feature-card,.route-card').forEach(el => {
+  el.style.opacity='0'; el.style.transform='translateY(24px)';
+  el.style.transition='opacity .5s ease, transform .5s ease';
   observer.observe(el);
 });
 </script>
