@@ -152,9 +152,16 @@
             color: #0f172a !important;
         }
         
-        /* ── Light mode status pills ── */
+        /* ── Light mode status pills and badges ── */
         html:not(.dark-mode) .status-pill {
             font-weight: 600 !important;
+        }
+        html:not(.dark-mode) .bg-slate-100 {
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+        }
+        html:not(.dark-mode) .text-slate-600 {
+            color: #475569 !important;
         }
         
         /* ── Light mode plane IDs and important text ── */
@@ -178,6 +185,18 @@
         html:not(.dark-mode) .bg-navy { 
             background-color: #1e293b !important; 
             color: #ffffff !important; 
+        }
+        html:not(.dark-mode) .bg-gold {
+            background-color: #c9922a !important;
+            color: #ffffff !important;
+        }
+        
+        /* Light mode top nav text */
+        html:not(.dark-mode) #topnav .text-white {
+            color: #1f2937 !important;
+        }
+        html:not(.dark-mode) #topnav .text-gold-light {
+            color: #d97706 !important;
         }
         
         /* ── Ensure proper text visibility in light mode ── */
@@ -486,6 +505,17 @@
         }
         #dm-toggle:hover { background:rgba(255,255,255,.14); transform:scale(1.05); }
         #dm-toggle svg { width:15px; height:15px; }
+        
+        /* Light mode toggle button */
+        html:not(.dark-mode) #dm-toggle {
+            border: 1px solid #d1d5db !important;
+            background: #f9fafb !important;
+            color: #374151 !important;
+        }
+        html:not(.dark-mode) #dm-toggle:hover {
+            background: #f3f4f6 !important;
+            border-color: #9ca3af !important;
+        }
     </style>
 </head>
 
