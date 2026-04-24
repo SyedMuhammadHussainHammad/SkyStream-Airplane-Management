@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask_login import UserMixin
 from app import db, login_manager
 
@@ -93,23 +93,13 @@ class Booking(db.Model):
     trip_type = db.Column(db.String(10), default="one_way")     # one_way, return
     return_date = db.Column(db.String(50))
     payment_method = db.Column(db.String(30), default="card")
-    status = db.Column(db.String(20), default="pending")        # pending, confirmed, cancelled
-    payment_status = db.Column(db.String(20), default="pending") # pending, confirmed, failed
+    status = db.Column(db.String(20), default="confirmed")      # confirmed, pending, cancelled
     total_price = db.Column(db.Float, default=0.0)
-
-    # Hold expires 10 minutes after booking created; if not paid → auto-cancel
-    hold_expires_at = db.Column(db.DateTime, nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    passengers = db.relationship("Passenger", backref="booking", lazy=True, cascade="all, delete-orphan")
-    ticket = db.relationship("Ticket", backref="booking", uselist=False, cascade="all, delete-orphan")
-
-    @property
-    def hold_expired(self):
-        if self.hold_expires_at is None:
-            return False
-        return datetime.utcnow() > self.hold_expires_at and self.payment_status == 'pending'
+    passengers = db.relationship("Passenger", backref="booking", lazy=True)
+    ticket = db.relationship("Ticket", backref="booking", uselist=False)
 
 
 # ── PASSENGER ──
@@ -119,70 +109,13 @@ class Passenger(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     seat_number = db.Column(db.String(5))
-    meal_preference = db.Column(db.String(50), default='None')
 
 
 # ── TICKET ──
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
-    ticket_number = db.Column(db.String(20), unique=True, nullable=True)
     issued_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='issued')  # issued, used, cancelled
-
-
-# ── SEAT LOCK ──
-class SeatLock(db.Model):
-    """Temporary seat hold during checkout — expires after LOCK_MINUTES."""
-    __tablename__ = 'seat_lock'
-    LOCK_MINUTES = 10
-
-    id = db.Column(db.Integer, primary_key=True)
-    flight_id = db.Column(db.Integer, db.ForeignKey("flight.id"), nullable=False)
-    seat_number = db.Column(db.String(5), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    locked_at = db.Column(db.DateTime, default=datetime.utcnow)
-    expires_at = db.Column(db.DateTime, nullable=False)
-
-    __table_args__ = (
-        db.UniqueConstraint('flight_id', 'seat_number', name='uq_seat_lock'),
-    )
-
-    @staticmethod
-    def is_locked(flight_id, seat_number, exclude_user_id=None):
-        """Return True if seat is currently locked by someone else."""
-        now = datetime.utcnow()
-        q = SeatLock.query.filter_by(flight_id=flight_id, seat_number=seat_number).filter(
-            SeatLock.expires_at > now
-        )
-        if exclude_user_id:
-            q = q.filter(SeatLock.user_id != exclude_user_id)
-        return q.first() is not None
-
-    @staticmethod
-    def cleanup_expired():
-        """Remove all expired locks."""
-        now = datetime.utcnow()
-        SeatLock.query.filter(SeatLock.expires_at <= now).delete()
-        db.session.flush()
-
-
-# ── PAYMENT TRANSACTION ──
-class PaymentTransaction(db.Model):
-    """Audit log for every payment attempt."""
-    __tablename__ = 'payment_transaction'
-
-    id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    method = db.Column(db.String(30), nullable=False)
-    status = db.Column(db.String(20), default='pending')   # pending, confirmed, failed
-    gateway_ref = db.Column(db.String(50))                 # simulated gateway reference
-    failure_reason = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    booking = db.relationship('Booking', backref=db.backref('transactions', lazy=True))
 
 
 # ── STAFF PROFILE ──
@@ -195,7 +128,7 @@ class StaffProfile(db.Model):
     feedback_rating = db.Column(db.Float, default=0.0)
     reward_points = db.Column(db.Integer, default=0)
 
-    rosters = db.relationship("Roster", backref="staff_profile", lazy=True, cascade="all, delete-orphan")
+    rosters = db.relationship("Roster", backref="staff_profile", lazy=True)
 
 
 # ── ROSTER ──

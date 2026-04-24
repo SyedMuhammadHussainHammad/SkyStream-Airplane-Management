@@ -133,147 +133,14 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
 .pax-counter button:hover{background:#0ea5e9;border-color:#0ea5e9;}
 .pax-counter span{min-width:20px;text-align:center;font-weight:700;color:#fff;}
 
-/* ═══ ENHANCED DATE SECTION STYLING ═══ */
-.date-section {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.date-section.hidden {
-  opacity: 0;
-  transform: translateY(-10px);
-  max-height: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-}
-
-.date-section.visible {
-  opacity: 1;
-  transform: translateY(0);
-  max-height: 200px;
-}
-
-.dates-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: end;
-}
-
-@media (max-width: 768px) {
-  .dates-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-.date-field-wrapper {
-  position: relative;
-}
-
-.date-field-wrapper .ss-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
+/* Date */
 .date-input {
-  width: 100%;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 12px;
-  padding: 12px 14px 12px 42px;
-  font-size: 14px;
-  color: #fff;
-  color-scheme: dark;
-  transition: all 0.25s ease;
+  width:100%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:12px 14px 12px 42px;font-size:14px;color:#fff;
+  color-scheme:dark;transition:border-color .2s,box-shadow .2s;
 }
-
-.date-input:focus {
-  outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,.2);
-  transform: translateY(-1px);
-}
-
-.date-input:invalid {
-  border-color: rgba(239, 68, 68, 0.5);
-}
-
-.date-error {
-  font-size: 11px;
-  color: #f87171;
-  margin-top: 4px;
-  min-height: 16px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.date-error.show {
-  opacity: 1;
-}
-
-/* ═══ ENHANCED TRIP TOGGLE ═══ */
-.trip-toggle {
-  display: flex;
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(10px);
-  border-radius: 50px;
-  padding: 4px;
-  width: fit-content;
-  margin: 0 auto 2.5rem;
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: 0 8px 32px rgba(0,0,0,.2);
-}
-
-.trip-toggle label {
-  padding: 12px 32px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  position: relative;
-  overflow: hidden;
-}
-
-.trip-toggle label::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.trip-toggle label:hover::before {
-  opacity: 1;
-}
-
-.trip-toggle input { 
-  display: none; 
-}
-
-.trip-toggle input:checked + label {
-  background: linear-gradient(135deg,#0ea5e9,#0284c7);
-  color: #fff;
-  box-shadow: 
-    0 4px 20px rgba(14,165,233,.4),
-    inset 0 1px 0 rgba(255,255,255,0.2);
-  transform: translateY(-1px);
-}
-
-/* ═══ ENHANCED FORM LAYOUT ═══ */
-.search-form-section {
-  margin-bottom: 1.5rem;
-}
-
-.search-form-section:last-child {
-  margin-bottom: 0;
-}
+.date-input:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.2);}
 
 /* Search button */
 .search-btn {
@@ -341,159 +208,125 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
     {{ form.hidden_tag() }}
     <input type="hidden" name="trip_type" id="trip_type_field" value="one_way">
 
-    <!-- Section 1: Route Selection -->
-    <div class="search-form-section">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_44px_1fr] gap-4 items-end">
-        <!-- From -->
-        <div>
-          <label class="ss-label">🛫 Departure</label>
-          <div class="ap-wrap">
-            <span class="ap-icon">🏙️</span>
-            <input class="ap-input" id="origin-display" placeholder="City or Airport" autocomplete="off" readonly>
-            <input type="hidden" name="origin" id="origin-val">
-            <div class="ap-dropdown" id="origin-dd">
-              <div class="overlay-header">
-                <span class="text-white font-bold text-sm">Select Departure</span>
-                <button type="button" onclick="closeDD('origin-dd')" class="text-slate-400 text-xl leading-none">×</button>
-              </div>
-              <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="origin-search" oninput="filterAP('origin')" autocomplete="off">
-              <div id="origin-list"></div>
-            </div>
-          </div>
-          <p class="val-error" id="origin-err"></p>
-        </div>
+    <!-- Row 1: From / Swap / To / Date -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_44px_1fr_1fr] gap-4 items-end mb-4">
 
-        <!-- Swap -->
-        <div class="flex items-end justify-center pb-1">
-          <button type="button" class="swap-btn" onclick="swapAirports()" title="Swap">⇄</button>
-        </div>
-
-        <!-- To -->
-        <div>
-          <label class="ss-label">🛬 Arrival</label>
-          <div class="ap-wrap">
-            <span class="ap-icon">🏙️</span>
-            <input class="ap-input" id="dest-display" placeholder="City or Airport" autocomplete="off" readonly>
-            <input type="hidden" name="destination" id="dest-val">
-            <div class="ap-dropdown" id="dest-dd">
-              <div class="overlay-header">
-                <span class="text-white font-bold text-sm">Select Arrival</span>
-                <button type="button" onclick="closeDD('dest-dd')" class="text-slate-400 text-xl leading-none">×</button>
-              </div>
-              <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="dest-search" oninput="filterAP('dest')" autocomplete="off">
-              <div id="dest-list"></div>
+      <!-- From -->
+      <div>
+        <label class="ss-label">🛫 Departure</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">🏙️</span>
+          <input class="ap-input" id="origin-display" placeholder="City or Airport" autocomplete="off" readonly>
+          <input type="hidden" name="origin" id="origin-val">
+          <div class="ap-dropdown" id="origin-dd">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Select Departure</span>
+              <button type="button" onclick="closeDD('origin-dd')" class="text-slate-400 text-xl leading-none">×</button>
             </div>
+            <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="origin-search" oninput="filterAP('origin')" autocomplete="off">
+            <div id="origin-list"></div>
           </div>
-          <p class="val-error" id="dest-err"></p>
+        </div>
+        <p class="val-error" id="origin-err"></p>
+      </div>
+
+      <!-- Swap -->
+      <div class="flex items-end justify-center pb-1">
+        <button type="button" class="swap-btn" onclick="swapAirports()" title="Swap">⇄</button>
+      </div>
+
+      <!-- To -->
+      <div>
+        <label class="ss-label">🛬 Arrival</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">🏙️</span>
+          <input class="ap-input" id="dest-display" placeholder="City or Airport" autocomplete="off" readonly>
+          <input type="hidden" name="destination" id="dest-val">
+          <div class="ap-dropdown" id="dest-dd">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Select Arrival</span>
+              <button type="button" onclick="closeDD('dest-dd')" class="text-slate-400 text-xl leading-none">×</button>
+            </div>
+            <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="dest-search" oninput="filterAP('dest')" autocomplete="off">
+            <div id="dest-list"></div>
+          </div>
+        </div>
+        <p class="val-error" id="dest-err"></p>
+      </div>
+
+      <!-- Departure Date -->
+      <div>
+        <label class="ss-label">📅 Departure Date</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">📅</span>
+          <input type="date" class="date-input" name="date" id="date-field" min="{{ now_date }}">
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Date Selection -->
-    <div class="search-form-section">
-      <!-- One Way: Single Date -->
-      <div id="oneway-dates" class="date-section visible">
-        <div class="date-field-wrapper">
-          <label class="ss-label">
-            <span>📅</span>
-            <span>Departure Date</span>
-          </label>
-          <div class="ap-wrap">
-            <span class="ap-icon">📅</span>
-            <input type="date" class="date-input" name="date" id="departure-date-field" min="{{ now_date }}">
-          </div>
-          <p class="date-error" id="departure-date-err"></p>
-        </div>
-      </div>
-
-      <!-- Return Trip: Two Dates Side by Side -->
-      <div id="return-dates" class="date-section hidden">
-        <div class="dates-grid">
-          <!-- Departure Date -->
-          <div class="date-field-wrapper">
-            <label class="ss-label">
-              <span>🛫</span>
-              <span>Departure Date</span>
-            </label>
-            <div class="ap-wrap">
-              <span class="ap-icon">📅</span>
-              <input type="date" class="date-input" name="departure_date_return" id="departure-date-return-field" min="{{ now_date }}">
-            </div>
-            <p class="date-error" id="departure-return-err"></p>
-          </div>
-
-          <!-- Return Date -->
-          <div class="date-field-wrapper">
-            <label class="ss-label">
-              <span>🛬</span>
-              <span>Return Date</span>
-            </label>
-            <div class="ap-wrap">
-              <span class="ap-icon">🔄</span>
-              <input type="date" class="date-input" name="return_date" id="return-date-field" min="{{ now_date }}">
-            </div>
-            <p class="date-error" id="return-date-err"></p>
-          </div>
-        </div>
+    <!-- Return date (shown for return trips) -->
+    <div id="return-date-row" class="mb-4" style="display:none;">
+      <label class="ss-label">🔄 Return Date</label>
+      <div class="ap-wrap" style="max-width:260px;">
+        <span class="ap-icon">📅</span>
+        <input type="date" class="date-input" name="return_date" id="return-date-field" min="{{ now_date }}">
       </div>
     </div>
 
-    <!-- Section 3: Passengers & Search -->
-    <div class="search-form-section">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 items-end">
-        <!-- Passengers -->
-        <div>
-          <label class="ss-label">👥 Passengers</label>
-          <div class="pax-wrap">
-            <span class="ap-icon">👤</span>
-            <button type="button" class="pax-btn" id="pax-btn" onclick="togglePax()">1 Adult</button>
-            <input type="hidden" name="adults" id="adults-val" value="1">
-            <input type="hidden" name="children" id="children-val" value="0">
-            <input type="hidden" name="infants" id="infants-val" value="0">
-            <div class="pax-panel" id="pax-panel">
-              <div class="overlay-header">
-                <span class="text-white font-bold text-sm">Passengers</span>
-                <button type="button" onclick="togglePax()" class="text-slate-400 text-xl leading-none">×</button>
-              </div>
-              <div class="pax-row">
-                <div><p class="pax-label">Adults</p><p class="pax-sub">12+ years</p></div>
-                <div class="pax-counter">
-                  <button type="button" onclick="changePax('adults',-1)">−</button>
-                  <span id="adults-count">1</span>
-                  <button type="button" onclick="changePax('adults',1)">+</button>
-                </div>
-              </div>
-              <div class="pax-row">
-                <div><p class="pax-label">Children</p><p class="pax-sub">2–11 years</p></div>
-                <div class="pax-counter">
-                  <button type="button" onclick="changePax('children',-1)">−</button>
-                  <span id="children-count">0</span>
-                  <button type="button" onclick="changePax('children',1)">+</button>
-                </div>
-              </div>
-              <div class="pax-row">
-                <div><p class="pax-label">Infants</p><p class="pax-sub">Under 2</p></div>
-                <div class="pax-counter">
-                  <button type="button" onclick="changePax('infants',-1)">−</button>
-                  <span id="infants-count">0</span>
-                  <button type="button" onclick="changePax('infants',1)">+</button>
-                </div>
-              </div>
-              <button type="button" onclick="togglePax()" class="mt-3 w-full py-2 rounded-xl text-white text-sm font-bold" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">Done</button>
+    <!-- Row 2: Passengers + Search -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 items-end">
+
+      <!-- Passengers -->
+      <div>
+        <label class="ss-label">👥 Passengers</label>
+        <div class="pax-wrap">
+          <span class="ap-icon">👤</span>
+          <button type="button" class="pax-btn" id="pax-btn" onclick="togglePax()">1 Adult</button>
+          <input type="hidden" name="adults" id="adults-val" value="1">
+          <input type="hidden" name="children" id="children-val" value="0">
+          <input type="hidden" name="infants" id="infants-val" value="0">
+          <div class="pax-panel" id="pax-panel">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Passengers</span>
+              <button type="button" onclick="togglePax()" class="text-slate-400 text-xl leading-none">×</button>
             </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Adults</p><p class="pax-sub">12+ years</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('adults',-1)">−</button>
+                <span id="adults-count">1</span>
+                <button type="button" onclick="changePax('adults',1)">+</button>
+              </div>
+            </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Children</p><p class="pax-sub">2–11 years</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('children',-1)">−</button>
+                <span id="children-count">0</span>
+                <button type="button" onclick="changePax('children',1)">+</button>
+              </div>
+            </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Infants</p><p class="pax-sub">Under 2</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('infants',-1)">−</button>
+                <span id="infants-count">0</span>
+                <button type="button" onclick="changePax('infants',1)">+</button>
+              </div>
+            </div>
+            <button type="button" onclick="togglePax()" class="mt-3 w-full py-2 rounded-xl text-white text-sm font-bold" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">Done</button>
           </div>
         </div>
+      </div>
 
-        <!-- Search button -->
-        <div>
-          <button type="submit" class="search-btn" id="search-btn">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z"/>
-            </svg>
-            <span id="search-text">Search Flights</span>
-            <span id="search-loading" style="display:none;">Searching...</span>
-          </button>
-        </div>
+      <!-- Search button -->
+      <div>
+        <button type="submit" class="search-btn" id="search-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z"/>
+          </svg>
+          Search Flights
+        </button>
       </div>
     </div>
   </form>
@@ -505,159 +338,78 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl font-black text-white">
       Search Results
-      {% if outbound_flights or return_flights %}
-        <span class="text-sm font-normal text-slate-400 ml-2">— 
-          {% if outbound_flights %}{{ outbound_flights|length }} outbound{% endif %}
-          {% if return_flights %}{% if outbound_flights %}, {% endif %}{{ return_flights|length }} return{% endif %}
-          flight(s) found
-        </span>
+      {% if flights %}
+        <span class="text-sm font-normal text-slate-400 ml-2">— {{ flights|length }} flight(s) found</span>
       {% endif %}
     </h2>
   </div>
 
-  {% if outbound_flights %}
-  <div class="mb-8">
-    <h3 class="text-xl font-bold text-white mb-4">
-      {% if trip_type == 'return' %}Outbound Flights{% else %}Available Flights{% endif %}
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      {% for item in outbound_flights %}
-      {% set flight = item.flight %}
-      <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="flight-{{ flight.id }}">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(14,165,233,.15);color:#38bdf8;border:1px solid rgba(14,165,233,.2);">FL-{{ flight.id }}</span>
-          <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
+  {% if flights %}
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    {% for item in flights %}
+    {% set flight = item.flight %}
+    <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="flight-{{ flight.id }}">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(14,165,233,.15);color:#38bdf8;border:1px solid rgba(14,165,233,.2);">FL-{{ flight.id }}</span>
+        <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-5">
+        <div class="text-center">
+          <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
         </div>
-        <div class="flex items-center justify-between mb-5">
-          <div class="text-center">
-            <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
-            <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
-          </div>
-          <div class="flex-1 flex flex-col items-center px-4">
-            <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
-            <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
-              <line x1="0" y1="10" x2="85" y2="10" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
-              <text x="88" y="14" font-size="10" fill="#38bdf8">✈</text>
-            </svg>
-            <p class="text-[10px] text-slate-500 mt-1">Direct</p>
-          </div>
-          <div class="text-center">
-            <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
-            <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
-          </div>
+        <div class="flex-1 flex flex-col items-center px-4">
+          <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
+          <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
+            <line x1="0" y1="10" x2="85" y2="10" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
+            <text x="88" y="14" font-size="10" fill="#38bdf8">✈</text>
+          </svg>
+          <p class="text-[10px] text-slate-500 mt-1">Direct</p>
         </div>
-
-        <!-- Seat availability bar -->
-        <div class="mb-4">
-          <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-            <span>Seats available</span>
-            <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
-              {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
-            </span>
-          </div>
-          <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
-            <div class="h-full rounded-full transition-all
-              {% if item.sold_out %}bg-red-500
-              {% elif item.available < 20 %}bg-amber-400
-              {% else %}bg-emerald-400{% endif %}"
-              style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
-          <div>
-            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
-            <p class="text-2xl font-black text-sky-400">Rs 19,000</p>
-          </div>
-          {% if item.sold_out %}
-          <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
-            🚫 Sold Out
-          </span>
-          {% else %}
-          <a href="{{ url_for('select_package', flight_id=flight.id) }}" id="select-{{ flight.id }}"
-             class="btn-primary px-5 py-2.5 text-sm rounded-xl">
-            Select →
-          </a>
-          {% endif %}
+        <div class="text-center">
+          <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
         </div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
 
-  {% if return_flights %}
-  <div class="mb-8">
-    <h3 class="text-xl font-bold text-white mb-4">Return Flights</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      {% for item in return_flights %}
-      {% set flight = item.flight %}
-      <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="return-flight-{{ flight.id }}">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.2);">FL-{{ flight.id }}</span>
-          <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
-        </div>
-        <div class="flex items-center justify-between mb-5">
-          <div class="text-center">
-            <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
-            <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
-          </div>
-          <div class="flex-1 flex flex-col items-center px-4">
-            <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
-            <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
-              <line x1="0" y1="10" x2="85" y2="10" stroke="#fb923c" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
-              <text x="88" y="14" font-size="10" fill="#fb923c">✈</text>
-            </svg>
-            <p class="text-[10px] text-slate-500 mt-1">Direct</p>
-          </div>
-          <div class="text-center">
-            <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
-            <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
-          </div>
-        </div>
-
-        <!-- Seat availability bar -->
-        <div class="mb-4">
-          <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-            <span>Seats available</span>
-            <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
-              {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
-            </span>
-          </div>
-          <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
-            <div class="h-full rounded-full transition-all
-              {% if item.sold_out %}bg-red-500
-              {% elif item.available < 20 %}bg-amber-400
-              {% else %}bg-emerald-400{% endif %}"
-              style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
-          <div>
-            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
-            <p class="text-2xl font-black text-orange-400">Rs 19,000</p>
-          </div>
-          {% if item.sold_out %}
-          <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
-            🚫 Sold Out
+      <!-- Seat availability bar -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+          <span>Seats available</span>
+          <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+            {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
           </span>
-          {% else %}
-          <a href="{{ url_for('select_package', flight_id=flight.id) }}" id="select-return-{{ flight.id }}"
-             class="px-5 py-2.5 text-sm rounded-xl font-bold transition-all" style="background:rgba(251,146,60,.2);border:1px solid rgba(251,146,60,.3);color:#fb923c;">
-            Select Return →
-          </a>
-          {% endif %}
+        </div>
+        <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div class="h-full rounded-full transition-all
+            {% if item.sold_out %}bg-red-500
+            {% elif item.available < 20 %}bg-amber-400
+            {% else %}bg-emerald-400{% endif %}"
+            style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
+          </div>
         </div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
 
-  {% if not outbound_flights and not return_flights %}
+      <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
+        <div>
+          <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
+          <p class="text-2xl font-black text-sky-400">Rs 19,000</p>
+        </div>
+        {% if item.sold_out %}
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
+          🚫 Sold Out
+        </span>
+        {% else %}
+        <a href="{{ url_for('select_package', flight_id=flight.id) }}" id="select-{{ flight.id }}"
+           class="btn-primary px-5 py-2.5 text-sm rounded-xl">
+          Select →
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
   <div class="text-center py-20">
     <p class="text-5xl mb-4">🔍</p>
     <h3 class="font-black text-xl text-white mb-2">No Flights Found</h3>
@@ -751,207 +503,27 @@ function updatePaxBtn() {
   document.getElementById('pax-btn').textContent=parts.join(', ');
 }
 
-/* ── Trip type toggle with enhanced animations ── */
-document.querySelectorAll('input[name="trip_ui"]').forEach(r => r.addEventListener('change', function() {
-  document.getElementById('trip_type_field').value = this.value;
-  
-  const onewayDates = document.getElementById('oneway-dates');
-  const returnDates = document.getElementById('return-dates');
-  
-  if (this.value === 'return') {
-    // Switch to return trip mode
-    onewayDates.classList.remove('visible');
-    onewayDates.classList.add('hidden');
-    
-    setTimeout(() => {
-      returnDates.classList.remove('hidden');
-      returnDates.classList.add('visible');
-    }, 150);
-    
-    // Clear one-way date and copy to return departure if exists
-    const onewayDate = document.getElementById('departure-date-field').value;
-    if (onewayDate) {
-      document.getElementById('departure-date-return-field').value = onewayDate;
-      updateReturnMinDate();
-    }
-    document.getElementById('departure-date-field').value = '';
-    
+/* ── Trip type ── */
+document.querySelectorAll('input[name="trip_ui"]').forEach(r=>r.addEventListener('change',function(){
+  document.getElementById('trip_type_field').value=this.value;
+  const returnRow = document.getElementById('return-date-row');
+  if(this.value === 'return') {
+    returnRow.style.removeProperty('display');
+    returnRow.style.display = 'grid';
   } else {
-    // Switch to one-way mode
-    returnDates.classList.remove('visible');
-    returnDates.classList.add('hidden');
-    
-    setTimeout(() => {
-      onewayDates.classList.remove('hidden');
-      onewayDates.classList.add('visible');
-    }, 150);
-    
-    // Clear return dates and copy departure back if exists
-    const returnDepartureDate = document.getElementById('departure-date-return-field').value;
-    if (returnDepartureDate) {
-      document.getElementById('departure-date-field').value = returnDepartureDate;
-    }
-    document.getElementById('departure-date-return-field').value = '';
+    returnRow.style.display = 'none';
     document.getElementById('return-date-field').value = '';
-    clearDateErrors();
   }
 }));
 
-/* ── Date validation functions ── */
-function updateReturnMinDate() {
-  const departureDate = document.getElementById('departure-date-return-field').value;
-  const returnDateField = document.getElementById('return-date-field');
-  
-  if (departureDate) {
-    // Set return date minimum to departure date
-    returnDateField.min = departureDate;
-    
-    // If return date is before departure date, clear it
-    if (returnDateField.value && returnDateField.value < departureDate) {
-      returnDateField.value = '';
-      showDateError('return-date-err', 'Return date must be after departure date');
-    } else {
-      clearDateError('return-date-err');
-    }
-  }
-}
-
-function validateReturnDates() {
-  const departureDate = document.getElementById('departure-date-return-field').value;
-  const returnDate = document.getElementById('return-date-field').value;
-  let isValid = true;
-  
-  clearDateErrors();
-  
-  if (!departureDate) {
-    showDateError('departure-return-err', 'Please select a departure date');
-    isValid = false;
-  }
-  
-  if (!returnDate) {
-    showDateError('return-date-err', 'Please select a return date');
-    isValid = false;
-  }
-  
-  if (departureDate && returnDate && returnDate < departureDate) {
-    showDateError('return-date-err', 'Return date must be after departure date');
-    isValid = false;
-  }
-  
-  return isValid;
-}
-
-function validateOnewayDate() {
-  const departureDate = document.getElementById('departure-date-field').value;
-  
-  clearDateError('departure-date-err');
-  
-  if (!departureDate) {
-    showDateError('departure-date-err', 'Please select a departure date');
-    return false;
-  }
-  
-  return true;
-}
-
-function showDateError(errorId, message) {
-  const errorEl = document.getElementById(errorId);
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.classList.add('show');
-  }
-}
-
-function clearDateError(errorId) {
-  const errorEl = document.getElementById(errorId);
-  if (errorEl) {
-    errorEl.textContent = '';
-    errorEl.classList.remove('show');
-  }
-}
-
-function clearDateErrors() {
-  ['departure-date-err', 'departure-return-err', 'return-date-err'].forEach(clearDateError);
-}
-
-/* ── Date field event listeners ── */
-document.getElementById('departure-date-return-field').addEventListener('change', function() {
-  updateReturnMinDate();
-  clearDateError('departure-return-err');
-});
-
-document.getElementById('return-date-field').addEventListener('change', function() {
-  const departureDate = document.getElementById('departure-date-return-field').value;
-  const returnDate = this.value;
-  
-  if (departureDate && returnDate && returnDate < departureDate) {
-    showDateError('return-date-err', 'Return date must be after departure date');
-    this.value = '';
-  } else {
-    clearDateError('return-date-err');
-  }
-});
-
-document.getElementById('departure-date-field').addEventListener('change', function() {
-  clearDateError('departure-date-err');
-});
-
-/* ── Enhanced form validation ── */
-document.getElementById('search-form').addEventListener('submit', function(e) {
-  let ok = true;
-  
-  // Show loading state
-  const searchBtn = document.getElementById('search-btn');
-  const searchText = document.getElementById('search-text');
-  const searchLoading = document.getElementById('search-loading');
-  
-  // Clear previous errors
-  clearDateErrors();
-  
-  // Validate airports
-  if (!selected.origin) {
-    document.getElementById('origin-err').textContent = 'Please select a departure city.';
-    ok = false;
-  }
-  if (!selected.dest) {
-    document.getElementById('dest-err').textContent = 'Please select an arrival city.';
-    ok = false;
-  }
-  if (selected.origin && selected.dest && selected.origin.code === selected.dest.code) {
-    document.getElementById('dest-err').textContent = 'Departure and arrival cannot be the same.';
-    ok = false;
-  }
-  
-  // Validate dates based on trip type
-  const tripType = document.getElementById('trip_type_field').value;
-  
-  if (tripType === 'return') {
-    // Validate return trip dates
-    if (!validateReturnDates()) {
-      ok = false;
-    }
-  } else {
-    // Validate one-way date
-    if (!validateOnewayDate()) {
-      ok = false;
-    }
-  }
-  
-  if (!ok) {
-    e.preventDefault();
-    
-    // Scroll to first error
-    const firstError = document.querySelector('.val-error:not(:empty), .date-error.show');
-    if (firstError) {
-      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  } else {
-    // Show loading state
-    searchBtn.disabled = true;
-    searchText.style.display = 'none';
-    searchLoading.style.display = 'inline';
-    searchBtn.style.opacity = '0.7';
-  }
+/* ── Form validation ── */
+document.getElementById('search-form').addEventListener('submit',function(e){
+  let ok=true;
+  if(!selected.origin){document.getElementById('origin-err').textContent='Please select a departure city.';ok=false;}
+  if(!selected.dest){document.getElementById('dest-err').textContent='Please select an arrival city.';ok=false;}
+  if(selected.origin && selected.dest && selected.origin.code===selected.dest.code){
+    document.getElementById('dest-err').textContent='Departure and arrival cannot be the same.';ok=false;}
+  if(!ok) e.preventDefault();
 });
 
 /* Close on outside click ── */
@@ -968,11 +540,8 @@ document.addEventListener('click',function(e){
   }
 });
 
-/* ── Initialize date fields with today as minimum ── */
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('departure-date-field').min = today;
-document.getElementById('departure-date-return-field').min = today;
-document.getElementById('return-date-field').min = today;
+/* ── Set today as min date ── */
+document.getElementById('date-field').min = new Date().toISOString().split('T')[0];
 
 /* ── Auto-scroll to results after search ── */
 {% if searched %}

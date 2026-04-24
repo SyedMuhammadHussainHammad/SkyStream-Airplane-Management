@@ -6,7 +6,7 @@ _backend_dir = os.path.abspath(os.path.dirname(__file__))
 if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
-# ── Load .env for local development ──
+# ── Load .env only in local development (Vercel uses dashboard env vars) ──
 try:
     from dotenv import load_dotenv
     from pathlib import Path
@@ -46,35 +46,25 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-m
 
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
-    # Use SQLite database for local development
-    database_url = "sqlite:///skystream.db"
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not set. "
+        "Add it in your Vercel project settings → Environment Variables."
+    )
 
 # Fix legacy 'postgres://' scheme (Heroku/older services)
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Strip channel_binding parameter — psycopg2-binary does not support it
-import re
-database_url = re.sub(r'[&?]channel_binding=[^&]*', '', database_url)
-
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Database configuration
-if "sqlite" not in database_url:
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-        "connect_args": {
-            "sslmode": "require",
-            "connect_timeout": 10,
-        },
-    }
-else:
-    # SQLite configuration
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-    }
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,          # test connection before use
+    "pool_recycle": 300,            # recycle connections every 5 min
+    "connect_args": {
+        "sslmode": "require",       # Neon requires SSL
+        "connect_timeout": 10,
+    },
+}
 
 from flask_wtf.csrf import CSRFProtect
 
@@ -92,12 +82,10 @@ sys.modules["app"] = sys.modules[__name__]
 with app.app_context():
     import models   # noqa
     import routes   # noqa
-    
-    # Database initialization
-    try:
-        db.create_all()
-    except Exception as e:
-        print(f"Database initialization warning: {e}")
+    db.create_all()
+
+# ── WSGI entry point ──
+application = app
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)

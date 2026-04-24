@@ -3,26 +3,15 @@
 
 {% block head %}
 <style>
-    /* ═══ GLASSMORPHISM & DEPTH ENHANCEMENTS ═══ */
-    .glass-enhanced {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-
     /* ── Card grid: equal height columns ── */
     .pkg-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
+        gap: 1.5rem;
         align-items: stretch;
     }
     @media (max-width: 768px) {
-        .pkg-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        .pkg-grid { grid-template-columns: 1fr; }
     }
 
     /* ── Wrapper ── */
@@ -32,8 +21,7 @@
         flex-direction: column;
         position: relative;
         /* reserve space at top for badge so all cards start at same baseline */
-        padding-top: 24px;
-        text-decoration: none;
+        padding-top: 20px;
     }
 
     /* ── Inner card ── */
@@ -41,57 +29,39 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        border-radius: 24px;
-        border: 2px solid rgba(255,255,255,.12);
+        border-radius: 20px;
+        border: 2px solid rgba(255,255,255,.10);
         overflow: hidden;
-        transition: all .3s cubic-bezier(.4,0,.2,1);
+        transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+                    border-color .25s ease,
+                    box-shadow .25s ease;
         will-change: transform;
-        background: rgba(255, 255, 255, 0.06);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
-    /* ── HOVER: enhanced scale and glow ── */
+    /* ── HOVER: scale up ── */
     .pkg-wrapper:hover .pkg-inner {
-        transform: scale(1.05) translateY(-8px);
-        box-shadow: 
-            0 32px 64px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        transform: scale(1.045) translateY(-4px);
+        box-shadow: 0 24px 56px rgba(0,0,0,.45);
         border-color: rgba(255,255,255,.25);
     }
 
-    /* ── Header gradients with enhanced depth ── */
-    .tier-basic   { 
-        background: linear-gradient(135deg,#1e3a5f,#1a3a8a);
-        position: relative;
-        overflow: hidden;
+    /* ── SELECTED ring ── */
+    input:checked ~ .pkg-inner {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14,165,233,.22), 0 20px 48px rgba(0,0,0,.35);
+        transform: scale(1.03) translateY(-4px);
     }
-    .tier-economy { 
-        background: linear-gradient(135deg,#0369a1,#0ea5e9);
-        position: relative;
-        overflow: hidden;
-    }
-    .tier-premium { 
-        background: linear-gradient(135deg,#92400e,#d97706);
-        position: relative;
-        overflow: hidden;
+    .pkg-premium input:checked ~ .pkg-inner {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(245,158,11,.22), 0 20px 48px rgba(0,0,0,.35);
     }
 
-    .tier-basic::before,
-    .tier-economy::before,
-    .tier-premium::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-        opacity: 0.8;
-    }
+    /* ── Header gradients ── */
+    .tier-basic   { background: linear-gradient(135deg,#1e3a5f,#1a3a8a); }
+    .tier-economy { background: linear-gradient(135deg,#0369a1,#0ea5e9); }
+    .tier-premium { background: linear-gradient(135deg,#92400e,#d97706); }
 
-    /* ── Enhanced Badge ── */
+    /* ── Badge ── */
     .pkg-badge {
         position: absolute;
         top: 0;
@@ -101,192 +71,63 @@
         white-space: nowrap;
         background: linear-gradient(135deg,#0ea5e9,#0284c7);
         color: #fff;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 800;
-        padding: 4px 16px;
+        padding: 3px 14px;
         border-radius: 100px;
-        border: 2px solid rgba(255,255,255,0.2);
-        box-shadow: 
-            0 4px 16px rgba(14,165,233,.5),
-            inset 0 1px 0 rgba(255,255,255,0.3);
-        letter-spacing: .4px;
-        backdrop-filter: blur(10px);
-        animation: badge-pulse 2s ease-in-out infinite;
+        border: 2px solid #050d1f;
+        box-shadow: 0 4px 12px rgba(14,165,233,.4);
+        letter-spacing: .3px;
     }
 
-    @keyframes badge-pulse {
-        0%, 100% { transform: translateX(-50%) scale(1); }
-        50% { transform: translateX(-50%) scale(1.05); }
-    }
-
-    /* ── Enhanced Body ── */
+    /* ── Body ── */
     .pkg-body {
         flex: 1;
-        background: rgba(13, 31, 60, 0.8);
-        backdrop-filter: blur(10px);
+        background: #0d1f3c;
         display: flex;
         flex-direction: column;
-        position: relative;
     }
+    html:not(.dark-mode) .pkg-body { background: rgba(47,84,112,.75); }
 
-    .pkg-body::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
-        pointer-events: none;
-    }
-
-    html:not(.dark-mode) .pkg-body { 
-        background: rgba(47,84,112,.8); 
-    }
-
-    /* ── Enhanced shimmer on premium price ── */
+    /* ── Shimmer on premium price ── */
     .shimmer-badge {
-        background: linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b,#fde68a,#f59e0b);
-        background-size: 300% 100%;
-        animation: enhanced-shimmer 2.5s linear infinite;
+        background: linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b);
+        background-size: 200% 100%;
+        animation: shimmer 2s linear infinite;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        position: relative;
     }
+    @keyframes shimmer { from{background-position:-200% 0} to{background-position:200% 0} }
 
-    @keyframes enhanced-shimmer { 
-        from { background-position: -300% 0; } 
-        to { background-position: 300% 0; } 
-    }
-
-    /* ── Enhanced feature list ── */
-    .feature-list li {
-        transition: all 0.2s ease;
-        padding: 2px 0;
-        border-radius: 8px;
-    }
-
-    .feature-list li:hover {
-        background: rgba(255, 255, 255, 0.05);
-        padding-left: 8px;
-        padding-right: 8px;
-    }
-
-    .f-yes { 
-        color: #4ade80; 
-        text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
-    }
-    .f-no  { 
-        color: #64748b; 
-    }
+    .f-yes { color:#4ade80; }
+    .f-no  { color:#475569; }
     html:not(.dark-mode) .f-no { color:#1e4a6e; }
 
-    /* ── Enhanced step indicators ── */
-    .step-active   { 
-        background: linear-gradient(135deg, #0ea5e9, #0284c7); 
-        color: #fff; 
-        box-shadow: 0 0 20px rgba(14,165,233,.6);
-        animation: step-pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes step-pulse {
-        0%, 100% { box-shadow: 0 0 20px rgba(14,165,233,.6); }
-        50% { box-shadow: 0 0 30px rgba(14,165,233,.8); }
-    }
-
-    .step-done     { 
-        background: rgba(34,197,94,.25); 
-        color: #4ade80; 
-        border: 1px solid rgba(34,197,94,.4);
-        box-shadow: 0 0 12px rgba(34,197,94,.3);
-    }
-    .step-upcoming { 
-        background: rgba(255,255,255,.08); 
-        color: #64748b; 
-        border: 1px solid rgba(255,255,255,.12);
-        backdrop-filter: blur(10px);
-    }
-    .step-line     { 
-        flex: 1; 
-        height: 3px; 
-        background: rgba(255,255,255,.1);
-        border-radius: 2px;
-    }
-    .step-line.done { 
-        background: linear-gradient(90deg,#22c55e,#0ea5e9);
-        box-shadow: 0 0 8px rgba(34,197,94,.3);
-    }
-
-    html:not(.dark-mode) .step-upcoming { 
-        background: rgba(14,165,233,.15); 
-        color: #1e4a6e; 
-        border-color: rgba(14,165,233,.3); 
-    }
-    html:not(.dark-mode) .step-line { 
-        background: rgba(14,165,233,.25); 
-    }
-
-    /* ── Enhanced choose buttons ── */
-    .choose-btn {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .choose-btn::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-        opacity: 0;
-        transition: opacity 0.25s ease;
-    }
-
-    .choose-btn:hover::before {
-        opacity: 1;
-    }
-
-    .pkg-premium .choose-btn {
-        border-color: rgba(245, 158, 11, 0.3);
-    }
-
-    .pkg-premium .choose-btn:hover {
-        border-color: rgba(245, 158, 11, 0.5);
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
-    }
-
-    /* ── Enhanced flight route display ── */
-    .flight-route {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .flight-route::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-    }
+    /* ── Step indicators ── */
+    .step-active   { background:#0ea5e9; color:#fff; box-shadow:0 0 12px rgba(14,165,233,.5); }
+    .step-done     { background:rgba(34,197,94,.2); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+    .step-upcoming { background:rgba(255,255,255,.05); color:#475569; border:1px solid rgba(255,255,255,.08); }
+    .step-line     { flex:1; height:2px; background:rgba(255,255,255,.07); }
+    .step-line.done { background:linear-gradient(90deg,#22c55e,#0ea5e9); }
+    html:not(.dark-mode) .step-upcoming { background:rgba(14,165,233,.1); color:#1e4a6e; border-color:rgba(14,165,233,.25); }
+    html:not(.dark-mode) .step-line { background:rgba(14,165,233,.2); }
 </style>
 {% endblock %}
 
 {% block content %}
 
 <!-- Progress stepper -->
-<div class="flex items-center gap-3 mb-12 max-w-2xl mx-auto justify-center">
-    <div class="step-dot step-done w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-    <div class="step-line done h-1 rounded-full"></div>
-    <div class="step-dot step-active w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold">2</div>
-    <div class="step-line h-1 rounded-full"></div>
-    <div class="step-dot step-upcoming w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold">3</div>
-    <div class="step-line h-1 rounded-full"></div>
-    <div class="step-dot step-upcoming w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold">4</div>
+<div class="flex items-center gap-2 mb-10 max-w-2xl mx-auto justify-center">
+    <div class="step-dot step-done">✓</div>
+    <div class="step-line done"></div>
+    <div class="step-dot step-active">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot step-upcoming">3</div>
+    <div class="step-line"></div>
+    <div class="step-dot step-upcoming">4</div>
 </div>
-<div class="flex justify-center gap-20 text-sm text-slate-400 mb-12 -mt-8 max-w-2xl mx-auto">
+<div class="flex justify-center gap-16 text-xs text-slate-500 mb-10 -mt-7 max-w-2xl mx-auto">
     <span class="text-emerald-400 font-semibold">Search</span>
     <span style="color:#38bdf8;" class="font-semibold">Package</span>
     <span>Passengers</span>
@@ -294,119 +135,120 @@
 </div>
 
 <!-- Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-12">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
     <div>
-        <p class="text-sm font-bold uppercase tracking-widest mb-2 flex items-center gap-2" style="color:#38bdf8;">
-            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-            Step 2 of 4
-        </p>
-        <h1 class="text-4xl font-black text-white leading-tight">Choose Your Package</h1>
-        <p class="text-slate-400 text-lg mt-2 leading-relaxed">Select the perfect travel experience for your journey</p>
+        <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#38bdf8;">Step 2 of 4</p>
+        <h1 class="text-3xl font-black text-white">Choose Your Package</h1>
     </div>
-    <div class="flight-route inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-base font-semibold text-white">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-        </svg>
-        <span class="relative z-10">{{ flight.origin }} → {{ flight.destination }}</span>
+    <div class="inline-flex items-center gap-2 glass px-5 py-2.5 rounded-2xl text-sm font-semibold text-white" style="border:1px solid rgba(255,255,255,.1);">
+        ✈️ {{ flight.origin }} → {{ flight.destination }}
     </div>
 </div>
 
-<div class="pkg-grid mb-10">
+<form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}">
+    {{ form.hidden_tag() }}
+
+    <div class="pkg-grid mb-10">
 
         <!-- ═══ BASIC ═══ -->
-        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Basic') }}" class="pkg-wrapper">
+        <label class="pkg-wrapper" for="pkg-basic">
+            <input type="radio" id="pkg-basic" name="{{ form.package_tier.name }}" value="Basic"
+                   class="peer sr-only" {% if form.package_tier.data == 'Basic' %}checked{% endif %}>
             <div class="pkg-inner">
-                <div class="tier-basic px-7 py-10 text-center">
-                    <div class="relative z-10">
-                        <div class="text-5xl mb-4 animate-float">🎒</div>
-                        <h3 class="text-white font-display font-bold text-2xl mb-1">Basic</h3>
-                        <p class="text-blue-200 text-sm font-medium">Essential Travel</p>
-                    </div>
+                <div class="tier-basic px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">🎒</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Basic</h3>
+                    <p class="text-blue-200 text-xs mt-1 font-medium">Essential Travel</p>
                 </div>
-                <div class="p-7 pkg-body">
-                    <div class="text-center mb-8 relative z-10">
-                        <span class="text-5xl font-display font-black text-white">Rs 19,000</span>
-                        <span class="text-slate-400 text-base ml-2">/ seat</span>
+                <div class="p-6 pkg-body">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black text-white">Rs 19,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="feature-list space-y-4 text-base mb-8 flex-1">
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> 7 kg hand-carry only</li>
-                        <li class="flex items-center gap-3 text-slate-500"><span class="f-no font-bold text-lg">✗</span> No seat selection (random assigned)</li>
-                        <li class="flex items-center gap-3 text-slate-500"><span class="f-no font-bold text-lg">✗</span> Meals (not included)</li>
-                        <li class="flex items-center gap-3 text-slate-500"><span class="f-no font-bold text-lg">✗</span> Premium drinks (not included)</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 7 kg hand-carry only</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> No seat selection (random assigned)</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Meals (not included)</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
                     </ul>
-                    <div class="choose-btn w-full py-4 rounded-2xl text-center text-base font-bold text-white transition-all mt-auto">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all mt-auto" style="border:1px solid rgba(14,165,233,.3);">
                         Choose Basic
                     </div>
                 </div>
             </div>
-        </a>
+        </label>
 
         <!-- ═══ ECONOMY ═══ -->
-        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Economy') }}" class="pkg-wrapper">
+        <label class="pkg-wrapper" for="pkg-economy">
             <span class="pkg-badge">⭐ Most Popular</span>
+            <input type="radio" id="pkg-economy" name="{{ form.package_tier.name }}" value="Economy"
+                   class="peer sr-only" {% if form.package_tier.data == 'Economy' %}checked{% endif %}>
             <div class="pkg-inner">
-                <div class="tier-economy px-7 py-10 text-center">
-                    <div class="relative z-10">
-                        <div class="text-5xl mb-4 animate-float" style="animation-delay: 0.5s;">🧳</div>
-                        <h3 class="text-white font-display font-bold text-2xl mb-1">Economy</h3>
-                        <p class="text-sky-100 text-sm font-medium">Comfortable Value</p>
-                    </div>
+                <div class="tier-economy px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">🧳</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Economy</h3>
+                    <p class="text-sky-100 text-xs mt-1 font-medium">Comfortable Value</p>
                 </div>
-                <div class="p-7 pkg-body">
-                    <div class="text-center mb-8 relative z-10">
-                        <span class="text-5xl font-display font-black text-white">Rs 24,000</span>
-                        <span class="text-slate-400 text-base ml-2">/ seat</span>
+                <div class="p-6 pkg-body">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black text-white">Rs 24,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="feature-list space-y-4 text-base mb-8 flex-1">
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> 23 kg checked luggage</li>
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> Economy seat selection only</li>
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> Select free meal from list</li>
-                        <li class="flex items-center gap-3 text-slate-500"><span class="f-no font-bold text-lg">✗</span> Premium drinks (not included)</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 23 kg checked luggage</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Economy seat selection only</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Select free meal from list</li>
+                        <li class="flex items-center gap-2.5 text-slate-500"><span class="f-no font-bold text-base">✗</span> Premium drinks (not included)</li>
                     </ul>
-                    <div class="choose-btn w-full py-4 rounded-2xl text-center text-base font-bold text-white transition-all mt-auto">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-all mt-auto" style="border:1px solid rgba(14,165,233,.3);">
                         Choose Economy
                     </div>
                 </div>
             </div>
-        </a>
+        </label>
 
         <!-- ═══ PREMIUM ═══ -->
-        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Premium') }}" class="pkg-wrapper pkg-premium">
+        <label class="pkg-wrapper pkg-premium" for="pkg-premium">
+            <input type="radio" id="pkg-premium" name="{{ form.package_tier.name }}" value="Premium"
+                   class="peer sr-only" {% if form.package_tier.data == 'Premium' %}checked{% endif %}>
             <div class="pkg-inner">
-                <div class="tier-premium px-7 py-10 text-center">
-                    <div class="relative z-10">
-                        <div class="text-5xl mb-4 animate-float" style="animation-delay: 1s;">👑</div>
-                        <h3 class="text-white font-display font-bold text-2xl mb-1">Premium</h3>
-                        <p class="text-amber-200 text-sm font-medium">Ultimate Luxury</p>
-                    </div>
+                <div class="tier-premium px-6 py-8 text-center">
+                    <div class="text-4xl mb-3">👑</div>
+                    <h3 class="text-white font-display font-bold text-2xl">Premium</h3>
+                    <p class="text-amber-200 text-xs mt-1 font-medium">Ultimate Luxury</p>
                 </div>
-                <div class="p-7 pkg-body">
-                    <div class="text-center mb-8 relative z-10">
-                        <span class="text-5xl font-display font-black shimmer-badge">Rs 30,000</span>
-                        <span class="text-slate-400 text-base ml-2">/ seat</span>
+                <div class="p-6 pkg-body">
+                    <div class="text-center mb-6">
+                        <span class="text-4xl font-display font-black shimmer-badge">Rs 30,000</span>
+                        <span class="text-slate-400 text-sm ml-1">/ seat</span>
                     </div>
-                    <ul class="feature-list space-y-4 text-base mb-8 flex-1">
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> 56 kg luggage capacity</li>
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> All gourmet meals included</li>
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> Premium drinks included</li>
-                        <li class="flex items-center gap-3 text-slate-300"><span class="f-yes font-bold text-lg">✓</span> Any seat — priority boarding</li>
+                    <ul class="space-y-3 text-sm mb-6 flex-1">
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> 56 kg luggage capacity</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> All gourmet meals included</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Premium drinks included</li>
+                        <li class="flex items-center gap-2.5 text-slate-300"><span class="f-yes font-bold text-base">✓</span> Any seat — priority boarding</li>
                     </ul>
-                    <div class="choose-btn w-full py-4 rounded-2xl text-center text-base font-bold text-white border border-amber-500/30 transition-all mt-auto">
+                    <div class="w-full py-3 rounded-xl text-center text-sm font-bold text-white border border-amber-500/30 transition-all mt-auto">
                         Choose Premium
                     </div>
                 </div>
             </div>
-        </a>
+        </label>
     </div>
 
-    <!-- Nav buttons -->
-    <div class="flex flex-col sm:flex-row gap-4 border-t border-white/08 pt-8">
-        <a href="{{ url_for('search_flights') }}"
-           class="glass-enhanced flex items-center justify-center gap-3 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-2xl transition-all text-base group">
-            <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Back to Search
-        </a>
+    {% if form.package_tier.errors %}
+    <div class="ss-card border-red-500/30 px-5 py-3 text-sm text-red-400 mb-6 flex items-center gap-2">
+        ⚠️ Please select a package to continue.
     </div>
+    {% endif %}
+
+    <!-- Nav buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 border-t border-white/06 pt-7">
+        <a href="{{ url_for('search_flights') }}"
+           class="flex items-center justify-center gap-2 text-slate-400 hover:text-white font-semibold px-6 py-3.5 rounded-xl transition-all text-sm" style="border:1px solid rgba(255,255,255,.1);">
+            ← Back to Search
+        </a>
+        {{ form.submit(class="flex-1 sm:flex-none sm:min-w-[200px] btn-primary py-3.5 px-8 rounded-xl text-sm font-bold", id="pkg-submit-btn") }}
+    </div>
+</form>
 {% endblock %}
