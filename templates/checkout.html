@@ -208,12 +208,21 @@
                         </p>
                     </div>
 
+                    {% if lock_expires_at %}
+                    <div id="lock-timer-box" class="rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2"
+                         style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#d97706;">
+                        <span>🔒</span>
+                        <span>Seats held for <span id="lock-countdown" class="font-black tabular-nums">--:--</span></span>
+                    </div>
+                    {% endif %}
+
                     <button
+                        id="pay-btn"
                         type="submit"
                         class="w-full py-3.5 rounded-xl font-display font-bold text-sm text-white transition-all hover:brightness-110 active:scale-[0.99]"
                         style="background: linear-gradient(135deg, #16a34a, #22c55e);"
                     >
-                        Confirm Booking & Pay
+                        🔐 Confirm Booking &amp; Pay
                     </button>
 
                     <a
@@ -225,8 +234,38 @@
 
                     <p class="text-[11px] text-slate-500 text-center">
                         By confirming, you agree to SkyStream booking and payment terms.
+                        {% if lock_minutes %} Seats are held for {{ lock_minutes }} minutes.{% endif %}
                     </p>
                 </form>
+
+{% if lock_expires_at %}
+<script>
+(function() {
+    const expiresAt = new Date("{{ lock_expires_at.isoformat() }}Z");
+    const el = document.getElementById('lock-countdown');
+    const box = document.getElementById('lock-timer-box');
+    const btn = document.getElementById('pay-btn');
+
+    function tick() {
+        const diff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+        const m = String(Math.floor(diff / 60)).padStart(2, '0');
+        const s = String(diff % 60).padStart(2, '0');
+        el.textContent = m + ':' + s;
+        if (diff === 0) {
+            box.style.background = 'rgba(239,68,68,.12)';
+            box.style.borderColor = 'rgba(239,68,68,.3)';
+            box.style.color = '#dc2626';
+            box.innerHTML = '<span>⚠️</span><span>Seat hold expired — <a href="{{ url_for("passenger_details", flight_id=flight.id, tier=package_tier) }}" class="underline font-bold">go back to re-select seats</a></span>';
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
+{% endif %}
             </div>
         </aside>
     </div>

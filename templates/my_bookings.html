@@ -36,6 +36,7 @@
     .status-confirmed { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
     .status-pending   { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
     .status-cancelled { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+    .status-failed    { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
 
     .tier-economy { background:#f0fdf4; color:#15803d; border:1px solid #86efac; }
     .tier-basic   { background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; }
@@ -175,6 +176,7 @@
     <!-- Stats banner -->
     <div class="stats-pill mb-8">
         {% set confirmed = bookings | selectattr('status', 'equalto', 'confirmed') | list %}
+        {% set pending = bookings | selectattr('status', 'equalto', 'pending') | list %}
         <div>
             <p class="stat-val">{{ bookings | length }}</p>
             <p class="stat-lbl">Total Bookings</p>
@@ -184,6 +186,13 @@
             <p class="stat-val">{{ confirmed | length }}</p>
             <p class="stat-lbl">Confirmed</p>
         </div>
+        {% if pending %}
+        <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
+        <div>
+            <p class="stat-val" style="color:#fbbf24;">{{ pending | length }}</p>
+            <p class="stat-lbl">Pending</p>
+        </div>
+        {% endif %}
         <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
         <div>
             <p class="stat-val">Rs {{ "{:,.0f}".format(confirmed | sum(attribute='total_price')) }}</p>
@@ -237,6 +246,11 @@
                             {% elif booking.status == 'pending' %}⏳ Pending
                             {% else %}✕ Cancelled{% endif %}
                         </span>
+                        {% if booking.payment_status == 'failed' %}
+                        <span class="status-badge status-failed">✕ Payment Failed</span>
+                        {% elif booking.payment_status == 'pending' and booking.status != 'cancelled' %}
+                        <span class="status-badge status-pending">⏳ Awaiting Payment</span>
+                        {% endif %}
                         <span class="status-badge tier-{{ booking.package_tier | lower }}">
                             {{ booking.package_tier }}
                         </span>
@@ -300,16 +314,30 @@
                         <p class="detail-lbl">Total Paid</p>
                         <p class="total-price">Rs {{ "{:,.0f}".format(booking.total_price) }}</p>
                     </div>
-                    {% if booking.ticket %}
+                    <div class="flex items-center gap-2 flex-wrap">
+                    {% if booking.ticket and booking.status == 'confirmed' %}
                     <a href="{{ url_for('view_ticket', ticket_id=booking.ticket.id) }}"
                        id="view-ticket-{{ booking.id }}"
                        class="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-md hover:brightness-110"
                        style="background: linear-gradient(135deg,#0a1628,#1a3a6b);">
                         🎫 View Boarding Pass
                     </a>
+                    {% elif booking.status == 'pending' %}
+                    <span class="text-xs text-amber-600 font-semibold italic">⏳ Awaiting payment confirmation</span>
                     {% else %}
-                    <span class="text-xs text-slate-400 italic">Ticket not yet issued</span>
+                    <span class="text-xs text-slate-400 italic">Ticket not issued</span>
                     {% endif %}
+                    {% if booking.status != 'cancelled' %}
+                    <form method="POST" action="{{ url_for('cancel_booking', booking_id=booking.id) }}"
+                          onsubmit="return confirm('Cancel this booking? Seats will be released.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                            class="inline-flex items-center gap-1 text-red-600 border border-red-200 hover:bg-red-50 text-xs font-bold px-4 py-2.5 rounded-xl transition-all">
+                            ✕ Cancel
+                        </button>
+                    </form>
+                    {% endif %}
+                    </div>
                 </div>
 
             </div>

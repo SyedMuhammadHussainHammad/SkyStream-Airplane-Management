@@ -152,7 +152,11 @@
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div>
-      <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#c9922a;">Booking Confirmed</p>
+      <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#c9922a;">
+        {% if booking.payment_status == 'confirmed' %}Booking Confirmed
+        {% elif booking.payment_status == 'pending' %}Awaiting Payment
+        {% else %}Booking Cancelled{% endif %}
+      </p>
       <h1 class="text-2xl font-black text-white">Your Boarding Pass</h1>
     </div>
     <span class="tier-badge tier-{{ booking.package_tier }}">
@@ -267,6 +271,10 @@
         <div>
           <p class="bp-label">Booking Ref</p>
           <p class="font-mono text-white font-bold text-sm tracking-widest">SS{{ '%06d' % booking.id }}</p>
+          {% if ticket.ticket_number %}
+          <p class="bp-label mt-2">Ticket No.</p>
+          <p class="font-mono text-white/70 text-xs tracking-widest">{{ ticket.ticket_number }}</p>
+          {% endif %}
         </div>
         <div class="barcode" aria-hidden="true">
           {% for w in [4,2,5,1,3,2,4,1,5,2,3,1,4,2,5,1,3,4,2,5,1,3,2,4] %}

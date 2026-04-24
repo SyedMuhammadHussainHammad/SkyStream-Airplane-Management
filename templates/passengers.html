@@ -397,9 +397,55 @@
         tags.innerHTML = filled.map(s => `<span class="font-mono text-xs font-bold bg-navy text-white px-3 py-1 rounded-full">${s}</span>`).join('');
     }
 
-    document.getElementById('passengerForm').addEventListener('submit', e => {
+    const FLIGHT_ID = {{ flight.id }};
+    const LOCK_MINUTES = {{ lock_minutes }};
+
+    document.getElementById('passengerForm').addEventListener('submit', async function(e) {
         if (PACKAGE !== 'Basic' && selectedSeats.slice(0, passengerCount).some(s => !s)) {
-            e.preventDefault(); toast('Please select a seat for every passenger before continuing.');
+            e.preventDefault();
+            toast('Please select a seat for every passenger before continuing.');
+            return;
+        }
+        // Lock seats before submitting
+        if (PACKAGE !== 'Basic') {
+            e.preventDefault();
+            const seats = selectedSeats.slice(0, passengerCount).filter(Boolean);
+            if (seats.length > 0) {
+                try {
+                    const resp = await fetch(`/api/flights/${FLIGHT_ID}/seats/lock`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrf_token]').value},
+                        body: JSON.stringify({seats})
+                    });
+                    const data = await resp.json();
+                    if (!data.ok) {
+                        toast('⚠️ ' + (data.error || 'Seat conflict — please choose different seats.'));
+                        // Deselect conflicting seats
+                        if (data.conflicts) {
+                            data.conflicts.forEach(sn => {
+                                const btn = document.querySelector(`[data-seat="${sn}"]`);
+                                if (btn) {
+                                    btn.classList.remove('seat-sel');
+                                    btn.classList.add('seat-taken');
+                                    btn.disabled = true;
+                                    btn.textContent = sn;
+                                }
+                                const idx = selectedSeats.indexOf(sn);
+                                if (idx !== -1) selectedSeats[idx] = null;
+                            });
+                            sync();
+                        }
+                        return;
+                    }
+                    toast(`✅ Seats locked for ${LOCK_MINUTES} minutes. Proceeding to checkout…`);
+                    setTimeout(() => document.getElementById('passengerForm').submit(), 800);
+                } catch (err) {
+                    // Network error — proceed anyway, server will validate
+                    document.getElementById('passengerForm').submit();
+                }
+            } else {
+                document.getElementById('passengerForm').submit();
+            }
         }
     });
 
