@@ -205,6 +205,28 @@ def db_status():
     except Exception as e:
         return jsonify({"status": "error", "detail": str(e)}), 500
 
+@app.route('/airplane-3d')
+def airplane_3d():
+    """3D Airplane Experience Page"""
+    return render_template('airplane_3d_integrated.html')
+
+@app.route('/airplane-3d/<int:flight_id>')
+def airplane_3d_flight(flight_id):
+    """3D Airplane Experience for specific flight"""
+    flight = Flight.query.get_or_404(flight_id)
+    
+    # Get seat availability for this flight
+    seats = Seat.query.filter_by(flight_id=flight_id).all()
+    seat_data = []
+    for seat in seats:
+        seat_data.append({
+            'seat_number': seat.seat_number,
+            'class_type': seat.class_type,
+            'is_available': seat.is_available
+        })
+    
+    return render_template('airplane_3d_integrated.html', flight=flight, seats=seat_data)
+
 # ── FLIGHTS ──
 @app.route('/flights/search', methods=['GET', 'POST'])
 def search_flights():
