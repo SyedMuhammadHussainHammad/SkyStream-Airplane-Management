@@ -21,5 +21,6 @@
   ],
   "env": {
     "PYTHONUNBUFFERED": "1"
-  }
+  },
+  "framework": null
 }
