@@ -33,6 +33,7 @@
         position: relative;
         /* reserve space at top for badge so all cards start at same baseline */
         padding-top: 24px;
+        text-decoration: none;
     }
 
     /* ── Inner card ── */
@@ -61,39 +62,6 @@
             0 0 0 1px rgba(255, 255, 255, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.15);
         border-color: rgba(255,255,255,.25);
-    }
-
-    /* ── SELECTED ring with enhanced glow ── */
-    input:checked ~ .pkg-inner {
-        border-color: #0ea5e9;
-        box-shadow: 
-            0 0 0 4px rgba(14,165,233,.25), 
-            0 24px 56px rgba(0,0,0,.4),
-            0 0 40px rgba(14,165,233,.2);
-        transform: scale(1.03) translateY(-6px);
-    }
-    .pkg-premium input:checked ~ .pkg-inner {
-        border-color: #f59e0b;
-        box-shadow: 
-            0 0 0 4px rgba(245,158,11,.3), 
-            0 24px 56px rgba(0,0,0,.4),
-            0 0 40px rgba(245,158,11,.25);
-        animation: premium-glow 2s ease-in-out infinite alternate;
-    }
-
-    @keyframes premium-glow {
-        from { 
-            box-shadow: 
-                0 0 0 4px rgba(245,158,11,.3), 
-                0 24px 56px rgba(0,0,0,.4),
-                0 0 40px rgba(245,158,11,.25);
-        }
-        to { 
-            box-shadow: 
-                0 0 0 6px rgba(245,158,11,.4), 
-                0 28px 64px rgba(0,0,0,.5),
-                0 0 50px rgba(245,158,11,.35);
-        }
     }
 
     /* ── Header gradients with enhanced depth ── */
@@ -343,15 +311,10 @@
     </div>
 </div>
 
-<form method="POST" action="{{ url_for('select_package', flight_id=flight.id) }}">
-    {{ form.hidden_tag() }}
-
-    <div class="pkg-grid mb-10">
+<div class="pkg-grid mb-10">
 
         <!-- ═══ BASIC ═══ -->
-        <label class="pkg-wrapper" for="pkg-basic">
-            <input type="radio" id="pkg-basic" name="{{ form.package_tier.name }}" value="Basic"
-                   class="peer sr-only" {% if form.package_tier.data == 'Basic' %}checked{% endif %}>
+        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Basic') }}" class="pkg-wrapper">
             <div class="pkg-inner">
                 <div class="tier-basic px-7 py-10 text-center">
                     <div class="relative z-10">
@@ -376,13 +339,11 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
 
         <!-- ═══ ECONOMY ═══ -->
-        <label class="pkg-wrapper" for="pkg-economy">
+        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Economy') }}" class="pkg-wrapper">
             <span class="pkg-badge">⭐ Most Popular</span>
-            <input type="radio" id="pkg-economy" name="{{ form.package_tier.name }}" value="Economy"
-                   class="peer sr-only" {% if form.package_tier.data == 'Economy' %}checked{% endif %}>
             <div class="pkg-inner">
                 <div class="tier-economy px-7 py-10 text-center">
                     <div class="relative z-10">
@@ -407,12 +368,10 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
 
         <!-- ═══ PREMIUM ═══ -->
-        <label class="pkg-wrapper pkg-premium" for="pkg-premium">
-            <input type="radio" id="pkg-premium" name="{{ form.package_tier.name }}" value="Premium"
-                   class="peer sr-only" {% if form.package_tier.data == 'Premium' %}checked{% endif %}>
+        <a href="{{ url_for('select_package', flight_id=flight.id, tier='Premium') }}" class="pkg-wrapper pkg-premium">
             <div class="pkg-inner">
                 <div class="tier-premium px-7 py-10 text-center">
                     <div class="relative z-10">
@@ -437,15 +396,8 @@
                     </div>
                 </div>
             </div>
-        </label>
+        </a>
     </div>
-
-    {% if form.package_tier.errors %}
-    <div class="glass-enhanced border-red-500/30 px-6 py-4 text-base text-red-300 mb-8 flex items-center gap-3 rounded-2xl">
-        <span class="text-red-400 text-xl">⚠️</span>
-        <span>Please select a package to continue.</span>
-    </div>
-    {% endif %}
 
     <!-- Nav buttons -->
     <div class="flex flex-col sm:flex-row gap-4 border-t border-white/08 pt-8">
@@ -456,7 +408,5 @@
             </svg>
             Back to Search
         </a>
-        {{ form.submit(class="flex-1 sm:flex-none sm:min-w-[240px] btn-primary py-4 px-10 rounded-2xl text-base font-bold relative overflow-hidden group", id="pkg-submit-btn") }}
     </div>
-</form>
 {% endblock %}

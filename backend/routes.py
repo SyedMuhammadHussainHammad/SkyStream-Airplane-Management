@@ -796,6 +796,14 @@ def select_package(flight_id):
         flash('Sorry, this flight is fully booked.', 'danger')
         return redirect(url_for('search_flights'))
 
+    # Handle direct package selection via query parameter (from button clicks)
+    tier = request.args.get('tier')
+    if tier and tier in ['Basic', 'Economy', 'Premium']:
+        # Store tier in session and redirect directly to passenger details (seat selection)
+        from flask import session
+        session['booking_tier'] = tier
+        return redirect(url_for('passenger_details', flight_id=flight_id, tier=tier))
+
     form = PackageSelectionForm()
     if form.validate_on_submit():
         return redirect(url_for('passenger_details', flight_id=flight_id, tier=form.package_tier.data))
