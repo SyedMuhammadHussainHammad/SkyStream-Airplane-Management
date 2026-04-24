@@ -6,7 +6,7 @@ _backend_dir = os.path.abspath(os.path.dirname(__file__))
 if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
-# ── Load .env only in local development (Vercel uses dashboard env vars) ──
+# ── Load .env for local development ──
 try:
     from dotenv import load_dotenv
     from pathlib import Path
@@ -46,9 +46,8 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-m
 
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
-    # Use a default SQLite database for development/testing
+    # Use SQLite database for local development
     database_url = "sqlite:///skystream.db"
-    print("Warning: DATABASE_URL not set, using SQLite fallback")
 
 # Fix legacy 'postgres://' scheme (Heroku/older services)
 if database_url.startswith("postgres://"):
@@ -61,7 +60,7 @@ database_url = re.sub(r'[&?]channel_binding=[^&]*', '', database_url)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Simplified database configuration for better compatibility
+# Database configuration
 if "sqlite" not in database_url:
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_pre_ping": True,
@@ -94,14 +93,11 @@ with app.app_context():
     import models   # noqa
     import routes   # noqa
     
-    # Simple database initialization
+    # Database initialization
     try:
         db.create_all()
-    except Exception:
-        pass  # non-fatal — app still starts
-
-# ── WSGI entry point ──
-application = app
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
