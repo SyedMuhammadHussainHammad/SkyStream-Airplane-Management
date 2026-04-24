@@ -116,10 +116,20 @@
     {{ form.hidden_tag() }}
     <input type="hidden" id="passengers_count" name="passengers_count" value="1">
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-7">
+    <div class="grid grid-cols-1 {% if trip_type == 'return' and return_flight %}xl:grid-cols-2{% endif %} gap-7">
 
-        <!-- ══ SEAT MAP ══ -->
+        <!-- ══ OUTBOUND SEAT MAP ══ -->
         <div>
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="text-sky-600">✈️</span> 
+                {% if trip_type == 'return' %}Outbound Flight{% else %}Select Your Seat{% endif %}
+            </h3>
+            {% if trip_type == 'return' %}
+            <p class="text-sm text-slate-600 mb-4">
+                {{ flight.origin.split('(')[0].strip() }} → {{ flight.destination.split('(')[0].strip() }}
+            </p>
+            {% endif %}
+            
             {% if package_tier == 'Basic' %}
             <div class="card p-6 text-center">
                 <p class="text-3xl mb-3">🎲</p>
@@ -130,7 +140,7 @@
             <div class="card overflow-hidden">
                 <!-- Map header -->
                 <div class="bg-navy px-6 py-5 text-center" class="pax-card-header">
-                    <p class="font-bold text-white text-base tracking-wide">Cabin map</p>
+                    <p class="font-bold text-white text-base tracking-wide">Outbound Cabin Map</p>
                     <p class="text-slate-400 text-xs mt-1">Flight #{{ flight.id }} · {{ flight.plane.plane_id if
                         flight.plane else 'TBA' }}</p>
                 </div>
@@ -195,7 +205,7 @@
                             class="seat {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
                             data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
                             {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
-                            onclick="selectSeat(this,event)">
+                            onclick="selectSeat(this,event,'outbound')">
                             {{ s.number if (not s.is_available or no_select) else s.col }}
                         </button>
                         {% endfor %}
@@ -210,7 +220,7 @@
                             class="seat {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
                             data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
                             {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
-                            onclick="selectSeat(this,event)">
+                            onclick="selectSeat(this,event,'outbound')">
                             {{ s.number if (not s.is_available or no_select) else s.col }}
                         </button>
                         {% endfor %}
@@ -226,6 +236,124 @@
             </div>
             {% endif %}
         </div>
+
+        <!-- ══ RETURN SEAT MAP (if return trip) ══ -->
+        {% if trip_type == 'return' and return_flight %}
+        <div>
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="text-amber-600">↩️</span> Return Flight
+            </h3>
+            <p class="text-sm text-slate-600 mb-4">
+                {{ return_flight.origin.split('(')[0].strip() }} → {{ return_flight.destination.split('(')[0].strip() }}
+            </p>
+            
+            {% if package_tier == 'Basic' %}
+            <div class="card p-6 text-center">
+                <p class="text-3xl mb-3">🎲</p>
+                <p class="font-bold text-white text-sm mb-1">Seat Auto-Assigned</p>
+                <p class="text-slate-400 text-xs">Basic tier does not include seat selection. Your seat will be randomly assigned at check-in.</p>
+            </div>
+            {% else %}
+            <div class="card overflow-hidden">
+                <!-- Map header -->
+                <div class="px-6 py-5 text-center" style="background: linear-gradient(135deg, #92400e, #d97706);">
+                    <p class="font-bold text-white text-base tracking-wide">Return Cabin Map</p>
+                    <p class="text-amber-100 text-xs mt-1">Flight #{{ return_flight.id }} · {{ return_flight.plane.plane_id if
+                        return_flight.plane else 'TBA' }}</p>
+                </div>
+
+                <!-- Legend -->
+                <div
+                    class="flex items-center justify-center gap-5 py-3 px-4 bg-slate-50 border-b border-slate-100 text-xs text-slate-500">
+                    <span class="flex items-center gap-1.5"><span
+                            class="w-3.5 h-3.5 rounded bg-emerald-100 border-2 border-emerald-300 inline-block"></span>Available</span>
+                    <span class="flex items-center gap-1.5"><span
+                            class="w-3.5 h-3.5 rounded bg-slate-100 border-2 border-slate-200 inline-block"></span>Taken</span>
+                    <span class="flex items-center gap-1.5"><span
+                            class="w-3.5 h-3.5 rounded bg-amber-900 border-2 border-amber-500 inline-block"></span>Selected</span>
+                    <span class="flex items-center gap-1.5"><span
+                            class="w-3.5 h-3.5 rounded bg-yellow-100 border-2 border-yellow-300 inline-block"></span>Business</span>
+                </div>
+
+                <!-- Column labels -->
+                <div
+                    class="flex items-center justify-center gap-1 py-2 px-5 text-[10px] font-bold text-slate-400 bg-slate-50">
+                    <div style="width:28px"></div>
+                    {% for col in ['A','B','C'] %}
+                    <div class="w-8 text-center">{{ col }}</div>
+                    {% endfor %}
+                    <div class="aisle"></div>
+                    {% for col in ['D','E','F'] %}
+                    <div class="w-8 text-center">{{ col }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Seat rows -->
+                <div id="return-seat-map-scroll" class="px-4 pb-4 space-y-1 mt-1">
+                    {% for row_num, seats in return_seat_rows %}
+                    {% set is_biz = seats[0].class_type == 'Business' %}
+
+                    {% if is_biz and row_num == 1 %}
+                    <div class="flex items-center gap-2 mt-2 mb-1">
+                        <div class="flex-1 h-px bg-amber-200"></div>
+                        <span class="text-[10px] text-amber-600 font-bold px-2 uppercase tracking-wider">Business</span>
+                        <div class="flex-1 h-px bg-amber-200"></div>
+                    </div>
+                    {% elif not is_biz and row_num == 6 %}
+                    <div class="flex items-center gap-2 mt-2 mb-1">
+                        <div class="flex-1 h-px bg-slate-200"></div>
+                        <span class="text-[10px] text-slate-400 font-bold px-2 uppercase tracking-wider">Economy</span>
+                        <div class="flex-1 h-px bg-slate-200"></div>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex items-center gap-1">
+                        <div class="text-[10px] text-slate-300 font-mono w-7 text-right pr-1 flex-shrink-0">{{ row_num
+                            }}</div>
+
+                        {% set left = seats[:3] %}
+                        {% set right = seats[3:] %}
+
+                        {% for s in left %}
+                        {% set locked = is_biz and package_tier != 'Premium' %}
+                        {% set no_select = package_tier == 'Basic' %}
+                        {% set disabled = not s.is_available or locked or no_select %}
+                        <button type="button"
+                            class="seat seat-return {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
+                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
+                            {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
+                            onclick="selectSeat(this,event,'return')">
+                            {{ s.number if (not s.is_available or no_select) else s.col }}
+                        </button>
+                        {% endfor %}
+
+                        <div class="aisle flex items-center justify-center text-slate-200 text-xs">|</div>
+
+                        {% for s in right %}
+                        {% set locked = is_biz and package_tier != 'Premium' %}
+                        {% set no_select = package_tier == 'Basic' %}
+                        {% set disabled = not s.is_available or locked or no_select %}
+                        <button type="button"
+                            class="seat seat-return {% if not s.is_available %}seat-taken{% elif no_select %}seat-taken{% elif is_biz %}seat-biz{% else %}seat-avail{% endif %}"
+                            data-seat="{{ s.number }}" data-class="{{ s.class_type }}"
+                            {% if disabled %}disabled data-locked="{{ 'basic' if no_select else ('business' if locked else 'booked') }}"{% endif %}
+                            onclick="selectSeat(this,event,'return')">
+                            {{ s.number if (not s.is_available or no_select) else s.col }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Return selected summary -->
+            <div id="return-selected-summary" class="hidden mt-4 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3">
+                <p class="text-xs text-amber-700 font-semibold uppercase tracking-wider mb-2">Selected return seats</p>
+                <div id="return-selected-tags" class="flex flex-wrap gap-2"></div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- ══ PASSENGER FORMS ══ -->
         <div>
@@ -281,19 +409,33 @@
                     required placeholder="Khan">
             </div>
             <input type="hidden" name="seat_number_INDEX" class="seat-input" required>
+            {% if trip_type == 'return' %}
+            <input type="hidden" name="return_seat_number_INDEX" class="return-seat-input" required>
+            {% endif %}
             <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Meal preference</label>
-                {% if package_tier == 'Premium' %}
+                {% if package_tier in ['Economy', 'Premium'] %}
                 <select name="meal_preference_INDEX"
                     class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white transition-all" style="color:#111827;">
                     <option value="None">No special meal</option>
                     <option value="Vegetarian">Vegetarian</option>
                     <option value="Non-Vegetarian">Non-Vegetarian (Halal)</option>
                 </select>
+                {% if trip_type == 'return' %}
+                <select name="return_meal_preference_INDEX"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white transition-all mt-2" style="color:#111827;">
+                    <option value="None">No special meal (Return)</option>
+                    <option value="Vegetarian">Vegetarian (Return)</option>
+                    <option value="Non-Vegetarian">Non-Vegetarian (Return)</option>
+                </select>
+                {% endif %}
                 {% else %}
                 <input type="hidden" name="meal_preference_INDEX" value="None">
+                {% if trip_type == 'return' %}
+                <input type="hidden" name="return_meal_preference_INDEX" value="None">
+                {% endif %}
                 <div class="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-400">
-                    Meal selection available for <span class="font-semibold" style="color:#c9922a;">Premium</span> tier only.
+                    Meal selection available for <span class="font-semibold" style="color:#0ea5e9;">Economy</span> and <span class="font-semibold" style="color:#c9922a;">Premium</span> tiers.
                 </div>
                 {% endif %}
             </div>
@@ -304,36 +446,58 @@
 {% block scripts %}
 <script>
     const PACKAGE = '{{ package_tier }}';
+    const TRIP_TYPE = '{{ trip_type }}';
     const MAX_PASS = 9;
     let passengerCount = 1;
-    let selectedSeats = [null];
+    let selectedSeats = [null];  // Outbound seats
+    let returnSelectedSeats = [null];  // Return seats
 
-    function selectSeat(btn, event) {
+    function selectSeat(btn, event, flightType) {
         event.preventDefault();
         if (btn.dataset.locked === 'basic') { toast('Seat selection is not available for Basic tier. A seat will be assigned automatically.'); return; }
         if (btn.dataset.locked === 'business') { toast('Business seats are reserved for Premium passengers.'); return; }
         if (btn.disabled) return;
 
         const seat = btn.dataset.seat;
+        const isReturn = flightType === 'return';
+        const seats = isReturn ? returnSelectedSeats : selectedSeats;
         const isSel = btn.classList.contains('seat-sel');
 
         if (isSel) {
-            const idx = selectedSeats.indexOf(seat);
-            if (idx !== -1) selectedSeats[idx] = null;
+            const idx = seats.indexOf(seat);
+            if (idx !== -1) seats[idx] = null;
             btn.classList.remove('seat-sel');
             btn.classList.add(btn.dataset.class === 'Business' ? 'seat-biz' : 'seat-avail');
             btn.textContent = seat.replace(/\d+/, '');
-            sync(); return;
+            if (isReturn) {
+                returnSelectedSeats = seats;
+                updateReturnSummary();
+            } else {
+                selectedSeats = seats;
+                sync();
+            }
+            return;
         }
-        if (selectedSeats.filter(Boolean).length >= passengerCount) { toast(`You have ${passengerCount} passenger(s). Deselect a seat first.`); return; }
-        if (selectedSeats.includes(seat)) { toast('That seat is already selected.'); return; }
+        
+        if (seats.filter(Boolean).length >= passengerCount) { 
+            toast(`You have ${passengerCount} passenger(s). Deselect a seat first.`); 
+            return; 
+        }
+        if (seats.includes(seat)) { toast('That seat is already selected.'); return; }
 
-        const empty = selectedSeats.indexOf(null);
-        selectedSeats[empty] = seat;
+        const empty = seats.indexOf(null);
+        seats[empty] = seat;
         btn.classList.remove('seat-avail', 'seat-biz', 'seat-taken');
         btn.classList.add('seat-sel');
         btn.textContent = seat;
-        sync();
+        
+        if (isReturn) {
+            returnSelectedSeats = seats;
+            updateReturnSummary();
+        } else {
+            selectedSeats = seats;
+            sync();
+        }
     }
 
     function toast(msg) {
@@ -352,18 +516,37 @@
         const n = Math.max(1, Math.min(MAX_PASS, passengerCount + d));
         if (n === passengerCount) return;
         if (n < passengerCount) {
+            // Remove excess outbound seats
             for (let i = n; i < passengerCount; i++) {
                 if (selectedSeats[i]) {
-                    const b = document.querySelector(`[data-seat="${selectedSeats[i]}"]`);
+                    const b = document.querySelector(`[data-seat="${selectedSeats[i]}"]:not(.seat-return)`);
                     if (b) { b.classList.remove('seat-sel'); b.classList.add(b.dataset.class === 'Business' ? 'seat-biz' : 'seat-avail'); b.textContent = selectedSeats[i].replace(/\d+/, ''); }
                 }
             }
             selectedSeats = selectedSeats.slice(0, n);
-        } else { for (let i = passengerCount; i < n; i++) selectedSeats.push(null); }
+            
+            // Remove excess return seats if return trip
+            if (TRIP_TYPE === 'return') {
+                for (let i = n; i < passengerCount; i++) {
+                    if (returnSelectedSeats[i]) {
+                        const b = document.querySelector(`.seat-return[data-seat="${returnSelectedSeats[i]}"]`);
+                        if (b) { b.classList.remove('seat-sel'); b.classList.add(b.dataset.class === 'Business' ? 'seat-biz' : 'seat-avail'); b.textContent = returnSelectedSeats[i].replace(/\d+/, ''); }
+                    }
+                }
+                returnSelectedSeats = returnSelectedSeats.slice(0, n);
+            }
+        } else { 
+            for (let i = passengerCount; i < n; i++) {
+                selectedSeats.push(null);
+                if (TRIP_TYPE === 'return') returnSelectedSeats.push(null);
+            }
+        }
         passengerCount = n;
         document.getElementById('passengers_count').value = n;
         document.getElementById('count-display').textContent = n;
-        render(); updateSummary();
+        render(); 
+        updateSummary();
+        if (TRIP_TYPE === 'return') updateReturnSummary();
     }
 
     function render() {
@@ -381,9 +564,22 @@
         document.querySelectorAll('.passenger-card').forEach((card, i) => {
             const seat = selectedSeats[i] || null;
             const inp = card.querySelector('.seat-input');
+            const returnInp = card.querySelector('.return-seat-input');
             const lbl = card.querySelector('.seat-label');
+            
             if (inp) inp.value = seat || '';
-            if (lbl) { lbl.textContent = seat ? `Seat ${seat}` : 'No seat selected'; lbl.style.color = seat ? '#c9922a' : '#94a3b8'; }
+            if (returnInp && TRIP_TYPE === 'return') {
+                returnInp.value = returnSelectedSeats[i] || '';
+            }
+            if (lbl) { 
+                let labelText = seat ? `Outbound: ${seat}` : 'No outbound seat';
+                if (TRIP_TYPE === 'return') {
+                    const returnSeat = returnSelectedSeats[i];
+                    labelText += returnSeat ? ` | Return: ${returnSeat}` : ' | No return seat';
+                }
+                lbl.textContent = labelText;
+                lbl.style.color = seat ? '#c9922a' : '#94a3b8'; 
+            }
         });
         updateSummary();
     }
@@ -397,9 +593,31 @@
         tags.innerHTML = filled.map(s => `<span class="font-mono text-xs font-bold bg-navy text-white px-3 py-1 rounded-full">${s}</span>`).join('');
     }
 
+    function updateReturnSummary() {
+        const sum = document.getElementById('return-selected-summary');
+        const tags = document.getElementById('return-selected-tags');
+        if (!sum || !tags) return;
+        
+        const filled = returnSelectedSeats.filter(Boolean);
+        if (!filled.length) { sum.classList.add('hidden'); return; }
+        sum.classList.remove('hidden');
+        tags.innerHTML = filled.map(s => `<span class="font-mono text-xs font-bold bg-amber-900 text-white px-3 py-1 rounded-full">${s}</span>`).join('');
+    }
+
     document.getElementById('passengerForm').addEventListener('submit', e => {
-        if (PACKAGE !== 'Basic' && selectedSeats.slice(0, passengerCount).some(s => !s)) {
-            e.preventDefault(); toast('Please select a seat for every passenger before continuing.');
+        if (PACKAGE !== 'Basic') {
+            // Check outbound seats
+            if (selectedSeats.slice(0, passengerCount).some(s => !s)) {
+                e.preventDefault(); 
+                toast('Please select an outbound seat for every passenger before continuing.');
+                return;
+            }
+            // Check return seats if return trip
+            if (TRIP_TYPE === 'return' && returnSelectedSeats.slice(0, passengerCount).some(s => !s)) {
+                e.preventDefault(); 
+                toast('Please select a return seat for every passenger before continuing.');
+                return;
+            }
         }
     });
 
@@ -410,6 +628,23 @@
     document.addEventListener('blur', e => {
         if (e.target.matches('input,select')) { e.target.style.borderColor = ''; e.target.style.boxShadow = ''; }
     }, true);
+
+    // Add special styling for return seat selection
+    const style = document.createElement('style');
+    style.textContent = `
+        .seat-return.seat-sel {
+            background: #92400e !important;
+            color: #fff !important;
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, .35) !important;
+        }
+        #return-seat-map-scroll {
+            overflow-y: auto;
+            max-height: 430px;
+            scrollbar-width: thin;
+        }
+    `;
+    document.head.appendChild(style);
 
     render();
 </script>

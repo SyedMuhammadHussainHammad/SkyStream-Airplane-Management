@@ -569,14 +569,26 @@ def select_package(flight_id):
 @app.route('/flights/<int:flight_id>/passengers', methods=['GET', 'POST'])
 @login_required
 def passenger_details(flight_id):
+    from flask import session
     flight = Flight.query.get_or_404(flight_id)
     tier = request.args.get('tier', 'Economy')
     form = PassengerDetailsForm()
+    
+    # Get trip type and return flight from session
+    trip_type = session.get('trip_type', 'one_way')
+    return_flight_id = session.get('return_flight_id')
+    return_flight = None
+    return_seat_rows = []
+    
+    if trip_type == 'return' and return_flight_id:
+        return_flight = Flight.query.get(return_flight_id)
 
     if request.method == 'POST':
         # validate CSRF token
         form.validate()  # runs CSRF check; ignore other field errors
         passengers_count = int(request.form.get('passengers_count', 1))
+        
+        # Outbound passengers
         passengers = []
         for i in range(passengers_count):
             passengers.append({
@@ -585,13 +597,25 @@ def passenger_details(flight_id):
                 'seat_number':     request.form.get(f'seat_number_{i}', ''),
                 'meal_preference': request.form.get(f'meal_preference_{i}', 'None'),
             })
-        # Store in session so checkout can read it
-        from flask import session
+        
+        # Return passengers (if return trip)
+        return_passengers = []
+        if trip_type == 'return' and return_flight_id:
+            for i in range(passengers_count):
+                return_passengers.append({
+                    'first_name':      request.form.get(f'first_name_{i}', f'Passenger {i+1}'),  # Same names
+                    'last_name':       request.form.get(f'last_name_{i}', ''),
+                    'seat_number':     request.form.get(f'return_seat_number_{i}', ''),  # Different seats
+                    'meal_preference': request.form.get(f'return_meal_preference_{i}', 'None'),
+                })
+        
+        # Store in session
         session['booking_passengers'] = passengers
+        session['return_passengers'] = return_passengers
         session['booking_tier'] = tier
         return redirect(url_for('checkout', flight_id=flight_id, tier=tier))
 
-    # Build seat rows for the cabin map
+    # Build seat rows for OUTBOUND flight
     Seat.generate_for_flight(flight_id)
     seats = Seat.query.filter_by(flight_id=flight_id).order_by(Seat.seat_number).all()
 
@@ -615,13 +639,41 @@ def passenger_details(flight_id):
         rows[row_num].append(s)
 
     seat_rows = sorted(rows.items())
+    
+    # Build seat rows for RETURN flight (if applicable)
+    if trip_type == 'return' and return_flight_id:
+        Seat.generate_for_flight(return_flight_id)
+        return_seats = Seat.query.filter_by(flight_id=return_flight_id).order_by(Seat.seat_number).all()
+        
+        # Mark taken seats for return flight
+        return_taken_seats = set(
+            p.seat_number
+            for b in Booking.query.filter_by(flight_id=return_flight_id).all()
+            for p in b.passengers
+            if p.seat_number
+        )
+        for s in return_seats:
+            if s.seat_number in return_taken_seats:
+                s.is_available = False
+        
+        return_rows = defaultdict(list)
+        for s in return_seats:
+            row_num = int(''.join(filter(str.isdigit, s.seat_number)))
+            s.col = ''.join(filter(str.isalpha, s.seat_number))
+            s.number = s.seat_number
+            return_rows[row_num].append(s)
+        
+        return_seat_rows = sorted(return_rows.items())
 
     return render_template(
         'passengers.html',
         flight=flight,
+        return_flight=return_flight,
         form=form,
         package_tier=tier,
         seat_rows=seat_rows,
+        return_seat_rows=return_seat_rows,
+        trip_type=trip_type,
     )
 
 
