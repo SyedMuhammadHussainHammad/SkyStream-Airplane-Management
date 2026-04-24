@@ -3,20 +3,11 @@
 
 {% block head %}
 <style>
-/* ── Full-page starfield canvas fixed behind everything ── */
-#star-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  transition: opacity .6s ease;
-}
+/* ── Full-page starfield — handled by base.html #ss-bg-canvas ── */
+#ss-bg-canvas { z-index: 0; } /* ensure it's behind home content */
 
 /* Kill the base.html body::before gradient on this page so canvas shows */
-body::before { display: none !important; }
-html:not(.dark-mode) .home-wrap { color: #0c1a3a; }
+/* body::before already hidden globally in base.html */
 
 /* Light mode text overrides for home page */
 html:not(.dark-mode) .hero-headline { color: #0c1a3a !important; }

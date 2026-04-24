@@ -54,13 +54,8 @@
     html,body{min-height:100%;}
     html{background:#050d1f;}
     body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:transparent;}
-    body::before{
-      content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 10%,rgba(14,165,233,.10) 0%,transparent 60%),
-        radial-gradient(ellipse 50% 40% at 85% 80%,rgba(201,146,42,.06) 0%,transparent 60%),
-        linear-gradient(160deg,#050d1f 0%,#0a1e3d 50%,#050d1f 100%);
-    }
+    /* body::before removed — ss-bg-canvas handles the background on all pages */
+    body::before{ display:none; }
     h1,h2,h3,h4,h5{font-family:'Inter',sans-serif;font-weight:800;}
     ::-webkit-scrollbar{width:4px;height:4px;}
     ::-webkit-scrollbar-thumb{background:linear-gradient(#0ea5e9,#c9922a);border-radius:4px;}
@@ -99,16 +94,9 @@
     .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
 
 
-    /* LIGHT MODE — #162245 */
-    html:not(.dark-mode){background:#162245;}
-    html:not(.dark-mode) body{background:transparent;color:#fff;}
-    html:not(.dark-mode) body::before{
-      background:
-        radial-gradient(ellipse 65% 55% at 8% 4%,  rgba(255,255,255,.13) 0%,transparent 55%),
-        radial-gradient(ellipse 50% 45% at 92% 88%, rgba(99,149,237,.18)  0%,transparent 55%),
-        radial-gradient(ellipse 40% 35% at 50% 50%, rgba(22,34,69,.25)    0%,transparent 60%),
-        linear-gradient(155deg,#1e2e5a 0%,#162245 40%,#0e1830 100%);
-    }
+    /* LIGHT MODE — slightly brighter navy, same starfield */
+    html:not(.dark-mode){background:#0d1f3c;}
+    html:not(.dark-mode) body{background:transparent;color:#e2e8f0;}
     html:not(.dark-mode) #navbar.scrolled{background:rgba(14,24,48,.94);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(255,255,255,.14),0 6px 28px rgba(8,14,32,.35);}
     html:not(.dark-mode) .nav-link{color:rgba(255,255,255,.78);}
     html:not(.dark-mode) .nav-link:hover{color:#fff;background:rgba(255,255,255,.13);}
@@ -158,20 +146,15 @@
     html:not(.dark-mode) input:not([type=radio]):not([type=checkbox]),html:not(.dark-mode) select,html:not(.dark-mode) textarea{background:rgba(255,255,255,.13) !important;border-color:rgba(255,255,255,.22) !important;color:#fff !important;}
     html:not(.dark-mode) input::placeholder,html:not(.dark-mode) textarea::placeholder{color:rgba(255,255,255,.42) !important;}
     html:not(.dark-mode) input:focus,html:not(.dark-mode) select:focus,html:not(.dark-mode) textarea:focus{border-color:rgba(147,197,253,.7) !important;box-shadow:0 0 0 3px rgba(147,197,253,.18) !important;}
-    html:not(.dark-mode) #site-footer{background:linear-gradient(180deg,#0d2270 0%,#091a58 100%) !important;border-top-color:rgba(255,255,255,.14) !important;}
-    html:not(.dark-mode) #mob-menu{background:rgba(13,34,112,.97) !important;border-top-color:rgba(255,255,255,.14) !important;}
+    html:not(.dark-mode) #site-footer{background:linear-gradient(180deg,#0d1f3c 0%,#050d1f 100%) !important;border-top-color:rgba(255,255,255,.10) !important;}
+    html:not(.dark-mode) #mob-menu{background:rgba(13,31,60,.97) !important;border-top-color:rgba(255,255,255,.10) !important;}
     html:not(.dark-mode) #dm-toggle{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.32);color:#fff;}
     html:not(.dark-mode) #dm-toggle:hover{background:rgba(255,255,255,.26);}
-    html:not(.dark-mode) ::-webkit-scrollbar-track{background:#0d2270;}
+    html:not(.dark-mode) ::-webkit-scrollbar-track{background:#0d1f3c;}
 
-    /* DARK MODE — Midnight Blue */
-    .dark-mode body{background:#080e1f;color:#e2e8f0;}
-    .dark-mode body::before{
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 10%,rgba(30,58,138,.18) 0%,transparent 60%),
-        radial-gradient(ellipse 50% 40% at 85% 80%,rgba(201,146,42,.06) 0%,transparent 60%),
-        linear-gradient(160deg,#080e1f 0%,#0d1535 50%,#080e1f 100%);
-    }
+    /* DARK MODE — deep navy */
+    .dark-mode body{background:transparent;color:#e2e8f0;}
+    html.dark-mode{background:#050d1f;}
     .dark-mode .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
     .dark-mode .ss-card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
     .dark-mode .text-slate-900,.dark-mode .text-slate-800{color:#e2e8f0 !important;}
@@ -548,31 +531,30 @@
       ctx.clearRect(0, 0, W, H);
       const light = isLight();
 
-      if (light) {
-        // Daytime sky
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#bae6fd'); sky.addColorStop(.5, '#e0f2fe'); sky.addColorStop(1, '#f0f9ff');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-        // Sun glow
-        const sun = ctx.createRadialGradient(W*.82, H*.1, 0, W*.82, H*.1, W*.3);
-        sun.addColorStop(0, 'rgba(253,224,71,.3)'); sun.addColorStop(.5, 'rgba(251,191,36,.08)'); sun.addColorStop(1, 'rgba(251,191,36,0)');
-        ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
-        // Cloud orbs
-        orbs.forEach(o => { o.tick(); const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r); g.addColorStop(0,`rgba(255,255,255,${o.a*4})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill(); });
-        // Subtle grid
-        ctx.strokeStyle = 'rgba(2,132,199,.035)'; ctx.lineWidth = 1;
-        for (let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-        for (let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      } else {
-        // Night starfield
-        orbs.forEach(o => { o.tick(); o.draw(false); });
-        // Connection lines
-        for (let i=0;i<stars.length;i++) for (let j=i+1;j<stars.length;j++) {
-          const dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y, d=Math.sqrt(dx*dx+dy*dy);
-          if (d<100) { ctx.beginPath(); ctx.strokeStyle=`rgba(14,165,233,${.09*(1-d/100)})`; ctx.lineWidth=.5; ctx.moveTo(stars[i].x,stars[i].y); ctx.lineTo(stars[j].x,stars[j].y); ctx.stroke(); }
-        }
-        stars.forEach(s => { s.tick(); s.draw(); });
+      // Both modes: starfield. Light = brighter navy base + more visible stars.
+      const bgColor = light ? '#0d1f3c' : '#050d1f';
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, W, H);
+
+      // Orbs (ambient glow)
+      orbs.forEach(o => { o.tick(); o.draw(light); });
+
+      // Connection lines
+      const lineAlpha = light ? .14 : .09;
+      for (let i=0;i<stars.length;i++) for (let j=i+1;j<stars.length;j++) {
+        const dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y, d=Math.sqrt(dx*dx+dy*dy);
+        if (d<100) { ctx.beginPath(); ctx.strokeStyle=`rgba(14,165,233,${lineAlpha*(1-d/100)})`; ctx.lineWidth=.5; ctx.moveTo(stars[i].x,stars[i].y); ctx.lineTo(stars[j].x,stars[j].y); ctx.stroke(); }
       }
+
+      // Stars — brighter in light mode
+      stars.forEach(s => {
+        s.tick();
+        const a = s.a * (.7 + .3 * Math.sin(s.pulse)) * (light ? 1.6 : 1);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.gold ? `rgba(232,184,75,${Math.min(a,1)})` : `rgba(14,165,233,${Math.min(a,1)})`;
+        ctx.fill();
+      });
 
       // Planes in both modes
       planeTimer++;
