@@ -17,7 +17,7 @@ from forms import (
     FlightSearchForm
 )
 
-from models import User, Flight, Seat, Plane, Booking, StaffProfile
+from models import User, Flight, Seat, Plane, Booking, Passenger, Ticket, StaffProfile
 
 # ── UTILS ──
 def utc_now():
