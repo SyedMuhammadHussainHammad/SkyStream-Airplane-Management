@@ -231,16 +231,21 @@ def airplane_3d_flight(flight_id):
 @app.route('/flights/search', methods=['GET', 'POST'])
 def search_flights():
     form = FlightSearchForm()
-    flights = []
+    outbound_flights = []
+    return_flights = []
     searched = False
+    trip_type = 'one_way'  # Default
 
     if request.method == 'POST':
         searched = True
-        # Use raw form data as fallback in case WTForms validation is strict
-        origin      = request.form.get('origin', '').strip()
+        # Get form data
+        origin = request.form.get('origin', '').strip()
         destination = request.form.get('destination', '').strip()
-        date_str    = request.form.get('date', '').strip()
+        date_str = request.form.get('date', '').strip()
+        trip_type = request.form.get('trip_type', 'one_way').strip()
+        return_date_str = request.form.get('return_date', '').strip()
 
+        # Search outbound flights
         query = Flight.query
         if origin:
             query = query.filter(Flight.origin.ilike(f"%{origin}%"))
@@ -252,15 +257,33 @@ def search_flights():
                 search_date = date_type.fromisoformat(date_str)
                 query = query.filter(db.func.date(Flight.departure_time) == search_date)
             except ValueError:
-                pass  # ignore invalid date format
-        flights = query.all()
+                pass
+        outbound_flights = query.all()
+
+        # Search return flights if round trip
+        if trip_type == 'return' and return_date_str and origin and destination:
+            return_query = Flight.query
+            # Swap origin and destination for return flights
+            return_query = return_query.filter(Flight.origin.ilike(f"%{destination}%"))
+            return_query = return_query.filter(Flight.destination.ilike(f"%{origin}%"))
+            try:
+                return_search_date = date_type.fromisoformat(return_date_str)
+                return_query = return_query.filter(db.func.date(Flight.departure_time) == return_search_date)
+                return_flights = return_query.all()
+            except ValueError:
+                pass
 
     elif request.method == 'GET':
-        source      = request.args.get('source', '').strip()
+        source = request.args.get('source', '').strip()
         destination = request.args.get('destination', '').strip()
-        date_str    = request.args.get('date', '').strip()
+        date_str = request.args.get('date', '').strip()
+        trip_type = request.args.get('trip_type', 'one_way').strip()
+        return_date_str = request.args.get('return_date', '').strip()
+        
         if source or destination or date_str:
             searched = True
+            
+            # Search outbound flights
             query = Flight.query
             if source:
                 query = query.filter(Flight.origin.ilike(f"%{source}%"))
@@ -273,19 +296,55 @@ def search_flights():
                     query = query.filter(db.func.date(Flight.departure_time) == search_date)
                 except ValueError:
                     pass
-            flights = query.all()
+            outbound_flights = query.all()
 
-    # Attach available seat count to each flight
-    flight_data = []
-    for f in flights:
+            # Search return flights if round trip
+            if trip_type == 'return' and return_date_str and source and destination:
+                return_query = Flight.query
+                return_query = return_query.filter(Flight.origin.ilike(f"%{destination}%"))
+                return_query = return_query.filter(Flight.destination.ilike(f"%{source}%"))
+                try:
+                    return_search_date = date_type.fromisoformat(return_date_str)
+                    return_query = return_query.filter(db.func.date(Flight.departure_time) == return_search_date)
+                    return_flights = return_query.all()
+                except ValueError:
+                    pass
+
+    # Process outbound flights
+    outbound_flight_data = []
+    for f in outbound_flights:
         Seat.generate_for_flight(f.id)
         taken = Seat.query.filter_by(flight_id=f.id, is_available=False).count()
         total = Seat.query.filter_by(flight_id=f.id).count()
         available = total - taken
-        flight_data.append({'flight': f, 'available': available, 'total': total, 'sold_out': available == 0})
+        outbound_flight_data.append({
+            'flight': f, 
+            'available': available, 
+            'total': total, 
+            'sold_out': available == 0
+        })
 
-    return render_template("search.html", flights=flight_data, form=form, searched=searched,
-                           now_date=utc_now().date().isoformat())
+    # Process return flights
+    return_flight_data = []
+    for f in return_flights:
+        Seat.generate_for_flight(f.id)
+        taken = Seat.query.filter_by(flight_id=f.id, is_available=False).count()
+        total = Seat.query.filter_by(flight_id=f.id).count()
+        available = total - taken
+        return_flight_data.append({
+            'flight': f, 
+            'available': available, 
+            'total': total, 
+            'sold_out': available == 0
+        })
+
+    return render_template("search.html", 
+                         outbound_flights=outbound_flight_data,
+                         return_flights=return_flight_data,
+                         form=form, 
+                         searched=searched,
+                         trip_type=trip_type,
+                         now_date=utc_now().date().isoformat())
 
 # ── SEATS API ──
 @app.route('/api/flights/<int:flight_id>/seats')
