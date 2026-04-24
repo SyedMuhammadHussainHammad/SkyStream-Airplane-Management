@@ -44,10 +44,13 @@
             color: #ffffff;
         }
         
-        /* ── Light Mode Body (Same as dark mode) ── */
+        /* ── Light Mode Body (Match Search Page) ── */
         html:not(.dark-mode) body { 
-            background: #162245 !important; 
-            color: #ffffff !important; 
+            background: #ffffff !important; 
+            color: #1e293b !important; 
+        }
+        html:not(.dark-mode) body::before {
+            background: none !important;
         }
 
         h1, h2, h3, h4, h5 { font-family: 'Sora', sans-serif; }
@@ -72,14 +75,15 @@
             box-shadow: 0 20px 40px rgba(0,0,0,.3);
         }
         
-        /* ── Light mode KPI cards (Same as dark mode) ── */
+        /* ── Light mode KPI cards (Match Search Page) ── */
         html:not(.dark-mode) .kpi-card {
-            background: #1f2a3d !important;
-            border: 1px solid #334155 !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06) !important;
+            color: #1e293b !important;
         }
         html:not(.dark-mode) .kpi-card:hover {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06) !important;
             transform: translateY(-2px);
         }
         /* ── Table ── */
@@ -90,11 +94,12 @@
             box-shadow: 0 2px 12px rgba(0,0,0,.2);
         }
         
-        /* ── Light mode cards (Same as dark mode) ── */
+        /* ── Light mode cards (Match Search Page) ── */
         html:not(.dark-mode) .card {
-            background: #1f2a3d !important;
-            border: 1px solid #334155 !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06) !important;
+            color: #1e293b !important;
         }
         
         /* ── Remove alternating variations ── */
@@ -107,53 +112,44 @@
             transform: translateY(-2px);
         }
         html:not(.dark-mode) .fleet-card {
-            background: #1f2a3d !important;
-            border: 1px solid #334155 !important;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.2) !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06) !important;
+            color: #1e293b !important;
         }
         html:not(.dark-mode) .fleet-card:hover {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06) !important;
             transform: translateY(-2px);
-        }
-        
-        /* ── Light mode inner elements ── */
-        html:not(.dark-mode) .fleet-card .bg-slate-50 {
-            background: rgba(248,250,252,0.8) !important;
-            border-color: rgba(0,0,0,0.1) !important;
-        }
-        html:not(.dark-mode) .card .bg-slate-50 {
-            background: rgba(248,250,252,0.8) !important;
-            border-color: rgba(0,0,0,0.1) !important;
         }
         
         /* ── Light mode inner elements ── */
         html:not(.dark-mode) .fleet-card .bg-slate-50,
         html:not(.dark-mode) .card .bg-slate-50 {
-            background: rgba(51, 65, 85, 0.5) !important;
-            border-color: rgba(203, 213, 225, 0.2) !important;
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
         }
         
-        /* ── Keep white text in light mode ── */
+        /* ── Light mode text colors (Match Search Page) ── */
         html:not(.dark-mode) .card,
         html:not(.dark-mode) .fleet-card,
         html:not(.dark-mode) .kpi-card {
-            color: #ffffff !important;
+            color: #1e293b !important;
         }
         html:not(.dark-mode) .card .text-slate-500,
         html:not(.dark-mode) .fleet-card .text-slate-500 {
-            color: #475569 !important;
+            color: #64748b !important;
         }
         html:not(.dark-mode) .card .text-slate-600,
         html:not(.dark-mode) .fleet-card .text-slate-600 {
-            color: #334155 !important;
+            color: #475569 !important;
         }
         html:not(.dark-mode) .card .text-slate-700,
         html:not(.dark-mode) .fleet-card .text-slate-700 {
-            color: #1e293b !important;
+            color: #334155 !important;
         }
         html:not(.dark-mode) .card .text-navy,
         html:not(.dark-mode) .fleet-card .text-navy {
-            color: #0a1628 !important;
+            color: #0f172a !important;
         }
         
         /* ── Light mode status pills ── */
@@ -176,53 +172,29 @@
             color: #0f172a !important;
         }
         
-        /* ── Airport city codes and plane badges ── */
-        html:not(.dark-mode) .card .text-navy {
-            color: #0a1628 !important;
-            font-weight: 700 !important;
-        }
-        html:not(.dark-mode) .bg-navy {
-            background-color: #1e293b !important;
-            color: #ffffff !important;
+        /* ── Light mode brand and user elements ── */
+        html:not(.dark-mode) .text-gold-light { color: #d97706 !important; }
+        html:not(.dark-mode) .text-gold { color: #c9922a !important; }
+        html:not(.dark-mode) .bg-navy { 
+            background-color: #1e293b !important; 
+            color: #ffffff !important; 
         }
         
-        /* ── General text improvements for light mode ── */
-        html:not(.dark-mode) .card p,
-        html:not(.dark-mode) .fleet-card p,
-        html:not(.dark-mode) .card span,
-        html:not(.dark-mode) .fleet-card span {
-            color: inherit;
-        }
-        
-        /* ── Ensure all text in cards is visible ── */
-        html:not(.dark-mode) .card,
-        html:not(.dark-mode) .fleet-card {
-            color: #1e293b !important;
-        }
-        
-        /* ── Override any inherited light colors ── */
-        html:not(.dark-mode) .card *,
-        html:not(.dark-mode) .fleet-card *,
-        html:not(.dark-mode) .kpi-card * {
-            color: inherit !important;
-        }
-        
-        /* ── Specific overrides for very light text ── */
-        html:not(.dark-mode) .text-white {
-            color: #1e293b !important;
-        }
+        /* ── Ensure proper text visibility in light mode ── */
         html:not(.dark-mode) .card .text-white,
         html:not(.dark-mode) .fleet-card .text-white {
             color: #1e293b !important;
         }
-        
-        /* ── Make sure badges and pills are visible ── */
-        html:not(.dark-mode) .bg-slate-100 {
-            background-color: #f1f5f9 !important;
-            color: #334155 !important;
+        html:not(.dark-mode) .card .font-mono,
+        html:not(.dark-mode) .fleet-card .font-mono {
+            color: #1e293b !important;
+            font-weight: 700 !important;
         }
-        html:not(.dark-mode) .text-slate-600 {
-            color: #334155 !important;
+        html:not(.dark-mode) .card .font-bold,
+        html:not(.dark-mode) .fleet-card .font-bold,
+        html:not(.dark-mode) .card .font-extrabold,
+        html:not(.dark-mode) .fleet-card .font-extrabold {
+            color: #0f172a !important;
         }
 
         .hidden-row {
@@ -373,12 +345,28 @@
             background: #0a1628 !important;
         }
         
-        /* ── Light Mode Sidebar (Same as dark mode) ── */
+        /* ── Light Mode Sidebar (Match Search Page) ── */
         html:not(.dark-mode) #sidebar {
-            background: #0a1628 !important;
+            background: #ffffff !important;
+            border-right: 1px solid #e2e8f0 !important;
         }
         html:not(.dark-mode) #topnav {
-            background: #0a1628 !important;
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06) !important;
+        }
+        html:not(.dark-mode) .nav-item {
+            color: #64748b !important;
+        }
+        html:not(.dark-mode) .nav-item:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+        html:not(.dark-mode) .nav-item:hover .nav-icon {
+            color: #c9922a !important;
+        }
+        html:not(.dark-mode) .nav-icon {
+            color: #94a3b8 !important;
         }
         .dark-mode .bg-slate-50 { background: #263348 !important; }
         .dark-mode .bg-slate-100 { background: #263348 !important; }
@@ -397,57 +385,51 @@
             border-color: #334155 !important;
             color: #e2e8f0 !important;
         }
-        .dark-mode .tbl-head { background: linear-gradient(135deg,#060e1c,#0a1628); }
+        /* ── Light mode table headers ── */
+        html:not(.dark-mode) .tbl-head { 
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important; 
+            color: #374151 !important;
+        }
 
-        /* ── Light Mode overrides for admin dashboard ── */
-        html:not(.dark-mode) .text-navy    { color: #ffffff !important; }
+        /* ── Light Mode overrides for admin dashboard (Match Search Page) ── */
+        html:not(.dark-mode) .text-navy    { color: #0f172a !important; }
         html:not(.dark-mode) .text-slate-800,
-        html:not(.dark-mode) .text-slate-900 { color: #ffffff !important; }
+        html:not(.dark-mode) .text-slate-900 { color: #0f172a !important; }
         html:not(.dark-mode) .text-slate-700,
-        html:not(.dark-mode) .text-slate-600 { color: rgba(255,255,255,.82) !important; }
-        html:not(.dark-mode) .text-slate-500 { color: rgba(255,255,255,.65) !important; }
-        html:not(.dark-mode) .text-slate-400 { color: rgba(255,255,255,.54) !important; }
+        html:not(.dark-mode) .text-slate-600 { color: #334155 !important; }
+        html:not(.dark-mode) .text-slate-500 { color: #64748b !important; }
+        html:not(.dark-mode) .text-slate-400 { color: #94a3b8 !important; }
+        html:not(.dark-mode) .text-white { color: #0f172a !important; }
         
-        /* ── KPI cards need dark text on light backgrounds ── */
+        /* ── KPI cards need proper contrast in light mode ── */
         html:not(.dark-mode) .kpi-card .text-slate-400 { 
             color: #64748b !important; 
         }
-        html:not(.dark-mode) .kpi-card [style*="color:#1d4ed8"],
-        html:not(.dark-mode) .kpi-card [style*="color:#4338ca"],
-        html:not(.dark-mode) .kpi-card [style*="color:#16a34a"],
-        html:not(.dark-mode) .kpi-card [style*="color:#ea580c"],
-        html:not(.dark-mode) .kpi-card [style*="color:#7c3aed"],
-        html:not(.dark-mode) .kpi-card [style*="color:#d97706"],
-        html:not(.dark-mode) .kpi-card [style*="color:#0f766e"] {
-            /* Keep the inline colors as-is for KPI cards but make them darker */
-            filter: brightness(0.8) !important;
-        }
-        
-        /* ── KPI card numbers and text ── */
         html:not(.dark-mode) .kpi-card .font-extrabold {
             color: inherit !important;
             text-shadow: none !important;
         }
         html:not(.dark-mode) .kpi-card .text-xs {
-            color: #475569 !important;
+            color: #64748b !important;
             font-weight: 600 !important;
         }
-        html:not(.dark-mode) .bg-white       { background: rgba(255,255,255,.14) !important; }
-        html:not(.dark-mode) .bg-slate-50    { background: rgba(255,255,255,.10) !important; }
-        html:not(.dark-mode) .bg-slate-100   { background: rgba(255,255,255,.08) !important; }
+        /* ── Light mode backgrounds and borders (Match Search Page) ── */
+        html:not(.dark-mode) .bg-white       { background: #ffffff !important; }
+        html:not(.dark-mode) .bg-slate-50    { background: #f8fafc !important; }
+        html:not(.dark-mode) .bg-slate-100   { background: #f1f5f9 !important; }
         html:not(.dark-mode) .border-slate-100,
-        html:not(.dark-mode) .border-slate-200 { border-color: rgba(255,255,255,.22) !important; }
-        html:not(.dark-mode) .divide-slate-100 > * { border-color: rgba(255,255,255,.16) !important; }
-        html:not(.dark-mode) .hover\:bg-slate-50:hover { background: rgba(255,255,255,.13) !important; }
+        html:not(.dark-mode) .border-slate-200 { border-color: #e2e8f0 !important; }
+        html:not(.dark-mode) .divide-slate-100 > * { border-color: #e2e8f0 !important; }
+        html:not(.dark-mode) .hover\:bg-slate-50:hover { background: #f8fafc !important; }
         html:not(.dark-mode) input,
         html:not(.dark-mode) select {
-            background: rgba(255,255,255,.13) !important;
-            border-color: rgba(255,255,255,.24) !important;
-            color: #ffffff !important;
+            background: #ffffff !important;
+            border-color: #d1d5db !important;
+            color: #1f2937 !important;
         }
         html:not(.dark-mode) .fleet-card {
-            background: rgba(255,255,255,.13);
-            border-color: rgba(255,255,255,.22);
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
         }
         
         /* ── KPI Card Color Variants ── */
