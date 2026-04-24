@@ -641,10 +641,15 @@ def contact():
 @app.route('/favicon.ico')
 @app.route('/favicon.png')
 def favicon():
-    return send_from_directory(
-        app.static_folder, 'favicon.ico',
-        mimetype='image/vnd.microsoft.icon'
-    )
+    # Serve the SVG favicon; fall back gracefully if missing
+    try:
+        return send_from_directory(
+            app.static_folder, 'favicon.svg',
+            mimetype='image/svg+xml'
+        )
+    except Exception:
+        from flask import Response
+        return Response(status=204)  # No content — silent fail
 
 # ── BOOKING FLOW ──
 from forms import PackageSelectionForm, PassengerDetailsForm

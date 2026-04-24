@@ -99,6 +99,24 @@ with app.app_context():
     except Exception as e:
         print(f"Warning: Could not create tables: {e}")
 
+    # ── Safe column migrations (add missing columns without dropping data) ──
+    try:
+        from sqlalchemy import text as _text
+        _migrations = [
+            "ALTER TABLE passenger ADD COLUMN IF NOT EXISTS meal_preference VARCHAR(30) DEFAULT 'None'",
+            "ALTER TABLE booking ADD COLUMN IF NOT EXISTS trip_type VARCHAR(10) DEFAULT 'one_way'",
+            "ALTER TABLE booking ADD COLUMN IF NOT EXISTS return_date VARCHAR(50)",
+            "ALTER TABLE booking ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30) DEFAULT 'card'",
+        ]
+        for _sql in _migrations:
+            try:
+                db.session.execute(_text(_sql))
+            except Exception as _col_err:
+                print(f"Migration skipped: {_col_err}")
+        db.session.commit()
+    except Exception as _mig_err:
+        print(f"Warning: Migration block failed: {_mig_err}")
+
 # ── WSGI entry point ──
 application = app
 
