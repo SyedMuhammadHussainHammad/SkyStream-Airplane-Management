@@ -5,18 +5,10 @@ __pycache__/
 .env
 *.db
 *.sqlite3
-
-# Keep instance folder but ignore DB files inside it
-instance/*.db
-backend/instance/*.db
-
-# IDE
+instance/
+backend/instance/
+static/css/
+static/js/
 .vscode/
 .cursor/
 *.log
-
-# Empty dirs
-instance/
-static/css/
-static/js/
-backend/instance/
