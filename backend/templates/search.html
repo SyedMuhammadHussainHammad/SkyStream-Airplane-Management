@@ -1,0 +1,700 @@
+{% extends "base.html" %}
+{% block title %}Search Flights{% endblock %}
+
+{% block head %}
+<style>
+/* Override main padding */
+main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width: 100% !important; }
+
+/* ── Hero section fills viewport ── */
+.search-hero {
+  min-height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem 5rem;
+  position: relative;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  overflow: hidden;
+}
+.search-hero::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(14,165,233,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;}
+.widget-wrap::before {
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(14,165,233,.05)1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.05)1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+}
+.widget-orb {
+  position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;
+}
+
+/* Toggle */
+.trip-toggle {
+  display:flex;background:rgba(255,255,255,.08);border-radius:50px;
+  padding:4px;width:fit-content;margin:0 auto 2.5rem;
+  border:1px solid rgba(255,255,255,.1);
+}
+.trip-toggle label {
+  padding:9px 28px;border-radius:50px;font-size:14px;font-weight:700;
+  color:#94a3b8;cursor:pointer;transition:all .2s;user-select:none;
+}
+.trip-toggle input { display:none; }
+.trip-toggle input:checked + label {
+  background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;
+  box-shadow:0 2px 16px rgba(14,165,233,.4);
+}
+
+/* Search card — wide */
+.search-card {
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:24px;
+  padding:2rem 2.5rem;
+  width:100%;
+  max-width:1000px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+}
+
+/* Airport dropdown */
+.ap-wrap { position:relative; }
+.ap-input {
+  width:100%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:12px 14px 12px 42px;font-size:14px;color:#fff;
+  transition:border-color .2s,box-shadow .2s;
+}
+.ap-input::placeholder{color:#475569;}
+.ap-input:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.2);}
+.ap-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+.ap-dropdown {
+  display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:#0a1e3d;border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;overflow:hidden;z-index:100;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);max-height:260px;overflow-y:auto;
+}
+.ap-dropdown.open{display:block;}
+.ap-item {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 16px;cursor:pointer;transition:background .15s;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.ap-item:last-child{border-bottom:none;}
+.ap-item:hover,.ap-item.highlighted{background:rgba(14,165,233,.12);}
+.ap-city{font-size:14px;font-weight:600;color:#fff;}
+.ap-country{font-size:11px;color:#64748b;margin-top:1px;}
+.ap-code{font-size:18px;font-weight:900;color:#38bdf8;font-family:'Inter',sans-serif;}
+
+/* Swap button */
+.swap-btn {
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);
+  color:#38bdf8;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.swap-btn:hover{background:rgba(14,165,233,.3);transform:rotate(180deg);}
+
+/* Passenger dropdown */
+.pax-wrap{position:relative;}
+.pax-btn {
+  width:100%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:12px 14px 12px 42px;font-size:14px;color:#fff;
+  cursor:pointer;text-align:left;transition:border-color .2s;
+}
+.pax-btn:hover,.pax-btn.open{border-color:#0ea5e9;}
+.pax-panel {
+  display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:#0a1e3d;border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;z-index:100;padding:1rem;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
+}
+.pax-panel.open{display:block;}
+.pax-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+.pax-row+.pax-row{border-top:1px solid rgba(255,255,255,.06);}
+.pax-label{font-size:13px;font-weight:600;color:#fff;}
+.pax-sub{font-size:11px;color:#64748b;}
+.pax-counter{display:flex;align-items:center;gap:10px;}
+.pax-counter button {
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:#fff;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.pax-counter button:hover{background:#0ea5e9;border-color:#0ea5e9;}
+.pax-counter span{min-width:20px;text-align:center;font-weight:700;color:#fff;}
+
+/* Date */
+.date-input {
+  width:100%;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:12px 14px 12px 42px;font-size:14px;color:#fff;
+  color-scheme:dark;transition:border-color .2s,box-shadow .2s;
+}
+.date-input:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.2);}
+
+/* Search button */
+.search-btn {
+  width:100%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-weight:800;
+  font-family:'Inter',sans-serif;font-size:15px;border:none;
+  border-radius:12px;padding:14px;cursor:pointer;
+  transition:filter .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.search-btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 8px 28px rgba(14,165,233,.4);}
+
+/* Validation error */
+.val-error{font-size:11px;color:#f87171;margin-top:4px;}
+
+/* Results section */
+.results-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+.flight-card{transition:transform .22s ease,box-shadow .22s ease;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;}
+.flight-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.4);border-color:rgba(14,165,233,.3);}
+.route-dash{stroke-dasharray:6 4;animation:dashMove 1.2s linear infinite;}
+@keyframes dashMove{to{stroke-dashoffset:-20;}}
+
+/* Mobile full-screen overlay */
+@media(max-width:640px){
+  .ap-dropdown,.pax-panel{position:fixed;top:0;left:0;right:0;bottom:0;border-radius:0;max-height:100vh;}
+  .ap-dropdown .overlay-header,.pax-panel .overlay-header{display:flex!important;}
+}
+.overlay-header{
+  display:none;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ══ SEARCH HERO ══ -->
+<div class="search-hero">
+  <div class="hero-orb w-[500px] h-[500px]" style="background:rgba(14,165,233,.1);top:-15%;left:-10%;"></div>
+  <div class="hero-orb w-[350px] h-[350px]" style="background:rgba(201,146,42,.07);bottom:-10%;right:-5%;"></div>
+
+  <!-- Heading -->
+  <div class="relative z-10 text-center mb-10">
+    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-5" style="background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);color:#38bdf8;">
+      <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+      Search Flights
+    </span>
+    <h1 class="text-5xl sm:text-6xl font-black text-white mb-3 leading-tight tracking-tight">Find Your Next Flight</h1>
+    <p class="text-slate-400 text-base">Search all available routes across Pakistan</p>
+  </div>
+
+  <!-- Trip toggle -->
+  <div class="trip-toggle relative z-10">
+    <input type="radio" name="trip_ui" id="t-oneway" value="one_way" checked>
+    <label for="t-oneway">✈ One Way</label>
+    <input type="radio" name="trip_ui" id="t-return" value="return">
+    <label for="t-return">↩ Return</label>
+  </div>
+
+  <!-- Search form card -->
+  <form method="POST" action="{{ url_for('search_flights') }}" id="search-form" class="search-card relative z-10">
+    {{ form.hidden_tag() }}
+    <input type="hidden" name="trip_type" id="trip_type_field" value="one_way">
+
+    <!-- Row 1: From / Swap / To / Date -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_44px_1fr_1fr] gap-4 items-end mb-4">
+
+      <!-- From -->
+      <div>
+        <label class="ss-label">🛫 Departure</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">🏙️</span>
+          <input class="ap-input" id="origin-display" placeholder="City or Airport" autocomplete="off" readonly>
+          <input type="hidden" name="origin" id="origin-val">
+          <div class="ap-dropdown" id="origin-dd">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Select Departure</span>
+              <button type="button" onclick="closeDD('origin-dd')" class="text-slate-400 text-xl leading-none">×</button>
+            </div>
+            <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="origin-search" oninput="filterAP('origin')" autocomplete="off">
+            <div id="origin-list"></div>
+          </div>
+        </div>
+        <p class="val-error" id="origin-err"></p>
+      </div>
+
+      <!-- Swap -->
+      <div class="flex items-end justify-center pb-1">
+        <button type="button" class="swap-btn" onclick="swapAirports()" title="Swap">⇄</button>
+      </div>
+
+      <!-- To -->
+      <div>
+        <label class="ss-label">🛬 Arrival</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">🏙️</span>
+          <input class="ap-input" id="dest-display" placeholder="City or Airport" autocomplete="off" readonly>
+          <input type="hidden" name="destination" id="dest-val">
+          <div class="ap-dropdown" id="dest-dd">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Select Arrival</span>
+              <button type="button" onclick="closeDD('dest-dd')" class="text-slate-400 text-xl leading-none">×</button>
+            </div>
+            <input class="ap-input" style="border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.1);" placeholder="Search airport…" id="dest-search" oninput="filterAP('dest')" autocomplete="off">
+            <div id="dest-list"></div>
+          </div>
+        </div>
+        <p class="val-error" id="dest-err"></p>
+      </div>
+
+      <!-- Departure Date -->
+      <div>
+        <label class="ss-label">📅 Departure Date</label>
+        <div class="ap-wrap">
+          <span class="ap-icon">📅</span>
+          <input type="date" class="date-input" name="date" id="date-field" min="{{ now_date }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- Return date (shown for return trips) -->
+    <div id="return-date-row" class="mb-4" style="display:none;">
+      <label class="ss-label">🔄 Return Date</label>
+      <div class="ap-wrap" style="max-width:260px;">
+        <span class="ap-icon">📅</span>
+        <input type="date" class="date-input" name="return_date" id="return-date-field" min="{{ now_date }}">
+      </div>
+    </div>
+
+    <!-- Row 2: Passengers + Search -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 items-end">
+
+      <!-- Passengers -->
+      <div>
+        <label class="ss-label">👥 Passengers</label>
+        <div class="pax-wrap">
+          <span class="ap-icon">👤</span>
+          <button type="button" class="pax-btn" id="pax-btn" onclick="togglePax()">1 Adult</button>
+          <input type="hidden" name="adults" id="adults-val" value="1">
+          <input type="hidden" name="children" id="children-val" value="0">
+          <input type="hidden" name="infants" id="infants-val" value="0">
+          <div class="pax-panel" id="pax-panel">
+            <div class="overlay-header">
+              <span class="text-white font-bold text-sm">Passengers</span>
+              <button type="button" onclick="togglePax()" class="text-slate-400 text-xl leading-none">×</button>
+            </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Adults</p><p class="pax-sub">12+ years</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('adults',-1)">−</button>
+                <span id="adults-count">1</span>
+                <button type="button" onclick="changePax('adults',1)">+</button>
+              </div>
+            </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Children</p><p class="pax-sub">2–11 years</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('children',-1)">−</button>
+                <span id="children-count">0</span>
+                <button type="button" onclick="changePax('children',1)">+</button>
+              </div>
+            </div>
+            <div class="pax-row">
+              <div><p class="pax-label">Infants</p><p class="pax-sub">Under 2</p></div>
+              <div class="pax-counter">
+                <button type="button" onclick="changePax('infants',-1)">−</button>
+                <span id="infants-count">0</span>
+                <button type="button" onclick="changePax('infants',1)">+</button>
+              </div>
+            </div>
+            <button type="button" onclick="togglePax()" class="mt-3 w-full py-2 rounded-xl text-white text-sm font-bold" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">Done</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search button -->
+      <div>
+        <button type="submit" class="search-btn" id="search-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z"/>
+          </svg>
+          Search Flights
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ══ RESULTS ══ -->
+{% if searched %}
+<div class="results-wrap">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-black text-white">
+      {% if trip_type == 'return' %}Outbound Flights{% else %}Search Results{% endif %}
+      {% if flights %}
+        <span class="text-sm font-normal text-slate-400 ml-2">— {{ flights|length }} flight(s) found</span>
+      {% endif %}
+    </h2>
+  </div>
+
+  {% if flights %}
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    {% for item in flights %}
+    {% set flight = item.flight %}
+    <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="flight-{{ flight.id }}">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(14,165,233,.15);color:#38bdf8;border:1px solid rgba(14,165,233,.2);">FL-{{ flight.id }}</span>
+        <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-5">
+        <div class="text-center">
+          <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
+        </div>
+        <div class="flex-1 flex flex-col items-center px-4">
+          <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
+          <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
+            <line x1="0" y1="10" x2="85" y2="10" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
+            <text x="88" y="14" font-size="10" fill="#38bdf8">✈</text>
+          </svg>
+          <p class="text-[10px] text-slate-500 mt-1">Direct</p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
+        </div>
+      </div>
+
+      <!-- Seat availability bar -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+          <span>Seats available</span>
+          <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+            {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
+          </span>
+        </div>
+        <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div class="h-full rounded-full transition-all
+            {% if item.sold_out %}bg-red-500
+            {% elif item.available < 20 %}bg-amber-400
+            {% else %}bg-emerald-400{% endif %}"
+            style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
+        <div>
+          <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
+          <p class="text-2xl font-black text-sky-400">Rs 19,000</p>
+        </div>
+        {% if item.sold_out %}
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
+          🚫 Sold Out
+        </span>
+        {% else %}
+        <a href="{% if trip_type == 'return' %}javascript:void(0){% else %}{{ url_for('select_package', flight_id=flight.id) }}{% endif %}" 
+           id="select-{{ flight.id }}"
+           class="btn-primary px-5 py-2.5 text-sm rounded-xl"
+           onclick="{% if trip_type == 'return' %}selectOutboundFlight({{ flight.id }});{% endif %}">
+          Select →
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-20">
+    <p class="text-5xl mb-4">🔍</p>
+    <h3 class="font-black text-xl text-white mb-2">No Flights Found</h3>
+    <p class="text-slate-400 text-sm">Try different dates or cities.<br>
+      <span class="text-slate-500 text-xs">Hint: search "Karachi" or "Lahore"</span></p>
+  </div>
+  {% endif %}
+
+  <!-- Return Flights Section -->
+  {% if trip_type == 'return' and return_flights %}
+  <div class="mt-16">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-black text-white">
+        Return Flights
+        <span class="text-sm font-normal text-slate-400 ml-2">— {{ return_flights|length }} flight(s) found</span>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {% for item in return_flights %}
+      {% set flight = item.flight %}
+      <div class="flight-card p-6 {% if item.sold_out %}opacity-60{% endif %}" id="return-flight-{{ flight.id }}">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.2);">↩ FL-{{ flight.id }}</span>
+          <span class="text-xs text-slate-400">🕒 {{ flight.departure_time.strftime('%d %b %Y, %H:%M') }}</span>
+        </div>
+        <div class="flex items-center justify-between mb-5">
+          <div class="text-center">
+            <p class="text-3xl font-black text-white">{{ flight.origin[:3].upper() }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ flight.origin.split('(')[0].strip() }}</p>
+          </div>
+          <div class="flex-1 flex flex-col items-center px-4">
+            <p class="text-xs text-slate-400 mb-2">{{ flight.duration }}</p>
+            <svg class="w-full h-5" viewBox="0 0 100 20" preserveAspectRatio="none" overflow="visible">
+              <line x1="0" y1="10" x2="85" y2="10" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.5" class="route-dash"/>
+              <text x="88" y="14" font-size="10" fill="#f59e0b">✈</text>
+            </svg>
+            <p class="text-[10px] text-slate-500 mt-1">Direct</p>
+          </div>
+          <div class="text-center">
+            <p class="text-3xl font-black text-white">{{ flight.destination[:3].upper() }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ flight.destination.split('(')[0].strip() }}</p>
+          </div>
+        </div>
+
+        <!-- Seat availability bar -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+            <span>Seats available</span>
+            <span class="font-bold {% if item.sold_out %}text-red-400{% elif item.available < 20 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+              {% if item.sold_out %}Sold Out{% else %}{{ item.available }} / {{ item.total }}{% endif %}
+            </span>
+          </div>
+          <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div class="h-full rounded-full transition-all
+              {% if item.sold_out %}bg-red-500
+              {% elif item.available < 20 %}bg-amber-400
+              {% else %}bg-emerald-400{% endif %}"
+              style="width: {{ ((item.available / item.total) * 100) | int if item.total > 0 else 0 }}%">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between border-t pt-4" style="border-color:rgba(255,255,255,.08);">
+          <div>
+            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">From</p>
+            <p class="text-2xl font-black text-amber-400">Rs 19,000</p>
+          </div>
+          {% if item.sold_out %}
+          <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/10">
+            🚫 Sold Out
+          </span>
+          {% else %}
+          <button onclick="selectReturnFlight({{ flight.id }})" id="select-return-{{ flight.id }}"
+             class="btn-primary px-5 py-2.5 text-sm rounded-xl">
+            Select Return →
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const AIRPORTS = [
+  {city:'Karachi',code:'KHI',country:'Pakistan'},
+  {city:'Lahore',code:'LHE',country:'Pakistan'},
+  {city:'Islamabad',code:'ISB',country:'Pakistan'},
+  {city:'Peshawar',code:'PEW',country:'Pakistan'},
+  {city:'Quetta',code:'UET',country:'Pakistan'},
+  {city:'Multan',code:'MUX',country:'Pakistan'},
+  {city:'Faisalabad',code:'LYP',country:'Pakistan'},
+  {city:'Sialkot',code:'SKT',country:'Pakistan'},
+  {city:'Rahim Yar Khan',code:'RYK',country:'Pakistan'},
+  {city:'Sukkur',code:'SKZ',country:'Pakistan'},
+];
+
+let selected = {origin:null, dest:null};
+let pax = {adults:1, children:0, infants:0};
+
+/* ── Airport dropdowns ── */
+function renderList(which, filter='') {
+  const listEl = document.getElementById(which+'-list');
+  const otherCode = which==='origin' ? selected.dest?.code : selected.origin?.code;
+  const filtered = AIRPORTS.filter(a=>
+    (a.city.toLowerCase().includes(filter.toLowerCase()) ||
+     a.code.toLowerCase().includes(filter.toLowerCase())) &&
+    a.code !== otherCode
+  );
+  listEl.innerHTML = filtered.map(a=>`
+    <div class="ap-item" onclick="selectAP('${which}','${a.code}','${a.city}','${a.country}')">
+      <div><p class="ap-city">${a.city}</p><p class="ap-country">${a.country}</p></div>
+      <span class="ap-code">${a.code}</span>
+    </div>`).join('');
+}
+function openDD(which) {
+  renderList(which);
+  document.getElementById(which+'-dd').classList.add('open');
+  setTimeout(()=>document.getElementById(which+'-search').focus(),80);
+}
+function closeDD(which) {
+  document.getElementById(which+'-dd').classList.remove('open');
+  document.getElementById(which+'-search').value='';
+}
+function filterAP(which) {
+  renderList(which, document.getElementById(which+'-search').value);
+}
+function selectAP(which, code, city, country) {
+  const obj = {code,city,country};
+  if(which==='origin') { selected.origin=obj; document.getElementById('origin-display').value=city+' ('+code+')'; document.getElementById('origin-val').value=city+' ('+code+')'; }
+  else { selected.dest=obj; document.getElementById('dest-display').value=city+' ('+code+')'; document.getElementById('dest-val').value=city+' ('+code+')'; }
+  closeDD(which);
+  document.getElementById(which==='origin'?'origin-err':'dest-err').textContent='';
+}
+function swapAirports() {
+  const tmp = selected.origin; selected.origin=selected.dest; selected.dest=tmp;
+  document.getElementById('origin-display').value = selected.origin ? selected.origin.city+' ('+selected.origin.code+')' : '';
+  document.getElementById('origin-val').value = selected.origin ? selected.origin.city+' ('+selected.origin.code+')' : '';
+  document.getElementById('dest-display').value = selected.dest ? selected.dest.city+' ('+selected.dest.code+')' : '';
+  document.getElementById('dest-val').value = selected.dest ? selected.dest.city+' ('+selected.dest.code+')' : '';
+}
+document.getElementById('origin-display').addEventListener('click',()=>openDD('origin'));
+document.getElementById('dest-display').addEventListener('click',()=>openDD('dest'));
+
+/* ── Passenger panel ── */
+function togglePax() {
+  document.getElementById('pax-panel').classList.toggle('open');
+  document.getElementById('pax-btn').classList.toggle('open');
+}
+function changePax(type, delta) {
+  const min = type==='adults'?1:0, max = type==='infants'?pax.adults:9;
+  pax[type] = Math.min(max, Math.max(min, pax[type]+delta));
+  document.getElementById(type+'-count').textContent = pax[type];
+  document.getElementById(type+'-val').value = pax[type];
+  updatePaxBtn();
+}
+function updatePaxBtn() {
+  let parts=[pax.adults+' Adult'+(pax.adults>1?'s':'')];
+  if(pax.children) parts.push(pax.children+' Child'+(pax.children>1?'ren':''));
+  if(pax.infants) parts.push(pax.infants+' Infant'+(pax.infants>1?'s':''));
+  document.getElementById('pax-btn').textContent=parts.join(', ');
+}
+
+/* ── Trip type ── */
+document.querySelectorAll('input[name="trip_ui"]').forEach(r=>r.addEventListener('change',function(){
+  document.getElementById('trip_type_field').value=this.value;
+  const returnRow = document.getElementById('return-date-row');
+  if(this.value === 'return') {
+    returnRow.style.removeProperty('display');
+    returnRow.style.display = 'grid';
+  } else {
+    returnRow.style.display = 'none';
+    document.getElementById('return-date-field').value = '';
+  }
+}));
+
+/* ── Form validation ── */
+document.getElementById('search-form').addEventListener('submit',function(e){
+  let ok=true;
+  if(!selected.origin){document.getElementById('origin-err').textContent='Please select a departure city.';ok=false;}
+  if(!selected.dest){document.getElementById('dest-err').textContent='Please select an arrival city.';ok=false;}
+  if(selected.origin && selected.dest && selected.origin.code===selected.dest.code){
+    document.getElementById('dest-err').textContent='Departure and arrival cannot be the same.';ok=false;}
+  if(!ok) e.preventDefault();
+});
+
+/* Close on outside click ── */
+document.addEventListener('click',function(e){
+  ['origin','dest'].forEach(w=>{
+    const dd=document.getElementById(w+'-dd');
+    const inp=document.getElementById(w+'-display');
+    if(!dd.contains(e.target)&&e.target!==inp) closeDD(w);
+  });
+  const pp=document.getElementById('pax-panel');
+  const pb=document.getElementById('pax-btn');
+  if(!pp.contains(e.target)&&e.target!==pb){
+    pp.classList.remove('open');pb.classList.remove('open');
+  }
+});
+
+/* ── Set today as min date ── */
+document.getElementById('date-field').min = new Date().toISOString().split('T')[0];
+
+/* ── Auto-scroll to results after search ── */
+{% if searched %}
+window.addEventListener('load', function() {
+    const results = document.querySelector('.results-wrap');
+    if (results) {
+        setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    }
+});
+{% endif %}
+
+/* ── Handle return flight selection ── */
+let selectedOutboundId = null;
+
+function selectOutboundFlight(flightId) {
+    // Store outbound flight ID
+    selectedOutboundId = flightId;
+    sessionStorage.setItem('outbound_flight_id', flightId);
+    
+    // Update all outbound flight cards
+    document.querySelectorAll('[id^="flight-"]').forEach(card => {
+        const btn = card.querySelector('[id^="select-"]');
+        if (btn) {
+            if (card.id === `flight-${flightId}`) {
+                // Selected card
+                card.style.borderColor = '#0ea5e9';
+                card.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.3)';
+                btn.textContent = '✓ Selected';
+                btn.style.background = '#22c55e';
+            } else {
+                // Other cards
+                card.style.borderColor = '';
+                card.style.boxShadow = '';
+                btn.textContent = 'Select →';
+                btn.style.background = '';
+            }
+        }
+    });
+    
+    // Scroll to return flights section
+    const returnSection = document.querySelector('.mt-16');
+    if (returnSection) {
+        setTimeout(() => {
+            returnSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+    }
+    
+    // Show message
+    const msg = document.createElement('div');
+    msg.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-sky-600 text-white px-6 py-3 rounded-xl shadow-xl font-semibold text-sm';
+    msg.textContent = '✓ Outbound flight selected. Now select your return flight below.';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 4000);
+}
+
+function selectReturnFlight(returnFlightId) {
+    // Store return flight ID in session storage
+    fetch('/api/store-return-flight', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ return_flight_id: returnFlightId })
+    }).then(() => {
+        // Get the outbound flight ID from session storage
+        const outboundId = sessionStorage.getItem('outbound_flight_id');
+        if (outboundId) {
+            window.location.href = `/flights/${outboundId}/package`;
+        } else {
+            alert('Please select an outbound flight first');
+        }
+    });
+}
+
+</script>
+{% endblock %}

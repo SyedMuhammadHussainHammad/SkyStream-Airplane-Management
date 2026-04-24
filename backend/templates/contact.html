@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Contact Us{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12 animate-fade-up">
+
+    <!-- Header -->
+    <div class="mb-10">
+        <a href="{{ url_for('home') }}" class="text-sm font-medium text-gold hover:text-gold-light transition-colors">←
+            Back to Home</a>
+        <h1 class="text-4xl font-display font-black text-slate-900 dark:text-white mt-4 mb-2">Contact Us</h1>
+        <p class="text-slate-500 text-sm">We're here to help. Reach out through any of the channels below.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Contact Info -->
+        <div class="space-y-6">
+
+            <div class="card p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl">
+                        📞</div>
+                    <div>
+                        <p class="font-display font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Customer
+                            Support</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">+92 314 2555018</p>
+                        <p class="text-slate-400 text-xs mt-1">Mon – Sat, 8am – 10pm PKT</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0 text-xl">
+                        ✉️</div>
+                    <div>
+                        <p class="font-display font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Email</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">hussainhammad.9800@gmail.com</p>
+                        <p class="text-slate-400 text-xs mt-1">We reply within 24 hours</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 text-xl">
+                        🏢</div>
+                    <div>
+                        <p class="font-display font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Head Office
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">SkyStream Airlines HQ<br>Shahrah-e-Faisal,
+                            Karachi<br>Pakistan — 75350</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl">
+                        🕐</div>
+                    <div>
+                        <p class="font-display font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">Airport Desks
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">Available at KHI, LHE, ISB, PEW, MUX, UET
+                        </p>
+                        <p class="text-slate-400 text-xs mt-1">Open 2 hours before each departure</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Contact Form -->
+        <div class="card p-6 sm:p-8">
+            <h2 class="font-display font-bold text-slate-800 dark:text-slate-200 text-base mb-6">Send a Message</h2>
+            <form id="contact-form" class="space-y-4" onsubmit="handleContact(event)">
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Your
+                        Name</label>
+                    <input type="text" id="cf-name" required placeholder="e.g. Ahmed Khan"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email
+                        Address</label>
+                    <input type="email" id="cf-email" required placeholder="you@example.com"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-white">
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Subject</label>
+                    <select id="cf-subject"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-gold transition-all bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-white" style="color:#111827;">
+                        <option>Booking Issue</option>
+                        <option>Flight Cancellation</option>
+                        <option>Refund Request</option>
+                        <option>Luggage Query</option>
+                        <option>Account Problem</option>
+                        <option>General Enquiry</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Message</label>
+                    <textarea id="cf-message" required rows="4" placeholder="Describe your issue or question…"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all resize-none bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-white"></textarea>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-navy hover:bg-navy-700 text-white font-display font-bold text-sm py-3 rounded-xl transition-all shadow-sm active:scale-[.98]">
+                    ✉️ Send Message
+                </button>
+
+                <div id="cf-success"
+                    class="hidden text-center py-3 px-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-medium">
+                    ✓ Message sent! We'll get back to you within 24 hours.
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 flex gap-6 text-xs text-slate-400">
+        <a href="{{ url_for('privacy') }}" class="hover:text-gold transition-colors">Privacy Policy</a>
+        <a href="{{ url_for('terms') }}" class="hover:text-gold transition-colors">Terms of Service</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function handleContact(e) {
+        e.preventDefault();
+        // Simulate submission — in production wire this to a backend endpoint
+        document.getElementById('contact-form').querySelectorAll('input,select,textarea,button[type=submit]')
+            .forEach(el => el.disabled = true);
+        document.getElementById('cf-success').classList.remove('hidden');
+    }
+</script>
+{% endblock %}

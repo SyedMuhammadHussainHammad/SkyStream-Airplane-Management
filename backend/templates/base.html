@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyStream — {% block title %}{% endblock %}</title>
+  <meta name="description" content="SkyStream Airlines – Pakistan's premier digital airline.">
+  <script>if(localStorage.getItem('ss-theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy:  { DEFAULT:'#050d1f', 900:'#050d1f', 800:'#0a1628', 700:'#0d1f3c', 600:'#112850', 500:'#1a3a6b' },
+            sky:   { DEFAULT:'#0ea5e9', light:'#38bdf8', dark:'#0284c7' },
+            gold:  { DEFAULT:'#c9922a', light:'#e8b84b', pale:'#fdf3dc', dark:'#a07020' },
+          },
+          fontFamily: {
+            display: ["'Inter'","'Sora'","sans-serif"],
+            body:    ["'Inter'","'DM Sans'","sans-serif"],
+          },
+          animation: {
+            'fade-up':   'fadeUp .5s cubic-bezier(.16,1,.3,1) both',
+            'fade-in':   'fadeIn .35s ease both',
+            'float':     'float 6s ease-in-out infinite',
+            'shimmer':   'shimmer 2.5s linear infinite',
+            'pulse-slow':'pulseSlow 3s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeUp:    { from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+            fadeIn:    { from:{opacity:'0'}, to:{opacity:'1'} },
+            float:     { '0%,100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-12px)'} },
+            shimmer:   { from:{backgroundPosition:'-200% 0'}, to:{backgroundPosition:'200% 0'} },
+            pulseSlow: { '0%,100%':{opacity:'1'}, '50%':{opacity:'.5'} },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:#050d1f; --navy2:#0a1628; --navy3:#0d1f3c;
+      --blue:#0ea5e9; --blue2:#38bdf8;
+      --gold:#c9922a; --gold2:#e8b84b;
+      --glass:rgba(255,255,255,.06); --glass-b:rgba(255,255,255,.10);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    html,body{min-height:100%;}
+    body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:#050d1f;}
+    body::before{
+      content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 10%,rgba(14,165,233,.10) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%,rgba(201,146,42,.06) 0%,transparent 60%),
+        linear-gradient(160deg,#050d1f 0%,#0a1e3d 50%,#050d1f 100%);
+    }
+    h1,h2,h3,h4,h5{font-family:'Inter',sans-serif;font-weight:800;}
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-thumb{background:linear-gradient(#0ea5e9,#c9922a);border-radius:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    .glass{background:rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.10);}
+    .glass-dark{background:rgba(5,13,31,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.08);}
+    .card{background:rgba(255,255,255,.05);border-radius:20px;border:1px solid rgba(255,255,255,.09);box-shadow:0 4px 24px rgba(0,0,0,.3);}
+    .ss-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+    .card-hover{transition:transform .25s ease,box-shadow .25s ease;}
+    .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.4);}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;}
+    .btn-primary:hover{filter:brightness(1.12);box-shadow:0 8px 28px rgba(14,165,233,.45);transform:translateY(-2px);}
+
+    .btn-gold{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#c9922a,#e8b84b);color:#fff;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;}
+    .btn-gold:hover{filter:brightness(1.1);box-shadow:0 8px 28px rgba(201,146,42,.4);transform:translateY(-2px);}
+    .btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s ease;border-radius:14px;}
+    .btn-ghost:hover{background:rgba(255,255,255,.13);border-color:rgba(14,165,233,.4);transform:translateY(-1px);}
+    .text-shimmer{background:linear-gradient(90deg,#0ea5e9,#38bdf8,#e8b84b,#38bdf8,#0ea5e9);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite;}
+    .text-gold-gradient{background:linear-gradient(135deg,#c9922a,#e8b84b,#c9922a);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .pill{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;}
+    .pill-blue{background:rgba(14,165,233,.15);color:#38bdf8;}
+    .pill-gold{background:rgba(201,146,42,.15);color:#e8b84b;}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399;}
+    .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.3px;}
+    .ss-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#64748b;margin-bottom:6px;}
+    .ss-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:11px 14px;font-size:14px;color:#e2e8f0;transition:border-color .2s,box-shadow .2s;}
+    .ss-input::placeholder{color:#334155;}
+    .ss-input:focus{outline:none;border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.18);}
+    .flash-msg{animation:fadeUp .35s cubic-bezier(.16,1,.3,1) both;}
+    main{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
+    #navbar{position:fixed;top:0;left:0;right:0;z-index:1000;transition:background .3s,backdrop-filter .3s,box-shadow .3s;}
+    #navbar.scrolled{background:rgba(5,13,31,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 32px rgba(0,0,0,.3);}
+    .nav-link{position:relative;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;padding:6px 14px;border-radius:10px;text-decoration:none;transition:color .2s,background .2s;}
+    .nav-link:hover{color:#fff;background:rgba(255,255,255,.07);}
+    .nav-link.active{color:#38bdf8;}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+
+
+    /* LIGHT MODE — #162245 */
+    html:not(.dark-mode) body{background:#162245;color:#fff;}
+    html:not(.dark-mode) body::before{
+      background:
+        radial-gradient(ellipse 65% 55% at 8% 4%,  rgba(255,255,255,.13) 0%,transparent 55%),
+        radial-gradient(ellipse 50% 45% at 92% 88%, rgba(99,149,237,.18)  0%,transparent 55%),
+        radial-gradient(ellipse 40% 35% at 50% 50%, rgba(22,34,69,.25)    0%,transparent 60%),
+        linear-gradient(155deg,#1e2e5a 0%,#162245 40%,#0e1830 100%);
+    }
+    html:not(.dark-mode) #navbar.scrolled{background:rgba(14,24,48,.94);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(255,255,255,.14),0 6px 28px rgba(8,14,32,.35);}
+    html:not(.dark-mode) .nav-link{color:rgba(255,255,255,.78);}
+    html:not(.dark-mode) .nav-link:hover{color:#fff;background:rgba(255,255,255,.13);}
+    html:not(.dark-mode) .nav-link.active{color:#93c5fd;}
+    html:not(.dark-mode) .card{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);box-shadow:0 4px 24px rgba(10,20,80,.22);}
+    html:not(.dark-mode) .ss-card{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);}
+    html:not(.dark-mode) .glass{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26);}
+    html:not(.dark-mode) .glass-dark{background:rgba(10,26,90,.72);border-color:rgba(255,255,255,.16);}
+    html:not(.dark-mode) .btn-ghost{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.32);color:#fff;}
+    html:not(.dark-mode) .btn-ghost:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.5);}
+    html:not(.dark-mode) .btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 4px 18px rgba(37,99,235,.45);}
+    html:not(.dark-mode) .btn-primary:hover{filter:brightness(1.14);box-shadow:0 8px 28px rgba(37,99,235,.55);}
+    html:not(.dark-mode) .btn-gold{background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 18px rgba(217,119,6,.4);}
+    html:not(.dark-mode) .ss-input{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);color:#fff;}
+    html:not(.dark-mode) .ss-input::placeholder{color:rgba(255,255,255,.42);}
+    html:not(.dark-mode) .ss-input:focus{border-color:rgba(147,197,253,.7);box-shadow:0 0 0 3px rgba(147,197,253,.2);}
+    html:not(.dark-mode) .ss-label{color:rgba(255,255,255,.62);}
+    html:not(.dark-mode) .pill-blue{background:rgba(147,197,253,.22);color:#dbeafe;border:1px solid rgba(147,197,253,.3);}
+    html:not(.dark-mode) .pill-gold{background:rgba(251,191,36,.22);color:#fef3c7;border:1px solid rgba(251,191,36,.3);}
+    html:not(.dark-mode) .pill-green{background:rgba(52,211,153,.2);color:#d1fae5;border:1px solid rgba(52,211,153,.25);}
+    html:not(.dark-mode) .text-white{color:#fff !important;}
+    html:not(.dark-mode) .text-white\/90{color:rgba(255,255,255,.9) !important;}
+    html:not(.dark-mode) .text-white\/80{color:rgba(255,255,255,.8) !important;}
+    html:not(.dark-mode) .text-white\/70{color:rgba(255,255,255,.7) !important;}
+    html:not(.dark-mode) .text-white\/60{color:rgba(255,255,255,.6) !important;}
+    html:not(.dark-mode) .text-white\/50{color:rgba(255,255,255,.5) !important;}
+    html:not(.dark-mode) .text-slate-300{color:rgba(255,255,255,.82) !important;}
+    html:not(.dark-mode) .text-slate-400{color:rgba(255,255,255,.66) !important;}
+    html:not(.dark-mode) .text-slate-500{color:rgba(255,255,255,.54) !important;}
+    html:not(.dark-mode) .text-slate-600{color:rgba(255,255,255,.68) !important;}
+    html:not(.dark-mode) .text-slate-700{color:rgba(255,255,255,.8) !important;}
+    html:not(.dark-mode) .text-slate-800{color:#fff !important;}
+    html:not(.dark-mode) .text-slate-900{color:#fff !important;}
+    html:not(.dark-mode) .text-gray-400{color:rgba(255,255,255,.62) !important;}
+    html:not(.dark-mode) .text-gray-500{color:rgba(255,255,255,.54) !important;}
+    html:not(.dark-mode) .text-gray-600{color:rgba(255,255,255,.68) !important;}
+    html:not(.dark-mode) .text-gray-700{color:rgba(255,255,255,.8) !important;}
+    html:not(.dark-mode) .bg-white{background:rgba(255,255,255,.15) !important;}
+    html:not(.dark-mode) .bg-slate-50{background:rgba(255,255,255,.10) !important;}
+    html:not(.dark-mode) .bg-slate-100{background:rgba(255,255,255,.08) !important;}
+    html:not(.dark-mode) .bg-slate-800,html:not(.dark-mode) .bg-slate-900{background:rgba(10,26,90,.82) !important;}
+    html:not(.dark-mode) [class*="bg-navy"]{background:rgba(10,26,90,.82) !important;}
+    html:not(.dark-mode) [style*="background:#050d1f"],html:not(.dark-mode) [style*="background: #050d1f"]{background:rgba(10,26,90,.88) !important;}
+    html:not(.dark-mode) .border-white\/08,html:not(.dark-mode) .border-white\/10,html:not(.dark-mode) .border-white\/20{border-color:rgba(255,255,255,.22) !important;}
+    html:not(.dark-mode) .border-slate-100,html:not(.dark-mode) .border-slate-200{border-color:rgba(255,255,255,.22) !important;}
+    html:not(.dark-mode) [class*="border-white"]{border-color:rgba(255,255,255,.22) !important;}
+    html:not(.dark-mode) input:not([type=radio]):not([type=checkbox]),html:not(.dark-mode) select,html:not(.dark-mode) textarea{background:rgba(255,255,255,.13) !important;border-color:rgba(255,255,255,.22) !important;color:#fff !important;}
+    html:not(.dark-mode) input::placeholder,html:not(.dark-mode) textarea::placeholder{color:rgba(255,255,255,.42) !important;}
+    html:not(.dark-mode) input:focus,html:not(.dark-mode) select:focus,html:not(.dark-mode) textarea:focus{border-color:rgba(147,197,253,.7) !important;box-shadow:0 0 0 3px rgba(147,197,253,.18) !important;}
+    html:not(.dark-mode) #site-footer{background:linear-gradient(180deg,#0d2270 0%,#091a58 100%) !important;border-top-color:rgba(255,255,255,.14) !important;}
+    html:not(.dark-mode) #mob-menu{background:rgba(13,34,112,.97) !important;border-top-color:rgba(255,255,255,.14) !important;}
+    html:not(.dark-mode) #dm-toggle{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.32);color:#fff;}
+    html:not(.dark-mode) #dm-toggle:hover{background:rgba(255,255,255,.26);}
+    html:not(.dark-mode) ::-webkit-scrollbar-track{background:#0d2270;}
+
+    /* DARK MODE — Midnight Blue */
+    .dark-mode body{background:#080e1f;color:#e2e8f0;}
+    .dark-mode body::before{
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 10%,rgba(30,58,138,.18) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%,rgba(201,146,42,.06) 0%,transparent 60%),
+        linear-gradient(160deg,#080e1f 0%,#0d1535 50%,#080e1f 100%);
+    }
+    .dark-mode .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+    .dark-mode .ss-card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+    .dark-mode .text-slate-900,.dark-mode .text-slate-800{color:#e2e8f0 !important;}
+    .dark-mode .text-slate-700,.dark-mode .text-slate-600{color:#94a3b8 !important;}
+    .dark-mode .text-slate-500{color:#64748b !important;}
+    .dark-mode .bg-white{background:rgba(255,255,255,.05) !important;}
+    .dark-mode .bg-slate-50,.dark-mode .bg-slate-100{background:rgba(255,255,255,.04) !important;}
+    .dark-mode .border-slate-100,.dark-mode .border-slate-200{border-color:rgba(255,255,255,.08) !important;}
+    .dark-mode input:not([type=radio]):not([type=checkbox]),.dark-mode select,.dark-mode textarea{background:rgba(255,255,255,.06) !important;border-color:rgba(255,255,255,.12) !important;color:#e2e8f0 !important;}
+    .dark-mode footer{background:#080e1f !important;}
+    .dark-mode .flash-msg.bg-emerald-50{background:#052e16;border-color:#166534;color:#86efac;}
+    .dark-mode .flash-msg.bg-red-50{background:#2d0a0a;border-color:#991b1b;color:#fca5a5;}
+    .dark-mode .flash-msg.bg-amber-50{background:#2d1a00;border-color:#92400e;color:#fcd34d;}
+    .dark-mode .flash-msg.bg-blue-50{background:#080e1f;border-color:#1e3a8a;color:#93c5fd;}
+    .dark-mode #navbar.scrolled{background:rgba(8,14,31,.94) !important;box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 32px rgba(0,0,0,.5) !important;}
+    .dark-mode .nav-link{color:rgba(255,255,255,.65);}
+    .dark-mode .nav-link:hover{color:#fff;background:rgba(255,255,255,.07);}
+    .dark-mode .nav-link.active{color:#818cf8;}
+    .dark-mode #site-footer{background:linear-gradient(180deg,#0d1535 0%,#080e1f 100%) !important;border-top-color:rgba(255,255,255,.07) !important;}
+    .dark-mode #mob-menu{background:rgba(8,14,31,.98) !important;border-top-color:rgba(255,255,255,.08) !important;}
+    .dark-mode ::-webkit-scrollbar-track{background:#0d1535;}
+
+    /* Force black text on white-background selects globally */
+    select option { color: #111827 !important; background: #fff !important; }
+    select.bg-white, select[style*="background:white"], select[style*="background:#fff"] { color: #111827 !important; }
+
+    /* DM toggle */
+    #dm-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#e2e8f0;cursor:pointer;transition:all .2s;flex-shrink:0;}
+    #dm-toggle:hover{background:rgba(255,255,255,.12);border-color:rgba(232,184,75,.4);}
+    #dm-toggle svg{width:16px;height:16px;}
+
+    /* Footer / mobile menu base */
+    #site-footer{background:linear-gradient(180deg,#2f5470 0%,#1e3d55 100%);border-top:1px solid rgba(255,255,255,.12);}
+    #mob-menu{background:rgba(35,65,90,.97);border-top-color:rgba(255,255,255,.12);}
+
+    /* Keyframes */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+    @keyframes pulseSlow{0%,100%{opacity:1}50%{opacity:.5}}
+    .animate-fade-up{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
+    .animate-fade-in{animation:fadeIn .35s ease both;}
+    .animate-float{animation:float 6s ease-in-out infinite;}
+    .animate-shimmer{animation:shimmer 2.5s linear infinite;}
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+
+<body class="min-h-screen">
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav id="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-[68px]">
+
+      <!-- Brand -->
+      <a href="{{ url_for('home') }}" class="flex items-center gap-3 group flex-shrink-0">
+        <div class="relative w-9 h-9 flex-shrink-0">
+          <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+          <div class="absolute inset-0 rounded-xl flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="white" class="w-5 h-5">
+              <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1l3.5 1v-1.5L13 19v-5.5z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="leading-none">
+          <span class="font-black text-lg tracking-tight" style="color:inherit;">SkyStream</span>
+          <span class="block text-[10px] font-semibold tracking-[.2em] uppercase text-gold-light mt-0.5" style="color:#e8b84b;">Airlines</span>
+        </div>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-1">
+        {% if current_user.is_authenticated %}
+          {% if current_user.role == 'customer' %}
+            <a href="{{ url_for('search_flights') }}" class="nav-link">Search Flights</a>
+            <a href="{{ url_for('my_bookings') }}" class="nav-link">My Bookings</a>
+          {% elif current_user.role == 'staff' %}
+            <a href="{{ url_for('staff_dashboard') }}" class="nav-link">Staff Dashboard</a>
+          {% elif current_user.role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Admin Dashboard</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('search_flights') }}" class="nav-link">Flights</a>
+          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+        {% endif %}
+      </div>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-2.5">
+        {% if current_user.is_authenticated %}
+          <div class="hidden md:flex items-center gap-2.5">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl glass">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white" style="background:linear-gradient(135deg,#0ea5e9,#c9922a);">
+                {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+              </div>
+              <span class="text-white text-sm font-medium">{{ current_user.first_name }}</span>
+            </div>
+            <a href="{{ url_for('logout') }}" class="flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 px-3 py-1.5 rounded-xl hover:bg-red-500/10 transition-all border border-red-500/20">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              Logout
+            </a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('register') }}" class="hidden md:inline-flex btn-gold text-sm px-5 py-2">Register Free</a>
+        {% endif %}
+
+        <button id="dm-toggle" onclick="toggleDarkMode()" title="Toggle theme">
+          <svg id="dm-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+          <svg id="dm-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        </button>
+
+        <!-- Mobile hamburger -->
+        <button class="md:hidden text-white/70 hover:text-white p-2 rounded-xl hover:bg-white/08 transition-all" onclick="document.getElementById('mob-menu').classList.toggle('hidden')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mob-menu" class="hidden md:hidden border-t px-4 py-3 space-y-1" style="backdrop-filter:blur(20px);">
+    {% if current_user.is_authenticated %}
+      <div class="flex items-center gap-2 px-3 py-2.5 mb-2 border-b border-white/08">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white" style="background:linear-gradient(135deg,#0ea5e9,#c9922a);">{{ current_user.first_name[0] }}</div>
+        <span class="text-white text-sm font-semibold">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+      </div>
+      {% if current_user.role == 'customer' %}
+        <a href="{{ url_for('search_flights') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Search Flights</a>
+        <a href="{{ url_for('my_bookings') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">My Bookings</a>
+      {% elif current_user.role == 'staff' %}
+        <a href="{{ url_for('staff_dashboard') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Staff Dashboard</a>
+      {% elif current_user.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl hover:bg-white/07 text-sm transition-all">Admin Dashboard</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="block text-red-400 px-3 py-2.5 rounded-xl text-sm">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="block text-white/70 hover:text-white px-3 py-2.5 rounded-xl text-sm">Login</a>
+      <a href="{{ url_for('register') }}" class="block text-yellow-400 font-semibold px-3 py-2.5 rounded-xl text-sm">Register Free</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2">
+  {% for category, message in messages %}
+  <div class="flash-msg flex items-start gap-3 px-5 py-3.5 rounded-2xl border text-sm font-medium shadow-xl
+    {% if category=='success'%}bg-emerald-50 border-emerald-200 text-emerald-800
+    {% elif category=='danger'%}bg-red-50 border-red-200 text-red-800
+    {% elif category=='warning'%}bg-amber-50 border-amber-200 text-amber-800
+    {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+    <span class="flex-shrink-0 mt-0.5">{% if category=='success'%}✓{% elif category=='danger'%}✕{% elif category=='warning'%}!{% else %}i{% endif %}</span>
+    <span class="flex-1">{{ message }}</span>
+    <button onclick="this.parentElement.remove()" class="opacity-40 hover:opacity-80 text-lg leading-none font-bold">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Main content -->
+<main class="pt-[68px]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="background:transparent;">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer id="site-footer" class="mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-14">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+      <!-- Brand col -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+            <svg viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1l3.5 1v-1.5L13 19v-5.5z"/></svg>
+          </div>
+          <div>
+            <span class="text-white font-black text-lg">SkyStream</span>
+            <span class="block text-[10px] tracking-[.2em] uppercase font-semibold" style="color:#e8b84b;">Airlines</span>
+          </div>
+        </div>
+        <p class="text-slate-500 text-sm leading-relaxed max-w-xs">Pakistan's premier digital airline. Book flights, manage bookings, and fly in style — all from one platform.</p>
+      </div>
+      <!-- Links -->
+      <div>
+        <p class="text-white font-bold text-sm mb-4">Quick Links</p>
+        <div class="space-y-2.5">
+          <a href="{{ url_for('search_flights') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Search Flights</a>
+          <a href="{{ url_for('login') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Login</a>
+          <a href="{{ url_for('register') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Register</a>
+        </div>
+      </div>
+      <div>
+        <p class="text-white font-bold text-sm mb-4">Legal</p>
+        <div class="space-y-2.5">
+          <a href="{{ url_for('privacy') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Privacy Policy</a>
+          <a href="{{ url_for('terms') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Terms of Service</a>
+          <a href="{{ url_for('contact') }}" class="block text-slate-500 hover:text-sky-400 text-sm transition-colors">Contact Us</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/06 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-slate-600 text-xs">© 2025 SkyStream Airlines. All rights reserved.</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-600 text-xs">All systems operational</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  }, {passive:true});
+  // Init scrolled state
+  if(window.scrollY > 20) navbar.classList.add('scrolled');
+
+  // Dark mode
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark-mode', dark);
+    document.getElementById('dm-moon').style.display = dark ? 'none' : 'block';
+    document.getElementById('dm-sun').style.display  = dark ? 'block' : 'none';
+  }
+  function toggleDarkMode() {
+    const isDark = document.documentElement.classList.contains('dark-mode');
+    localStorage.setItem('ss-theme', isDark ? 'light' : 'dark');
+    applyTheme(!isDark);
+  }
+  applyTheme(document.documentElement.classList.contains('dark-mode'));
+</script>
+</body>
+</html>

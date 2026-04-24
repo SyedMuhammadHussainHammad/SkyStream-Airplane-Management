@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}Confirm Booking{% endblock %}
+<!-- Version: 2026-04-24-v3 - Force Vercel cache bust -->
+{% block head %}
+<style>
+    .checkout-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+    .checkout-hero {
+        background: linear-gradient(140deg, #071529, #102a4d 65%, #1a3a6b);
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, .2);
+        padding: 26px 28px;
+        color: #fff;
+        box-shadow: 0 20px 50px rgba(10, 22, 40, .28);
+        margin-bottom: 22px;
+    }
+    .stepper { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .step-dot { width: 28px; height: 28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+    .step-done { background: #22c55e; color: #fff; }
+    .step-active { background: #0ea5e9; color: #fff; box-shadow: 0 0 0 4px rgba(14,165,233,.2); }
+    .step-line { height: 2px; width: 42px; background: rgba(255,255,255,.2); border-radius: 999px; }
+
+    .checkout-grid {
+        display: grid;
+        gap: 20px;
+    }
+    .checkout-grid.one-way {
+        grid-template-columns: 1.45fr 1fr;
+    }
+    .checkout-grid.return-trip {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    @media (max-width: 980px) {
+        .checkout-grid { grid-template-columns: 1fr !important; }
+    }
+    .panel {
+        background: rgba(74,120,152,.6);
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,.2);
+        box-shadow: 0 2px 14px rgba(0,0,0,.2);
+    }
+    .dark-mode .panel { background: #0d1f3c; border-color: #1e3a5f; box-shadow: 0 2px 14px rgba(0,0,0,.3); }
+    .panel-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(255,255,255,.15);
+    }
+    .dark-mode .panel-head { border-bottom-color: #1e3a5f; }
+    .panel-body { padding: 20px; }
+    .route-code {
+        font-family: 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+        color: #ffffff;
+    }
+    .dark-mode .route-code { color: #e2e8f0; }
+    .payment-option {
+        display: block;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 12px;
+        padding: 12px 14px;
+        transition: all .2s ease;
+        cursor: pointer;
+        background: rgba(47,84,112,.6);
+    }
+    .dark-mode .payment-option { background: #0a1628; border-color: #1e3a5f; }
+    .payment-option:hover {
+        border-color: rgba(255,255,255,.5);
+        box-shadow: 0 0 0 3px rgba(255,255,255,.1);
+    }
+    .payment-option input { accent-color: #0ea5e9; }
+    .total-pill {
+        border-radius: 14px;
+        background: rgba(47,84,112,.7);
+        border: 1px solid rgba(255,255,255,.2);
+        padding: 14px 16px;
+    }
+    .dark-mode .total-pill { background: linear-gradient(135deg,#0c1a2e,#0a1628); border-color: #1e3a5f; }
+    .subtle {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #a8cfe0;
+    }
+    .dark-mode .subtle { color: #64748b; }
+    .table-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,.12); }
+    .dark-mode .table-row:not(:last-child) { border-bottom-color: #1e3a5f; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-shell animate-fade-up">
+    <div class="checkout-hero">
+        <p class="text-xs tracking-[0.2em] uppercase text-sky-200 font-semibold">SkyStream Checkout</p>
+        <h1 class="text-3xl font-display font-black mt-1">Confirm Booking & Payment</h1>
+        <p class="text-sm text-slate-300 mt-2">Review passenger details and select a payment method to finalize your ticket.</p>
+        <div class="stepper" aria-label="Booking progress">
+            <div class="step-dot step-done">1</div><div class="step-line"></div>
+            <div class="step-dot step-done">2</div><div class="step-line"></div>
+            <div class="step-dot step-done">3</div><div class="step-line"></div>
+            <div class="step-dot step-active">4</div>
+        </div>
+    </div>
+
+    <div class="checkout-grid {% if trip_type == 'return' %}return-trip{% else %}one-way{% endif %}">
+        <!-- Outbound Flight Panel -->
+        <section class="panel">
+            <div class="panel-head flex items-center justify-between">
+                <div>
+                    <p class="subtle">{% if trip_type == 'return' %}Outbound Flight{% else %}Flight Summary{% endif %}</p>
+                    <h2 class="text-xl font-display font-bold text-slate-900">Flight #{{ flight.id }}</h2>
+                </div>
+                <span class="badge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">{{ package_tier }}</span>
+            </div>
+            <div class="panel-body">
+                <div class="flex items-center justify-between gap-4 mb-5">
+                    <div>
+                        <p class="subtle">Route</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="route-code">{{ flight.origin[:3].upper() }}</span>
+                            <span class="text-sky-600 text-xl">✈</span>
+                            <span class="route-code">{{ flight.destination[:3].upper() }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ flight.origin }} → {{ flight.destination }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="subtle">Departure</p>
+                        <p class="font-semibold text-slate-900 mt-1">{{ flight.departure_time.strftime('%d %b %Y') }}</p>
+                        <p class="text-sm text-slate-600">{{ flight.departure_time.strftime('%I:%M %p') }}</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#0a1e36,#0f2d4a);">
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">#</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Passenger</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Seat</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#7ab8d8;">Meal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in passengers %}
+                            <tr class="table-row">
+                                <td class="px-4 py-3 text-slate-500">{{ loop.index }}</td>
+                                <td class="px-4 py-3 font-semibold text-slate-900">{{ p.first_name }} {{ p.last_name }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">{{ p.seat_number }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">{{ p.meal_preference }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Return Flight Panel (only for return trips) -->
+        {% if trip_type == 'return' and return_flight %}
+        <section class="panel">
+            <div class="panel-head flex items-center justify-between">
+                <div>
+                    <p class="subtle">Return Flight</p>
+                    <h2 class="text-xl font-display font-bold text-slate-900">Flight #{{ return_flight.id }}</h2>
+                </div>
+                <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">{{ package_tier }}</span>
+            </div>
+            <div class="panel-body">
+                <div class="flex items-center justify-between gap-4 mb-5">
+                    <div>
+                        <p class="subtle">Route</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="route-code">{{ return_flight.origin[:3].upper() }}</span>
+                            <span class="text-amber-600 text-xl">↩</span>
+                            <span class="route-code">{{ return_flight.destination[:3].upper() }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ return_flight.origin }} → {{ return_flight.destination }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="subtle">Departure</p>
+                        <p class="font-semibold text-slate-900 mt-1">{{ return_flight.departure_time.strftime('%d %b %Y') }}</p>
+                        <p class="text-sm text-slate-600">{{ return_flight.departure_time.strftime('%I:%M %p') }}</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#78350f,#92400e);">
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">#</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Passenger</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Seat</th>
+                                <th class="text-left px-4 py-3 subtle" style="color:#fde68a;">Meal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in (return_passengers or passengers) %}
+                            <tr class="table-row">
+                                <td class="px-4 py-3 text-slate-500">{{ loop.index }}</td>
+                                <td class="px-4 py-3 font-semibold text-slate-900">{{ p.first_name }} {{ p.last_name }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">{{ p.seat_number }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">{{ p.meal_preference }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <aside class="panel">
+            <div class="panel-head">
+                <p class="subtle">Payment</p>
+                <h2 class="text-xl font-display font-bold text-slate-900">Choose Payment Method</h2>
+            </div>
+            <div class="panel-body">
+                <form method="POST" action="{{ url_for('checkout', flight_id=flight.id, tier=package_tier) }}" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="trip_type" value="{{ trip_type }}">
+                    {% if return_date %}<input type="hidden" name="return_date" value="{{ return_date }}">{% endif %}
+                    {% for method_key, method_label in payment_method_choices.items() %}
+                    <label class="payment-option flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="{{ method_key }}"
+                                {% if selected_payment_method == method_key %}checked{% endif %}
+                                required
+                            >
+                            <div>
+                                <p class="font-semibold text-slate-900">{{ method_label }}</p>
+                                <p class="text-xs text-slate-500">
+                                    {% if method_key == 'card' %}Instant secure card payment
+                                    {% elif method_key == 'jazzcash' %}Pay directly via JazzCash wallet
+                                    {% elif method_key == 'easypaisa' %}Pay directly via EasyPaisa wallet
+                                    {% else %}Manual transfer with booking reference{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-xs uppercase font-bold">Pay</span>
+                    </label>
+                    {% endfor %}
+
+                    <div class="total-pill mt-5">
+                        <p class="subtle">Total Amount</p>
+                        <p class="text-3xl font-display font-black text-sky-700 mt-1">Rs {{ "{:,.0f}".format(total_price) }}</p>
+                        <p class="text-xs text-slate-600 mt-1">
+                            {{ passengers|length }} passenger(s) × {{ package_tier }}
+                            {% if trip_type == 'return' %} × 2 (Return Trip){% endif %}
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full py-3.5 rounded-xl font-display font-bold text-sm text-white transition-all hover:brightness-110 active:scale-[0.99]"
+                        style="background: linear-gradient(135deg, #16a34a, #22c55e);"
+                    >
+                        Confirm Booking & Pay
+                    </button>
+
+                    <a
+                        href="{{ url_for('select_package', flight_id=flight.id) }}"
+                        class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold text-sm transition-all"
+                    >
+                        Back to Package Selection
+                    </a>
+
+                    <p class="text-[11px] text-slate-500 text-center">
+                        By confirming, you agree to SkyStream booking and payment terms.
+                    </p>
+                </form>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
