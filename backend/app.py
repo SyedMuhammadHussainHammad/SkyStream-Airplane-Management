@@ -69,14 +69,27 @@ if not database_url:
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
+# Force pg8000 driver (psycopg2-binary is unreliable on Vercel's Lambda runtime)
+if database_url.startswith("postgresql://") and "+pg8000" not in database_url:
+    database_url = database_url.replace("postgresql://", "postgresql+pg8000://", 1)
+
+# pg8000 doesn't support channel_binding — strip it if present
+if "channel_binding" in database_url:
+    import urllib.parse
+    parsed = urllib.parse.urlparse(database_url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    qs.pop("channel_binding", None)
+    new_query = urllib.parse.urlencode({k: v[0] for k, v in qs.items()})
+    database_url = parsed._replace(query=new_query).geturl()
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
     "connect_args": {
-        "sslmode": "require",
-        "connect_timeout": 10,
+        "ssl_context": True,  # pg8000 SSL (works on Vercel)
+        "timeout": 10,
     },
 }
 
