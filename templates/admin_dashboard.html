@@ -175,6 +175,14 @@
             font-weight: 700 !important;
         }
         
+        /* ── Exception: Keep white text on dark navy backgrounds ── */
+        html:not(.dark-mode) .bg-navy.text-white,
+        html:not(.dark-mode) .bg-navy .text-white,
+        html:not(.dark-mode) .card .bg-navy.text-white,
+        html:not(.dark-mode) .fleet-card .bg-navy.text-white {
+            color: #ffffff !important;
+        }
+        
         /* ── Light mode headings and labels ── */
         html:not(.dark-mode) .card .font-bold,
         html:not(.dark-mode) .fleet-card .font-bold,
@@ -208,10 +216,16 @@
         html:not(.dark-mode) .fleet-card .text-white {
             color: #1e293b !important;
         }
-        html:not(.dark-mode) .card .font-mono,
-        html:not(.dark-mode) .fleet-card .font-mono {
-            color: #1e293b !important;
-            font-weight: 700 !important;
+        
+        /* ── Exception: Keep white text on dark navy backgrounds ── */
+        html:not(.dark-mode) .bg-navy.text-white,
+        html:not(.dark-mode) .bg-navy .text-white,
+        html:not(.dark-mode) .card .bg-navy.text-white,
+        html:not(.dark-mode) .fleet-card .bg-navy.text-white,
+        html:not(.dark-mode) .bg-navy.font-mono.text-white,
+        html:not(.dark-mode) .card .bg-navy.font-mono.text-white,
+        html:not(.dark-mode) .fleet-card .bg-navy.font-mono.text-white {
+            color: #ffffff !important;
         }
         html:not(.dark-mode) .card .font-bold,
         html:not(.dark-mode) .fleet-card .font-bold,
