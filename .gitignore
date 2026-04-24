@@ -14,3 +14,9 @@ backend/instance/*.db
 .vscode/
 .cursor/
 *.log
+
+# Empty dirs
+instance/
+static/css/
+static/js/
+backend/instance/
