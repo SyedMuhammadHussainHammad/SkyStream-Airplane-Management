@@ -112,21 +112,43 @@
                                transition-all outline-none">
                 </div>
 
-                <!-- Departure -->
-                <div>
-                    <label for="departure_time" 
-                        class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                        Departure Date & Time
-                    </label>
+                <!-- Departure Date & Time -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Date -->
+                    <div>
+                        <label for="departure_date" 
+                            class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                            Departure Date
+                        </label>
 
-                    <input type="datetime-local" name="departure_time" id="departure_time" required
-                        class="w-full border border-slate-200 dark:border-slate-700
-                               bg-white dark:bg-slate-800
-                               rounded-xl px-4 py-3 text-sm 
-                               text-slate-800 dark:text-white
-                               focus:ring-2 focus:ring-gold/40 focus:border-gold 
-                               transition-all outline-none">
+                        <input type="date" name="departure_date" id="departure_date" required
+                            class="w-full border border-slate-200 dark:border-slate-700
+                                   bg-white dark:bg-slate-800
+                                   rounded-xl px-4 py-3 text-sm 
+                                   text-slate-800 dark:text-white
+                                   focus:ring-2 focus:ring-gold/40 focus:border-gold 
+                                   transition-all outline-none">
+                    </div>
+
+                    <!-- Time -->
+                    <div>
+                        <label for="departure_time_slot" 
+                            class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                            Departure Time
+                        </label>
+
+                        <input type="time" name="departure_time_slot" id="departure_time_slot" required
+                            class="w-full border border-slate-200 dark:border-slate-700
+                                   bg-white dark:bg-slate-800
+                                   rounded-xl px-4 py-3 text-sm 
+                                   text-slate-800 dark:text-white
+                                   focus:ring-2 focus:ring-gold/40 focus:border-gold 
+                                   transition-all outline-none">
+                    </div>
                 </div>
+
+                <!-- Hidden field for combined datetime -->
+                <input type="hidden" name="departure_time" id="departure_time">
 
                 <!-- Submit -->
                 <div class="pt-3">
@@ -145,4 +167,22 @@
         </form>
     </div>
 </div>
+
+<script>
+// Combine date and time fields before form submission
+document.getElementById('add-flight-form').addEventListener('submit', function(e) {
+    const dateInput = document.getElementById('departure_date');
+    const timeInput = document.getElementById('departure_time_slot');
+    const hiddenInput = document.getElementById('departure_time');
+    
+    if (dateInput.value && timeInput.value) {
+        // Combine date and time in the format expected by backend: YYYY-MM-DDTHH:MM
+        hiddenInput.value = dateInput.value + 'T' + timeInput.value;
+    } else {
+        e.preventDefault();
+        alert('Please select both departure date and time.');
+    }
+});
+</script>
+
 {% endblock %}

@@ -215,6 +215,19 @@
         html:not(.dark-mode) .text-slate-600 { color: rgba(255,255,255,.82) !important; }
         html:not(.dark-mode) .text-slate-500 { color: rgba(255,255,255,.65) !important; }
         html:not(.dark-mode) .text-slate-400 { color: rgba(255,255,255,.54) !important; }
+        
+        /* ── KPI cards need dark text on light backgrounds ── */
+        html:not(.dark-mode) .kpi-card .text-slate-400 { color: #94a3b8 !important; }
+        html:not(.dark-mode) .kpi-card [style*="color:#1d4ed8"],
+        html:not(.dark-mode) .kpi-card [style*="color:#4338ca"],
+        html:not(.dark-mode) .kpi-card [style*="color:#16a34a"],
+        html:not(.dark-mode) .kpi-card [style*="color:#ea580c"],
+        html:not(.dark-mode) .kpi-card [style*="color:#7c3aed"],
+        html:not(.dark-mode) .kpi-card [style*="color:#d97706"],
+        html:not(.dark-mode) .kpi-card [style*="color:#0f766e"] {
+            /* Keep the inline colors as-is for KPI cards */
+            color: inherit !important;
+        }
         html:not(.dark-mode) .bg-white       { background: rgba(255,255,255,.14) !important; }
         html:not(.dark-mode) .bg-slate-50    { background: rgba(255,255,255,.10) !important; }
         html:not(.dark-mode) .bg-slate-100   { background: rgba(255,255,255,.08) !important; }
