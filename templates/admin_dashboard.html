@@ -1120,20 +1120,16 @@
                             </a>
                             {% endif %}
                             
-                            {% for page_num in flights_pagination.iter_pages() %}
-                                {% if page_num %}
-                                    {% if page_num != flights_pagination.page %}
-                                    <a href="{{ url_for('admin_dashboard', page=page_num) }}#flights" 
-                                       class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition">
-                                        {{ page_num }}
-                                    </a>
-                                    {% else %}
-                                    <span class="px-3 py-1.5 text-xs bg-navy text-white rounded-lg">
-                                        {{ page_num }}
-                                    </span>
-                                    {% endif %}
+                            {% for page_num in range(1, flights_pagination.pages + 1) %}
+                                {% if page_num != flights_pagination.page %}
+                                <a href="{{ url_for('admin_dashboard', page=page_num) }}#flights" 
+                                   class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition">
+                                    {{ page_num }}
+                                </a>
                                 {% else %}
-                                <span class="px-2 text-slate-400">…</span>
+                                <span class="px-3 py-1.5 text-xs bg-navy text-white rounded-lg">
+                                    {{ page_num }}
+                                </span>
                                 {% endif %}
                             {% endfor %}
                             
