@@ -11,11 +11,75 @@
   height: 100vh;
   z-index: 0;
   pointer-events: none;
+  transition: opacity .6s ease;
 }
 
 /* Kill the base.html body::before gradient on this page so canvas shows */
 body::before { display: none !important; }
+
+/* DARK MODE (default) — deep space */
 html, body { background: #050d1f !important; }
+
+/* LIGHT MODE — bright sky blue */
+html:not(.dark-mode), html:not(.dark-mode) body {
+  background: #e0f2fe !important;
+}
+html:not(.dark-mode) .home-wrap { color: #0c1a3a; }
+
+/* Light mode text overrides for home page */
+html:not(.dark-mode) .hero-headline { color: #0c1a3a !important; }
+html:not(.dark-mode) .hero-headline .accent {
+  background: linear-gradient(135deg,#0284c7 0%,#6366f1 50%,#c9922a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+html:not(.dark-mode) .hero-badge {
+  background: rgba(2,132,199,.1);
+  border-color: rgba(2,132,199,.4);
+  color: #0369a1;
+}
+html:not(.dark-mode) #hero-content p.text-slate-400 { color: #334155 !important; }
+html:not(.dark-mode) .section-title { color: #0c1a3a !important; }
+html:not(.dark-mode) .section-label { color: #0284c7 !important; }
+html:not(.dark-mode) .stat-num {
+  background: linear-gradient(135deg,#0284c7,#c9922a);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+html:not(.dark-mode) .stat-card { border-right-color: rgba(2,132,199,.2) !important; }
+html:not(.dark-mode) .stat-card .text-slate-500 { color: #475569 !important; }
+html:not(.dark-mode) .feature-card {
+  background: rgba(255,255,255,.7) !important;
+  border-color: rgba(2,132,199,.25) !important;
+  box-shadow: 0 4px 20px rgba(2,132,199,.08);
+}
+html:not(.dark-mode) .feature-card h3 { color: #0c1a3a !important; }
+html:not(.dark-mode) .feature-card p { color: #475569 !important; }
+html:not(.dark-mode) .feature-card:hover { border-color: rgba(2,132,199,.5) !important; box-shadow: 0 0 28px rgba(2,132,199,.15) !important; }
+html:not(.dark-mode) .route-card {
+  background: rgba(255,255,255,.7) !important;
+  border-color: rgba(2,132,199,.25) !important;
+}
+html:not(.dark-mode) .route-card:hover { border-color: rgba(2,132,199,.5) !important; box-shadow: 0 0 24px rgba(2,132,199,.12) !important; }
+html:not(.dark-mode) .route-card .text-white { color: #0c1a3a !important; }
+html:not(.dark-mode) .route-card .text-slate-500 { color: #64748b !important; }
+html:not(.dark-mode) .route-card .text-sky-400 { color: #0284c7 !important; }
+html:not(.dark-mode) .route-card .text-slate-600 { color: #64748b !important; }
+html:not(.dark-mode) .step-num { border-color: rgba(2,132,199,.5) !important; color: #0284c7 !important; }
+html:not(.dark-mode) .step-connector { background: linear-gradient(to bottom,rgba(2,132,199,.4),transparent) !important; }
+html:not(.dark-mode) .how-section { border-color: rgba(2,132,199,.2) !important; }
+html:not(.dark-mode) .how-section .text-slate-100 { color: #0c1a3a !important; }
+html:not(.dark-mode) .how-section .text-slate-400 { color: #475569 !important; }
+html:not(.dark-mode) .stats-section { border-color: rgba(2,132,199,.2) !important; }
+html:not(.dark-mode) .hero-grid {
+  background-image:
+    linear-gradient(rgba(2,132,199,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2,132,199,.06) 1px, transparent 1px) !important;
+}
+html:not(.dark-mode) .section-divider { border-color: rgba(2,132,199,.2) !important; }
+html:not(.dark-mode) .cta-banner { border-color: rgba(2,132,199,.2) !important; }
+html:not(.dark-mode) .cta-banner h2 { color: #0c1a3a !important; }
+html:not(.dark-mode) .cta-banner p { color: #475569 !important; }
+html:not(.dark-mode) .scroll-hint { opacity: .4; }
+html:not(.dark-mode) .plane-float { opacity: .04; }
 
 /* ── Page wrapper sits above canvas ── */
 .home-wrap {
@@ -539,6 +603,10 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   let meteorTimer = 0;
   let planeTimer  = 0;
 
+  function isLight() {
+    return !document.documentElement.classList.contains('dark-mode');
+  }
+
   function init() {
     resize();
     stars  = Array.from({ length: 220 }, () => new Star());
@@ -549,41 +617,75 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
   // ── Main loop ──────────────────────────────────────────
   function loop() {
     ctx.clearRect(0, 0, W, H);
+    const light = isLight();
 
-    // orbs (drawn first, very subtle)
-    orbs.forEach(o => { o.tick(); o.draw(); });
+    if (light) {
+      // ── LIGHT MODE: daytime sky gradient ──
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0,   '#bae6fd'); // sky blue top
+      sky.addColorStop(0.5, '#e0f2fe'); // lighter mid
+      sky.addColorStop(1,   '#f0f9ff'); // near white bottom
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
 
-    // connection lines between stars
-    for (let i = 0; i < stars.length; i++) {
-      for (let j = i + 1; j < stars.length; j++) {
-        const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < 110) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(14,165,233,${.10 * (1 - d / 110)})`;
-          ctx.lineWidth = .5;
-          ctx.moveTo(stars[i].x, stars[i].y);
-          ctx.lineTo(stars[j].x, stars[j].y);
-          ctx.stroke();
+      // soft sun glow top-right
+      const sun = ctx.createRadialGradient(W * .82, H * .12, 0, W * .82, H * .12, W * .35);
+      sun.addColorStop(0,   'rgba(253,224,71,.35)');
+      sun.addColorStop(0.4, 'rgba(251,191,36,.12)');
+      sun.addColorStop(1,   'rgba(251,191,36,0)');
+      ctx.fillStyle = sun;
+      ctx.fillRect(0, 0, W, H);
+
+      // floating clouds (orbs as white puffs)
+      orbs.forEach(o => {
+        o.tick();
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, `rgba(255,255,255,${o.a * 3.5})`);
+        g.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      // light grid lines
+      ctx.strokeStyle = 'rgba(2,132,199,.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    } else {
+      // ── DARK MODE: starfield ──
+      orbs.forEach(o => { o.tick(); o.draw(); });
+
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
+          const d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < 110) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(14,165,233,${.10 * (1 - d / 110)})`;
+            ctx.lineWidth = .5;
+            ctx.moveTo(stars[i].x, stars[i].y);
+            ctx.lineTo(stars[j].x, stars[j].y);
+            ctx.stroke();
+          }
         }
       }
+      stars.forEach(s => { s.tick(); s.draw(); });
+
+      meteorTimer++;
+      if (meteorTimer > 180 + Math.random() * 240) {
+        meteors.push(new Meteor());
+        meteorTimer = 0;
+      }
+      meteors = meteors.filter(m => !m.dead);
+      meteors.forEach(m => { m.tick(); m.draw(); });
     }
 
-    // stars
-    stars.forEach(s => { s.tick(); s.draw(); });
-
-    // meteors
-    meteorTimer++;
-    if (meteorTimer > 180 + Math.random() * 240) { // every ~3-7s
-      meteors.push(new Meteor());
-      meteorTimer = 0;
-    }
-    meteors = meteors.filter(m => !m.dead);
-    meteors.forEach(m => { m.tick(); m.draw(); });
-
-    // planes
+    // planes always visible in both modes
     planeTimer++;
-    if (planeTimer > 400 + Math.random() * 600) { // every ~7-17s
+    if (planeTimer > 400 + Math.random() * 600) {
       planes.push(new Plane());
       planeTimer = 0;
     }
