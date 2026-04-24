@@ -66,12 +66,55 @@
             transform: translateY(-5px) rotateX(3deg);
             box-shadow: 0 20px 40px rgba(0,0,0,.3);
         }
+        
+        /* ── Light mode KPI cards ── */
+        html:not(.dark-mode) .kpi-card {
+            background: rgba(255,255,255,0.95) !important;
+            border: 1px solid rgba(0,0,0,0.15) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+        html:not(.dark-mode) .kpi-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
         /* ── Table ── */
         .card {
             background: rgba(255,255,255,.13);
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,.2);
             box-shadow: 0 2px 12px rgba(0,0,0,.2);
+        }
+        
+        /* ── Light mode cards ── */
+        html:not(.dark-mode) .card {
+            background: rgba(255,255,255,0.95) !important;
+            border: 1px solid rgba(0,0,0,0.15) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* ── Fleet cards specific styling ── */
+        .fleet-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fleet-card:hover {
+            transform: translateY(-2px);
+        }
+        html:not(.dark-mode) .fleet-card {
+            background: rgba(255,255,255,0.98) !important;
+            border: 1px solid rgba(0,0,0,0.12) !important;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08) !important;
+        }
+        html:not(.dark-mode) .fleet-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+        }
+        
+        /* ── Light mode inner elements ── */
+        html:not(.dark-mode) .fleet-card .bg-slate-50 {
+            background: rgba(248,250,252,0.8) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+        }
+        html:not(.dark-mode) .card .bg-slate-50 {
+            background: rgba(248,250,252,0.8) !important;
+            border-color: rgba(0,0,0,0.1) !important;
         }
 
         .hidden-row {
@@ -184,8 +227,8 @@
 
         /* ── Dark Mode ── */
         .dark-mode body { background: #0f172a !important; color: #e2e8f0; }
-        .dark-mode .card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
-        .dark-mode .kpi-card { background: #1e293b !important; border-color: #334155 !important; }
+        .dark-mode .card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 2px 12px rgba(0,0,0,.4) !important; }
+        .dark-mode .kpi-card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 4px 16px rgba(0,0,0,.4) !important; }
         .dark-mode .fleet-card { background: #1e293b !important; border-color: #334155 !important; }
         .dark-mode .bg-white { background: #1e293b !important; }
         .dark-mode .bg-slate-50 { background: #263348 !important; }
