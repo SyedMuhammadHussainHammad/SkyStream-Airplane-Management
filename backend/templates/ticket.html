@@ -138,10 +138,16 @@
 
   @keyframes shimmer { from{background-position:-200% 0} to{background-position:200% 0} }
 
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+
   @media print {
     #navbar, footer, .no-print { display: none !important; }
-    body { background: #fff !important; }
-    .bp-card { box-shadow: none; border: 1px solid #e2e8f0; }
+    body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bp-card { box-shadow: none; }
+    .bp-wrap { padding: 20px; }
   }
 </style>
 {% endblock %}
