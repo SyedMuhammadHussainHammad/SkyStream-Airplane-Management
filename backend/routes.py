@@ -32,6 +32,34 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+# ── DIAGNOSTIC ROUTE (for debugging Vercel deployment) ──
+@app.route('/api/diagnostic')
+def diagnostic():
+    """Simple diagnostic endpoint to check environment and database"""
+    import sys
+    diagnostics = {
+        'status': 'running',
+        'python_version': sys.version,
+        'environment': {
+            'DATABASE_URL_set': bool(os.environ.get('DATABASE_URL')),
+            'SECRET_KEY_set': bool(os.environ.get('SECRET_KEY')),
+        },
+        'paths': {
+            'cwd': os.getcwd(),
+            'backend_dir': os.path.dirname(__file__),
+            'sys_path': sys.path[:3],
+        }
+    }
+    
+    # Try database connection
+    try:
+        db.session.execute(text("SELECT 1"))
+        diagnostics['database'] = 'connected'
+    except Exception as e:
+        diagnostics['database'] = f'error: {str(e)}'
+    
+    return jsonify(diagnostics)
+
 # ── HOME ──
 @app.route('/')
 def home():

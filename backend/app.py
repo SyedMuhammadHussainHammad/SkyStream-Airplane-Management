@@ -25,6 +25,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 
 # ── APP ──
 _project_root = os.path.abspath(os.path.join(_backend_dir, os.pardir))
@@ -44,12 +45,17 @@ login_manager = LoginManager()
 # ── CONFIG ──
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
+# Get DATABASE_URL from environment
 database_url = os.environ.get("DATABASE_URL")
+
 if not database_url:
-    raise RuntimeError(
-        "DATABASE_URL environment variable is not set. "
-        "Add it in your Vercel project settings → Environment Variables."
-    )
+    # In development, this will show a helpful error
+    # In production (Vercel), this means env vars aren't configured
+    import sys
+    print("ERROR: DATABASE_URL environment variable is not set", file=sys.stderr)
+    print("Please add DATABASE_URL in Vercel Environment Variables", file=sys.stderr)
+    # Don't raise error immediately - let the app start so we can show error page
+    database_url = "postgresql://localhost/placeholder"  # Placeholder to prevent crash
 
 # Fix legacy 'postgres://' scheme (Heroku/older services)
 if database_url.startswith("postgres://"):
@@ -58,21 +64,19 @@ if database_url.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,          # test connection before use
-    "pool_recycle": 300,            # recycle connections every 5 min
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
     "connect_args": {
-        "sslmode": "require",       # Neon requires SSL
+        "sslmode": "require",
         "connect_timeout": 10,
     },
 }
-
-from flask_wtf.csrf import CSRFProtect
 
 # ── INIT EXTENSIONS ──
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
-CSRFProtect(app)  # makes csrf_token() available in all templates
+CSRFProtect(app)
 login_manager.login_view = "login"
 
 # ── Register 'app' module alias so sub-modules can do 'from app import ...' ──
@@ -82,7 +86,10 @@ sys.modules["app"] = sys.modules[__name__]
 with app.app_context():
     import models   # noqa
     import routes   # noqa
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Warning: Could not create tables: {e}")
 
 # ── WSGI entry point ──
 application = app
