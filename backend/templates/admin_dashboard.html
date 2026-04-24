@@ -34,216 +34,47 @@
         }
     </script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/skystream.css">
     <style>
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #162245;
-            color: #ffffff;
-        }
-        html:not(.dark-mode) body { background: #162245; color: #ffffff; }
-
+        /* Admin-specific styles not in shared CSS */
+        body { font-family: 'DM Sans', sans-serif; }
         h1, h2, h3, h4, h5 { font-family: 'Sora', sans-serif; }
-
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.4); border-radius: 4px; }
-        html:not(.dark-mode) ::-webkit-scrollbar-track { background: #0e1830; }
-
-        /* ── KPI 3D cards ── */
-        .kpi-card {
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,.2);
-            background: rgba(255,255,255,.13);
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0,0,0,.2);
-            transition: transform .25s ease, box-shadow .25s ease;
-            transform-style: preserve-3d;
-            cursor: default;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px) rotateX(3deg);
-            box-shadow: 0 20px 40px rgba(0,0,0,.3);
-        }
-        /* ── Table ── */
-        .card {
-            background: rgba(255,255,255,.13);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,.2);
-            box-shadow: 0 2px 12px rgba(0,0,0,.2);
-        }
-
-        .hidden-row {
-            display: none !important;
-        }
-
-        .section-anchor {
-            scroll-margin-top: 72px;
-        }
-
-        /* ── Status pills ── */
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 100px;
-            border-width: 1px;
-            letter-spacing: .3px;
-        }
-
-        /* ── Airport badge pulse ── */
-        .airport-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .airport-dot.active {
-            animation: dotPulse 2s ease infinite;
-        }
-
-        @keyframes dotPulse {
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: .5;
-                transform: scale(1.5);
-            }
-        }
-
-        /* ── Sidebar ── */
-        #sidebar {
-            background: #0a1628;
-            border-right: 1px solid rgba(201, 146, 42, .15);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: rgba(226, 232, 240, .5);
-            font-size: .8125rem;
-            font-weight: 500;
-            padding: 10px 12px;
-            border-radius: 10px;
-            transition: all .2s;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, .06);
-            color: #e8b84b;
-        }
-
-        .nav-item:hover .nav-icon {
-            color: #e8b84b;
-        }
-
-        .nav-icon {
-            width: 16px;
-            height: 16px;
-            color: rgba(226, 232, 240, .3);
-            transition: color .2s;
-        }
-
-        /* ── Top nav ── */
-        #topnav {
-            background: #0a1628;
-            border-bottom: 1px solid rgba(201, 146, 42, .2);
-            box-shadow: 0 1px 0 rgba(201, 146, 42, .15);
-        }
-
-        /* ── Fleet card 3D ── */
-        .fleet-card {
-            transition: transform .25s ease, box-shadow .25s ease;
-        }
-
-        .fleet-card:hover {
-            transform: translateY(-4px) rotateX(2deg);
-            box-shadow: 0 16px 40px rgba(10, 22, 40, .12);
-        }
-
-        /* ── Shimmer table header ── */
-        .tbl-head {
-            background: linear-gradient(135deg, #0a1628, #112850);
-        }
-
-        /* ── Page transition ── */
-        main {
-            animation: fadeIn .4s ease both;
-        }
-
-        /* ── Dark Mode ── */
-        .dark-mode body { background: #0f172a !important; color: #e2e8f0; }
-        .dark-mode .card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
-        .dark-mode .kpi-card { background: #1e293b !important; border-color: #334155 !important; }
-        .dark-mode .fleet-card { background: #1e293b !important; border-color: #334155 !important; }
-        .dark-mode .bg-white { background: #1e293b !important; }
-        .dark-mode .bg-slate-50 { background: #263348 !important; }
-        .dark-mode .bg-slate-100 { background: #263348 !important; }
-        .dark-mode .border-slate-100,
-        .dark-mode .border-slate-200 { border-color: #334155 !important; }
-        .dark-mode .text-slate-900,
-        .dark-mode .text-slate-800 { color: #e2e8f0 !important; }
-        .dark-mode .text-slate-700,
-        .dark-mode .text-slate-600 { color: #94a3b8 !important; }
-        .dark-mode .text-slate-500 { color: #64748b !important; }
-        .dark-mode .text-navy { color: #93c5fd !important; }
-        .dark-mode .divide-slate-100 > * { border-color: #334155 !important; }
-        .dark-mode .hover\:bg-slate-50:hover { background: #263348 !important; }
-        .dark-mode input, .dark-mode select {
-            background: #263348 !important;
-            border-color: #334155 !important;
-            color: #e2e8f0 !important;
-        }
-        .dark-mode .tbl-head { background: linear-gradient(135deg,#060e1c,#0a1628); }
-
-        /* ── Light Mode overrides for admin dashboard ── */
-        html:not(.dark-mode) .text-navy    { color: #ffffff !important; }
-        html:not(.dark-mode) .text-slate-800,
-        html:not(.dark-mode) .text-slate-900 { color: #ffffff !important; }
-        html:not(.dark-mode) .text-slate-700,
-        html:not(.dark-mode) .text-slate-600 { color: rgba(255,255,255,.82) !important; }
-        html:not(.dark-mode) .text-slate-500 { color: rgba(255,255,255,.65) !important; }
-        html:not(.dark-mode) .text-slate-400 { color: rgba(255,255,255,.54) !important; }
-        html:not(.dark-mode) .bg-white       { background: rgba(255,255,255,.14) !important; }
-        html:not(.dark-mode) .bg-slate-50    { background: rgba(255,255,255,.10) !important; }
-        html:not(.dark-mode) .bg-slate-100   { background: rgba(255,255,255,.08) !important; }
-        html:not(.dark-mode) .border-slate-100,
-        html:not(.dark-mode) .border-slate-200 { border-color: rgba(255,255,255,.22) !important; }
-        html:not(.dark-mode) .divide-slate-100 > * { border-color: rgba(255,255,255,.16) !important; }
-        html:not(.dark-mode) .hover\:bg-slate-50:hover { background: rgba(255,255,255,.13) !important; }
-        html:not(.dark-mode) input,
-        html:not(.dark-mode) select {
-            background: rgba(255,255,255,.13) !important;
-            border-color: rgba(255,255,255,.24) !important;
-            color: #ffffff !important;
-        }
-        html:not(.dark-mode) .fleet-card {
-            background: rgba(255,255,255,.13);
-            border-color: rgba(255,255,255,.22);
-        }
-        /* Dark mode toggle */
-        #dm-toggle {
-            display:flex; align-items:center; justify-content:center;
-            width:32px; height:32px; border-radius:9px;
-            border:1px solid rgba(255,255,255,.15);
-            background:rgba(255,255,255,.07);
-            color:#e2e8f0; cursor:pointer;
-            transition:background .2s, transform .15s;
-            flex-shrink:0;
-        }
-        #dm-toggle:hover { background:rgba(255,255,255,.14); transform:scale(1.05); }
-        #dm-toggle svg { width:15px; height:15px; }
+        .hidden-row { display: none !important; }
+        .section-anchor { scroll-margin-top: 72px; }
+        .status-pill { display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;border-width:1px;letter-spacing:.3px; }
+        .airport-dot { width:8px;height:8px;border-radius:50%;display:inline-block; }
+        .airport-dot.active { animation: dotPulse 2s ease infinite; }
+        #sidebar { background:#0a1628;border-right:1px solid rgba(201,146,42,.15); }
+        .nav-item { display:flex;align-items:center;gap:10px;color:rgba(226,232,240,.5);font-size:.8125rem;font-weight:500;padding:10px 12px;border-radius:10px;transition:all .2s;text-decoration:none; }
+        .nav-item:hover { background:rgba(255,255,255,.06);color:#e8b84b; }
+        .nav-item:hover .nav-icon { color:#e8b84b; }
+        .nav-icon { width:16px;height:16px;color:rgba(226,232,240,.3);transition:color .2s; }
+        #topnav { background:#0a1628;border-bottom:1px solid rgba(201,146,42,.2);box-shadow:0 1px 0 rgba(201,146,42,.15); }
+        .fleet-card { transition:transform .25s ease,box-shadow .25s ease; }
+        .fleet-card:hover { transform:translateY(-4px) rotateX(2deg);box-shadow:0 16px 40px rgba(10,22,40,.12); }
+        .tbl-head { background:linear-gradient(135deg,#0a1628,#112850); }
+        .kpi-card { border-radius:18px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.13);padding:20px;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:transform .25s ease,box-shadow .25s ease;transform-style:preserve-3d;cursor:default; }
+        .kpi-card:hover { transform:translateY(-5px) rotateX(3deg);box-shadow:0 20px 40px rgba(0,0,0,.3); }
+        .kpi-blue { background:#eff6ff !important; }
+        .kpi-icon-blue, .kpi-text-blue { color:#1d4ed8 !important; }
+        .kpi-indigo { background:#eef2ff !important; }
+        .kpi-icon-indigo, .kpi-text-indigo { color:#4338ca !important; }
+        .kpi-green { background:#f0fdf4 !important; }
+        .kpi-icon-green, .kpi-text-green { color:#16a34a !important; }
+        .kpi-orange { background:#fff7ed !important; }
+        .kpi-icon-orange, .kpi-text-orange { color:#ea580c !important; }
+        .kpi-purple { background:#faf5ff !important; }
+        .kpi-icon-purple, .kpi-text-purple { color:#7c3aed !important; }
+        .kpi-amber { background:#fffbeb !important; }
+        .kpi-icon-amber, .kpi-text-amber { color:#d97706 !important; }
+        .kpi-teal { background:#f0fdfa !important; }
+        .kpi-icon-teal, .kpi-text-teal { color:#0f766e !important; }
+        .card { background:rgba(255,255,255,.13);border-radius:16px;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 12px rgba(0,0,0,.2); }
+        main { animation:fadeIn .4s ease both; }
+        #dm-toggle { display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#e2e8f0;cursor:pointer;transition:background .2s,transform .15s;flex-shrink:0; }
+        #dm-toggle:hover { background:rgba(255,255,255,.14);transform:scale(1.05); }
+        #dm-toggle svg { width:15px;height:15px; }
     </style>
 </head>
 
@@ -365,24 +196,6 @@
 
                 <div
                     class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-4">
-                    {% set bg_map = {
-                        'blue':   '#eff6ff',
-                        'indigo': '#eef2ff',
-                        'green':  '#f0fdf4',
-                        'orange': '#fff7ed',
-                        'purple': '#faf5ff',
-                        'amber':  '#fffbeb',
-                        'teal':   '#f0fdfa'
-                    } %}
-                    {% set txt_map = {
-                        'blue':   '#1d4ed8',
-                        'indigo': '#4338ca',
-                        'green':  '#16a34a',
-                        'orange': '#ea580c',
-                        'purple': '#7c3aed',
-                        'amber':  '#d97706',
-                        'teal':   '#0f766e'
-                    } %}
                     {% for val, label, icon, accent in [
                     (kpis.planes,      'Total Aircraft', 'plane',      'blue'),
                     (kpis.in_flight,   'In Flight',      'radio',      'indigo'),
@@ -392,10 +205,9 @@
                     (kpis.staff,       'Crew Members',   'users',      'amber'),
                     (kpis.customers,   'Customers',      'user-check', 'teal'),
                     ] %}
-                    <div class="kpi-card animate-fade-in" style="background:{{ bg_map[accent] }};">
-                        <i data-lucide="{{ icon }}" class="w-4 h-4 mb-3 opacity-70"
-                            style="color:{{ txt_map[accent] }};"></i>
-                        <p class="font-display font-extrabold text-3xl" style="color:{{ txt_map[accent] }};">{{ val }}</p>
+                    <div class="kpi-card animate-fade-in kpi-{{ accent }}">
+                        <i data-lucide="{{ icon }}" class="w-4 h-4 mb-3 opacity-70 kpi-icon-{{ accent }}"></i>
+                        <p class="font-display font-extrabold text-3xl kpi-text-{{ accent }}">{{ val }}</p>
                         <p class="text-xs text-slate-400 mt-1 font-medium">{{ label }}</p>
                     </div>
                     {% endfor %}
@@ -1278,4 +1090,5 @@
   </div>
 
 </body>
+</html>
 </html>
