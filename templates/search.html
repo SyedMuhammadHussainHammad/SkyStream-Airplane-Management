@@ -490,7 +490,8 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z"/>
             </svg>
-            Search Flights
+            <span id="search-text">Search Flights</span>
+            <span id="search-loading" style="display:none;">Searching...</span>
           </button>
         </div>
       </div>
@@ -899,6 +900,11 @@ document.getElementById('departure-date-field').addEventListener('change', funct
 document.getElementById('search-form').addEventListener('submit', function(e) {
   let ok = true;
   
+  // Show loading state
+  const searchBtn = document.getElementById('search-btn');
+  const searchText = document.getElementById('search-text');
+  const searchLoading = document.getElementById('search-loading');
+  
   // Clear previous errors
   clearDateErrors();
   
@@ -939,6 +945,12 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
     if (firstError) {
       firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  } else {
+    // Show loading state
+    searchBtn.disabled = true;
+    searchText.style.display = 'none';
+    searchLoading.style.display = 'inline';
+    searchBtn.style.opacity = '0.7';
   }
 });
 
