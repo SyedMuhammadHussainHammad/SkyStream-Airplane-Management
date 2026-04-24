@@ -109,6 +109,7 @@ class Passenger(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     seat_number = db.Column(db.String(5))
+    meal_preference = db.Column(db.String(30), default='None')
 
 
 # ── TICKET ──

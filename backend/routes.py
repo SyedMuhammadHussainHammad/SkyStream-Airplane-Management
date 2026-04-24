@@ -815,6 +815,7 @@ def checkout(flight_id):
                 first_name=p['first_name'],
                 last_name=p['last_name'],
                 seat_number=p['seat_number'],
+                meal_preference=p.get('meal_preference', 'None'),
             ))
             # Mark seat as taken
             if p['seat_number']:
@@ -851,6 +852,7 @@ def checkout(flight_id):
                     first_name=p['first_name'],
                     last_name=p['last_name'],
                     seat_number=p.get('seat_number', ''),
+                    meal_preference=p.get('meal_preference', 'None'),
                 ))
                 # Mark return seat as taken
                 if p.get('seat_number'):
