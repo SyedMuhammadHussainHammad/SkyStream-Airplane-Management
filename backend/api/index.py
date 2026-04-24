@@ -7,20 +7,32 @@ _backend_dir = os.path.abspath(os.path.join(_api_dir, ".."))   # .../backend
 if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
+from flask import Flask, jsonify
+
+# Fallback app shown if the real app fails to initialize
+application = Flask(__name__)
+
+@application.route('/')
+@application.route('/<path:path>')
+def error_handler(path=''):
+    return jsonify({
+        'error': 'Application failed to initialize',
+        'hint': 'Check that DATABASE_URL is set in Vercel Environment Variables'
+    }), 500
+
 try:
-    from app import app  # noqa: E402  (import after path fix)
+    from app import app  # noqa: E402
     application = app
 except Exception as e:
-    # If app fails to initialize, create a minimal Flask app to show the error
-    from flask import Flask, jsonify
-    application = Flask(__name__)
-    
-    @application.route('/')
-    @application.route('/<path:path>')
-    def error_handler(path=''):
+    import traceback
+    _err = traceback.format_exc()
+
+    @application.route('/_error')
+    def show_error():
         return jsonify({
             'error': 'Application failed to initialize',
             'detail': str(e),
-            'type': type(e).__name__,
-            'hint': 'Check that DATABASE_URL is set in Vercel Environment Variables'
+            'traceback': _err,
         }), 500
+
+app = application
