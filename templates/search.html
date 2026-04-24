@@ -400,9 +400,10 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; max-width:
           🚫 Sold Out
         </span>
         {% else %}
-        <a href="{{ url_for('select_package', flight_id=flight.id) }}" id="select-{{ flight.id }}"
+        <a href="{% if trip_type == 'return' %}javascript:void(0){% else %}{{ url_for('select_package', flight_id=flight.id) }}{% endif %}" 
+           id="select-{{ flight.id }}"
            class="btn-primary px-5 py-2.5 text-sm rounded-xl"
-           onclick="{% if trip_type == 'return' %}sessionStorage.setItem('outbound_flight_id', {{ flight.id }});{% endif %}">
+           onclick="{% if trip_type == 'return' %}selectOutboundFlight({{ flight.id }});{% endif %}">
           Select →
         </a>
         {% endif %}
@@ -632,6 +633,49 @@ window.addEventListener('load', function() {
 {% endif %}
 
 /* ── Handle return flight selection ── */
+let selectedOutboundId = null;
+
+function selectOutboundFlight(flightId) {
+    // Store outbound flight ID
+    selectedOutboundId = flightId;
+    sessionStorage.setItem('outbound_flight_id', flightId);
+    
+    // Update all outbound flight cards
+    document.querySelectorAll('[id^="flight-"]').forEach(card => {
+        const btn = card.querySelector('[id^="select-"]');
+        if (btn) {
+            if (card.id === `flight-${flightId}`) {
+                // Selected card
+                card.style.borderColor = '#0ea5e9';
+                card.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.3)';
+                btn.textContent = '✓ Selected';
+                btn.style.background = '#22c55e';
+            } else {
+                // Other cards
+                card.style.borderColor = '';
+                card.style.boxShadow = '';
+                btn.textContent = 'Select →';
+                btn.style.background = '';
+            }
+        }
+    });
+    
+    // Scroll to return flights section
+    const returnSection = document.querySelector('.mt-16');
+    if (returnSection) {
+        setTimeout(() => {
+            returnSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+    }
+    
+    // Show message
+    const msg = document.createElement('div');
+    msg.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-sky-600 text-white px-6 py-3 rounded-xl shadow-xl font-semibold text-sm';
+    msg.textContent = '✓ Outbound flight selected. Now select your return flight below.';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 4000);
+}
+
 function selectReturnFlight(returnFlightId) {
     // Store return flight ID in session storage
     fetch('/api/store-return-flight', {
@@ -651,5 +695,6 @@ function selectReturnFlight(returnFlightId) {
         }
     });
 }
+
 </script>
 {% endblock %}
