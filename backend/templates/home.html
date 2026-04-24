@@ -380,76 +380,239 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
 {% block scripts %}
 <script>
-// ── Full-page starfield (fixed, behind all sections) ──
-(function() {
+(function () {
   const cvs = document.getElementById('star-canvas');
   const ctx = cvs.getContext('2d');
-  let W, H, pts = [];
+  let W, H;
 
   function resize() {
     W = cvs.width  = window.innerWidth;
     H = cvs.height = window.innerHeight;
   }
 
+  // ── Stars ──────────────────────────────────────────────
   class Star {
     constructor() { this.reset(true); }
     reset(init) {
-      this.x  = Math.random() * W;
-      this.y  = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
-      this.r  = Math.random() * 2 + .4;
-      this.vx = (Math.random() - .5) * .3;
-      this.vy = (Math.random() - .5) * .3;
-      this.a  = Math.random() * .7 + .2;
+      this.x     = Math.random() * W;
+      this.y     = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
+      this.r     = Math.random() * 1.8 + .3;
+      this.vx    = (Math.random() - .5) * .25;
+      this.vy    = (Math.random() - .5) * .25;
+      this.a     = Math.random() * .7 + .2;
       this.pulse = Math.random() * Math.PI * 2;
+      // colour: mostly blue, occasional gold
+      this.gold  = Math.random() < .12;
     }
     tick() {
-      this.x += this.vx;
-      this.y += this.vy;
-      this.pulse += .018;
+      this.x += this.vx; this.y += this.vy; this.pulse += .018;
       if (this.x < -4 || this.x > W + 4 || this.y < -4 || this.y > H + 4) this.reset(false);
     }
     draw() {
       const a = this.a * (.7 + .3 * Math.sin(this.pulse));
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(14,165,233,${a})`;
+      ctx.fillStyle = this.gold ? `rgba(232,184,75,${a})` : `rgba(14,165,233,${a})`;
       ctx.fill();
     }
   }
 
-  function init() {
-    resize();
-    pts = Array.from({ length: 220 }, () => new Star());
+  // ── Shooting stars ─────────────────────────────────────
+  class Meteor {
+    constructor() { this.spawn(); }
+    spawn() {
+      this.x    = Math.random() * W * 1.2 - W * .1;
+      this.y    = Math.random() * H * .4;
+      this.len  = Math.random() * 120 + 60;
+      this.spd  = Math.random() * 8 + 6;
+      this.a    = 0;
+      this.life = 0;
+      this.max  = Math.random() * 60 + 40;
+      this.ang  = Math.PI / 5 + (Math.random() - .5) * .3;
+      this.dead = false;
+    }
+    tick() {
+      this.life++;
+      this.a = this.life < 10 ? this.life / 10 : this.life > this.max - 10 ? (this.max - this.life) / 10 : 1;
+      this.x += Math.cos(this.ang) * this.spd;
+      this.y += Math.sin(this.ang) * this.spd;
+      if (this.life >= this.max) this.dead = true;
+    }
+    draw() {
+      const tx = this.x - Math.cos(this.ang) * this.len;
+      const ty = this.y - Math.sin(this.ang) * this.len;
+      const g  = ctx.createLinearGradient(tx, ty, this.x, this.y);
+      g.addColorStop(0, `rgba(255,255,255,0)`);
+      g.addColorStop(1, `rgba(255,255,255,${this.a * .9})`);
+      ctx.beginPath();
+      ctx.strokeStyle = g;
+      ctx.lineWidth   = 1.5;
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(this.x, this.y);
+      ctx.stroke();
+      // bright tip
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${this.a})`;
+      ctx.fill();
+    }
   }
 
+  // ── Floating orbs (slow, large, blurry via shadow) ─────
+  class Orb {
+    constructor() {
+      this.x    = Math.random() * W;
+      this.y    = Math.random() * H;
+      this.r    = Math.random() * 80 + 40;
+      this.vx   = (Math.random() - .5) * .15;
+      this.vy   = (Math.random() - .5) * .15;
+      this.a    = Math.random() * .04 + .015;
+      this.gold = Math.random() < .3;
+    }
+    tick() {
+      this.x += this.vx; this.y += this.vy;
+      if (this.x < -this.r) this.x = W + this.r;
+      if (this.x > W + this.r) this.x = -this.r;
+      if (this.y < -this.r) this.y = H + this.r;
+      if (this.y > H + this.r) this.y = -this.r;
+    }
+    draw() {
+      const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+      const c = this.gold ? `201,146,42` : `14,165,233`;
+      g.addColorStop(0, `rgba(${c},${this.a})`);
+      g.addColorStop(1, `rgba(${c},0)`);
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+  }
+
+  // ── Plane trails ───────────────────────────────────────
+  class Plane {
+    constructor() { this.spawn(); }
+    spawn() {
+      const fromLeft = Math.random() < .5;
+      this.x    = fromLeft ? -60 : W + 60;
+      this.y    = Math.random() * H * .6 + H * .05;
+      this.spd  = (Math.random() * 1.2 + .6) * (fromLeft ? 1 : -1);
+      this.flip = !fromLeft;
+      this.trail = [];
+      this.dead = false;
+    }
+    tick() {
+      this.x += this.spd;
+      this.trail.unshift({ x: this.x, y: this.y });
+      if (this.trail.length > 80) this.trail.pop();
+      if (this.x < -120 || this.x > W + 120) this.dead = true;
+    }
+    draw() {
+      // trail
+      for (let i = 1; i < this.trail.length; i++) {
+        const a = (1 - i / this.trail.length) * .18;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(14,165,233,${a})`;
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(this.trail[i - 1].x, this.trail[i - 1].y);
+        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+        ctx.stroke();
+      }
+      // plane emoji via canvas text
+      ctx.save();
+      ctx.font = '14px serif';
+      ctx.globalAlpha = .35;
+      if (this.flip) {
+        ctx.scale(-1, 1);
+        ctx.fillText('✈', -this.x - 7, this.y + 5);
+      } else {
+        ctx.fillText('✈', this.x - 7, this.y + 5);
+      }
+      ctx.restore();
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  let stars   = [];
+  let meteors = [];
+  let orbs    = [];
+  let planes  = [];
+  let meteorTimer = 0;
+  let planeTimer  = 0;
+
+  function init() {
+    resize();
+    stars  = Array.from({ length: 220 }, () => new Star());
+    orbs   = Array.from({ length: 6 },   () => new Orb());
+    planes = [];
+  }
+
+  // ── Main loop ──────────────────────────────────────────
   function loop() {
     ctx.clearRect(0, 0, W, H);
-    // Draw connection lines first
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+
+    // orbs (drawn first, very subtle)
+    orbs.forEach(o => { o.tick(); o.draw(); });
+
+    // connection lines between stars
+    for (let i = 0; i < stars.length; i++) {
+      for (let j = i + 1; j < stars.length; j++) {
+        const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
         const d  = Math.sqrt(dx * dx + dy * dy);
         if (d < 110) {
           ctx.beginPath();
-          ctx.strokeStyle = `rgba(14,165,233,${.12 * (1 - d / 110)})`;
-          ctx.lineWidth = .6;
-          ctx.moveTo(pts[i].x, pts[i].y);
-          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.strokeStyle = `rgba(14,165,233,${.10 * (1 - d / 110)})`;
+          ctx.lineWidth = .5;
+          ctx.moveTo(stars[i].x, stars[i].y);
+          ctx.lineTo(stars[j].x, stars[j].y);
           ctx.stroke();
         }
       }
     }
-    // Draw stars on top
-    pts.forEach(p => { p.tick(); p.draw(); });
+
+    // stars
+    stars.forEach(s => { s.tick(); s.draw(); });
+
+    // meteors
+    meteorTimer++;
+    if (meteorTimer > 180 + Math.random() * 240) { // every ~3-7s
+      meteors.push(new Meteor());
+      meteorTimer = 0;
+    }
+    meteors = meteors.filter(m => !m.dead);
+    meteors.forEach(m => { m.tick(); m.draw(); });
+
+    // planes
+    planeTimer++;
+    if (planeTimer > 400 + Math.random() * 600) { // every ~7-17s
+      planes.push(new Plane());
+      planeTimer = 0;
+    }
+    planes = planes.filter(p => !p.dead);
+    planes.forEach(p => { p.tick(); p.draw(); });
+
     requestAnimationFrame(loop);
   }
 
   init();
   loop();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', () => { resize(); orbs.forEach(o => { o.x = Math.random() * W; o.y = Math.random() * H; }); });
 })();
 
-// ── Scroll-triggered reveal ──
+// ── Hero mouse parallax ────────────────────────────────
+document.addEventListener('mousemove', e => {
+  const hero = document.getElementById('hero-content');
+  if (!hero) return;
+  const rx = (e.clientY / window.innerHeight - .5) * 8;
+  const ry = (e.clientX / window.innerWidth  - .5) * -8;
+  hero.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  hero.style.transition = 'transform .1s ease';
+});
+document.getElementById('hero')?.addEventListener('mouseleave', () => {
+  const hero = document.getElementById('hero-content');
+  if (hero) { hero.style.transform = ''; hero.style.transition = 'transform .6s ease'; }
+});
+
+// ── Scroll-triggered reveal ────────────────────────────
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -459,10 +622,10 @@ const observer = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.feature-card, .route-card, .stat-card').forEach(el => {
+document.querySelectorAll('.feature-card, .route-card, .stat-card').forEach((el, i) => {
   el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  el.style.transform = 'translateY(24px)';
+  el.style.transition = `opacity .5s ease ${i * 0.06}s, transform .5s ease ${i * 0.06}s`;
   observer.observe(el);
 });
 </script>
