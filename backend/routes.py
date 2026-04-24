@@ -23,6 +23,15 @@ from models import User, Flight, Seat, Plane, Booking, StaffProfile, SeatLock, P
 def utc_now():
     return datetime.now(timezone.utc)
 
+# ── DECORATORS ──
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return wrapper
+
 # ── GENERATE FLIGHTS ON DEMAND ──
 @app.route('/admin/generate-flights')
 @login_required
@@ -106,15 +115,6 @@ def ensure_30_day_schedule():
     db.session.commit()
     _last_schedule_refresh = now
     return created
-
-# ── DECORATORS ──
-def admin_required(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != 'admin':
-            return redirect(url_for('home'))
-        return f(*args, **kwargs)
-    return wrapper
 
 # ── HOME ──
 @app.route('/')
