@@ -430,7 +430,35 @@ def admin_add_flight():
 
     return render_template('admin_add_flight.html', planes=planes)
 
-# ── ADMIN ASSIGN STAFF TO FLIGHT ──
+# ── ADMIN DELETE FLIGHT ──
+@app.route('/admin/flights/<int:flight_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_flight(flight_id):
+    flight = Flight.query.get_or_404(flight_id)
+    # Delete related seats, bookings (cascade via DB relationships)
+    try:
+        # Remove rosters linked to this flight
+        from models import Roster
+        Roster.query.filter_by(flight_id=flight_id).delete()
+        # Remove seats
+        Seat.query.filter_by(flight_id=flight_id).delete()
+        # Remove passengers + tickets via bookings
+        for booking in flight.bookings:
+            if booking.ticket:
+                db.session.delete(booking.ticket)
+            for passenger in booking.passengers:
+                db.session.delete(passenger)
+            db.session.delete(booking)
+        db.session.delete(flight)
+        db.session.commit()
+        flash(f'Flight #{flight_id} deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting flight: {str(e)}', 'danger')
+    return redirect(url_for('admin_dashboard'))
+
+
 @app.route('/admin/staff/<int:user_id>/assign', methods=['POST'])
 @login_required
 @admin_required
