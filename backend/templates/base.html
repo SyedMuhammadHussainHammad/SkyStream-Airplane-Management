@@ -52,7 +52,8 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html{scroll-behavior:smooth;}
     html,body{min-height:100%;}
-    body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:#050d1f;}
+    html{background:#050d1f;}
+    body{font-family:'Inter',sans-serif;color:#e2e8f0;min-height:100vh;background:transparent;}
     body::before{
       content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
       background:
@@ -99,7 +100,8 @@
 
 
     /* LIGHT MODE — #162245 */
-    html:not(.dark-mode) body{background:#162245;color:#fff;}
+    html:not(.dark-mode){background:#162245;}
+    html:not(.dark-mode) body{background:transparent;color:#fff;}
     html:not(.dark-mode) body::before{
       background:
         radial-gradient(ellipse 65% 55% at 8% 4%,  rgba(255,255,255,.13) 0%,transparent 55%),
