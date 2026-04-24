@@ -3,75 +3,21 @@
 
 {% block head %}
 <style>
-/* ── Full-page starfield — handled by base.html #ss-bg-canvas ── */
-#ss-bg-canvas { z-index: 0; } /* ensure it's behind home content */
-
-/* Kill the base.html body::before gradient on this page so canvas shows */
-/* body::before already hidden globally in base.html */
-
-/* Light mode text overrides for home page */
-html:not(.dark-mode) .hero-headline { color: #0c1a3a !important; }
-html:not(.dark-mode) .hero-headline .accent {
-  background: linear-gradient(135deg,#0284c7 0%,#6366f1 50%,#c9922a 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+/* ── Full-page starfield canvas fixed behind everything ── */
+#star-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
 }
-html:not(.dark-mode) .hero-badge {
-  background: rgba(2,132,199,.1);
-  border-color: rgba(2,132,199,.4);
-  color: #0369a1;
-}
-html:not(.dark-mode) #hero-content p.text-slate-400 { color: #334155 !important; }
-html:not(.dark-mode) .section-title { color: #0c1a3a !important; }
-html:not(.dark-mode) .section-label { color: #0284c7 !important; }
-html:not(.dark-mode) .stat-num {
-  background: linear-gradient(135deg,#0284c7,#c9922a);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-html:not(.dark-mode) .stat-card { border-right-color: rgba(2,132,199,.2) !important; }
-html:not(.dark-mode) .stat-card .text-slate-500 { color: #475569 !important; }
-html:not(.dark-mode) .feature-card {
-  background: rgba(255,255,255,.7) !important;
-  border-color: rgba(2,132,199,.25) !important;
-  box-shadow: 0 4px 20px rgba(2,132,199,.08);
-}
-html:not(.dark-mode) .feature-card h3 { color: #0c1a3a !important; }
-html:not(.dark-mode) .feature-card p { color: #475569 !important; }
-html:not(.dark-mode) .feature-card:hover { border-color: rgba(2,132,199,.5) !important; box-shadow: 0 0 28px rgba(2,132,199,.15) !important; }
-html:not(.dark-mode) .route-card {
-  background: rgba(255,255,255,.7) !important;
-  border-color: rgba(2,132,199,.25) !important;
-}
-html:not(.dark-mode) .route-card:hover { border-color: rgba(2,132,199,.5) !important; box-shadow: 0 0 24px rgba(2,132,199,.12) !important; }
-html:not(.dark-mode) .route-card .text-white { color: #0c1a3a !important; }
-html:not(.dark-mode) .route-card .text-slate-500 { color: #64748b !important; }
-html:not(.dark-mode) .route-card .text-sky-400 { color: #0284c7 !important; }
-html:not(.dark-mode) .route-card .text-slate-600 { color: #64748b !important; }
-html:not(.dark-mode) .step-num { border-color: rgba(2,132,199,.5) !important; color: #0284c7 !important; }
-html:not(.dark-mode) .step-connector { background: linear-gradient(to bottom,rgba(2,132,199,.4),transparent) !important; }
-html:not(.dark-mode) .how-section { border-color: rgba(2,132,199,.2) !important; }
-html:not(.dark-mode) .how-section .text-slate-100 { color: #0c1a3a !important; }
-html:not(.dark-mode) .how-section .text-slate-400 { color: #475569 !important; }
-html:not(.dark-mode) .stats-section { border-color: rgba(2,132,199,.2) !important; }
-html:not(.dark-mode) .hero-grid {
-  background-image:
-    linear-gradient(rgba(2,132,199,.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(2,132,199,.06) 1px, transparent 1px) !important;
-}
-html:not(.dark-mode) .section-divider { border-color: rgba(2,132,199,.2) !important; }
-html:not(.dark-mode) .cta-banner { border-color: rgba(2,132,199,.2) !important; }
-html:not(.dark-mode) .cta-banner h2 { color: #0c1a3a !important; }
-html:not(.dark-mode) .cta-banner p { color: #475569 !important; }
-html:not(.dark-mode) .scroll-hint { opacity: .4; }
-html:not(.dark-mode) .plane-float { opacity: .04; }
 
 /* ── Page wrapper sits above canvas ── */
 .home-wrap {
   position: relative;
   z-index: 1;
 }
-
-/* Navbar must sit above canvas */
-#navbar { z-index: 1000 !important; }
 
 main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
@@ -231,7 +177,9 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
 {% block content %}
 
-<!-- Full-page canvas is provided by base.html -->
+<!-- Full-page starfield canvas -->
+<canvas id="star-canvas"></canvas>
+
 <div class="home-wrap">
 
 <!-- ── HERO ── -->
@@ -425,18 +373,90 @@ main > div { padding-top: 0 !important; padding-bottom: 0 !important; }
 
 {% block scripts %}
 <script>
-// ── Hero mouse parallax ────────────────────────────────
-document.addEventListener('mousemove', e => {
-  const hero = document.getElementById('hero-content');
-  if (!hero) return;
-  const rx = (e.clientY / window.innerHeight - .5) * 6;
-  const ry = (e.clientX / window.innerWidth  - .5) * -6;
-  hero.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-  hero.style.transition = 'transform .1s ease';
-});
-document.getElementById('hero')?.addEventListener('mouseleave', () => {
-  const h = document.getElementById('hero-content');
-  if (h) { h.style.transform = ''; h.style.transition = 'transform .6s ease'; }
+// ── Full-page starfield (fixed, behind all sections) ──
+(function() {
+  const cvs = document.getElementById('star-canvas');
+  const ctx = cvs.getContext('2d');
+  let W, H, pts = [];
+
+  function resize() {
+    W = cvs.width  = window.innerWidth;
+    H = cvs.height = window.innerHeight;
+  }
+
+  class Star {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x  = Math.random() * W;
+      this.y  = init ? Math.random() * H : (Math.random() < .5 ? -2 : H + 2);
+      this.r  = Math.random() * 1.6 + .2;
+      this.vx = (Math.random() - .5) * .3;
+      this.vy = (Math.random() - .5) * .3;
+      this.a  = Math.random() * .5 + .08;
+      this.pulse = Math.random() * Math.PI * 2;
+    }
+    tick() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.pulse += .018;
+      if (this.x < -4 || this.x > W + 4 || this.y < -4 || this.y > H + 4) this.reset(false);
+    }
+    draw() {
+      const a = this.a * (.7 + .3 * Math.sin(this.pulse));
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(14,165,233,${a})`;
+      ctx.fill();
+    }
+  }
+
+  function init() {
+    resize();
+    pts = Array.from({ length: 160 }, () => new Star());
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    // Draw connection lines first
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < 110) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(14,165,233,${.07 * (1 - d / 110)})`;
+          ctx.lineWidth = .5;
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    // Draw stars on top
+    pts.forEach(p => { p.tick(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+
+  init();
+  loop();
+  window.addEventListener('resize', resize);
+})();
+
+// ── Scroll-triggered reveal ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card, .route-card, .stat-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  observer.observe(el);
 });
 </script>
 {% endblock %}
