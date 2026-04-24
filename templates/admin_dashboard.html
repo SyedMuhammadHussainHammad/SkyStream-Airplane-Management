@@ -75,12 +75,12 @@
             box-shadow: 0 20px 40px rgba(0,0,0,.3);
         }
         
-        /* ── Light mode KPI cards (Match Search Page) ── */
+        /* ── Light mode KPI cards (Clean white with black text) ── */
         html:not(.dark-mode) .kpi-card {
             background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
+            border: 1px solid #e5e7eb !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06) !important;
-            color: #1e293b !important;
+            color: #000000 !important;
         }
         html:not(.dark-mode) .kpi-card:hover {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06) !important;
@@ -420,17 +420,44 @@
         html:not(.dark-mode) .text-slate-400 { color: #94a3b8 !important; }
         html:not(.dark-mode) .text-white { color: #0f172a !important; }
         
-        /* ── KPI cards need proper contrast in light mode ── */
+        /* ── KPI cards need black text in light mode ── */
         html:not(.dark-mode) .kpi-card .text-slate-400 { 
-            color: #64748b !important; 
+            color: #000000 !important; 
         }
         html:not(.dark-mode) .kpi-card .font-extrabold {
-            color: inherit !important;
+            color: #000000 !important;
             text-shadow: none !important;
         }
         html:not(.dark-mode) .kpi-card .text-xs {
-            color: #64748b !important;
+            color: #000000 !important;
             font-weight: 600 !important;
+        }
+        
+        /* ── Force all KPI card text to be black in light mode ── */
+        html:not(.dark-mode) .kpi-card,
+        html:not(.dark-mode) .kpi-card *,
+        html:not(.dark-mode) .kpi-card p,
+        html:not(.dark-mode) .kpi-card span,
+        html:not(.dark-mode) .kpi-card i {
+            color: #000000 !important;
+        }
+        
+        /* ── KPI card icons and values - force black text ── */
+        html:not(.dark-mode) .kpi-icon-blue, 
+        html:not(.dark-mode) .kpi-value-blue,
+        html:not(.dark-mode) .kpi-icon-indigo, 
+        html:not(.dark-mode) .kpi-value-indigo,
+        html:not(.dark-mode) .kpi-icon-green, 
+        html:not(.dark-mode) .kpi-value-green,
+        html:not(.dark-mode) .kpi-icon-orange, 
+        html:not(.dark-mode) .kpi-value-orange,
+        html:not(.dark-mode) .kpi-icon-purple, 
+        html:not(.dark-mode) .kpi-value-purple,
+        html:not(.dark-mode) .kpi-icon-amber, 
+        html:not(.dark-mode) .kpi-value-amber,
+        html:not(.dark-mode) .kpi-icon-teal, 
+        html:not(.dark-mode) .kpi-value-teal {
+            color: #000000 !important;
         }
         /* ── Light mode backgrounds and borders (Match Search Page) ── */
         html:not(.dark-mode) .bg-white       { background: #ffffff !important; }
@@ -472,6 +499,29 @@
         
         .kpi-card-teal { background: #f0fdfa; }
         .kpi-icon-teal, .kpi-value-teal { color: #0f766e; }
+        
+        /* Light mode KPI card colors - all white with black text */
+        html:not(.dark-mode) .kpi-card-blue,
+        html:not(.dark-mode) .kpi-card-indigo,
+        html:not(.dark-mode) .kpi-card-green,
+        html:not(.dark-mode) .kpi-card-orange,
+        html:not(.dark-mode) .kpi-card-purple,
+        html:not(.dark-mode) .kpi-card-amber,
+        html:not(.dark-mode) .kpi-card-teal {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+        }
+        
+        /* Light mode KPI icon and value colors - all black */
+        html:not(.dark-mode) .kpi-icon-blue, html:not(.dark-mode) .kpi-value-blue,
+        html:not(.dark-mode) .kpi-icon-indigo, html:not(.dark-mode) .kpi-value-indigo,
+        html:not(.dark-mode) .kpi-icon-green, html:not(.dark-mode) .kpi-value-green,
+        html:not(.dark-mode) .kpi-icon-orange, html:not(.dark-mode) .kpi-value-orange,
+        html:not(.dark-mode) .kpi-icon-purple, html:not(.dark-mode) .kpi-value-purple,
+        html:not(.dark-mode) .kpi-icon-amber, html:not(.dark-mode) .kpi-value-amber,
+        html:not(.dark-mode) .kpi-icon-teal, html:not(.dark-mode) .kpi-value-teal {
+            color: #000000 !important;
+        }
         
         /* Dark mode KPI card colors */
         .dark-mode .kpi-card-blue,
