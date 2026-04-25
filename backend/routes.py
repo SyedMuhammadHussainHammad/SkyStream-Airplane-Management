@@ -343,10 +343,24 @@ def staff_dashboard():
 @login_required
 @admin_required
 def admin_dashboard():
+    # Get pagination parameters
+    flights_page = request.args.get('flights_page', 1, type=int)
+    flights_per_page = 10
+    
     planes        = Plane.query.all()
     staff_members = User.query.filter_by(role='staff').all()
     admin_users   = User.query.filter_by(role='admin').all()
-    flights       = Flight.query.all()
+    
+    # Paginate flights
+    flights_pagination = Flight.query.order_by(Flight.departure_time.desc()).paginate(
+        page=flights_page,
+        per_page=flights_per_page,
+        error_out=False
+    )
+    flights = flights_pagination.items
+    
+    # Get total count for KPIs
+    total_flights_count = Flight.query.count()
 
     # Build enriched customer list with booking stats (what the template expects)
     raw_customers = User.query.filter_by(role='customer').all()
@@ -377,7 +391,7 @@ def admin_dashboard():
         'in_flight':     in_flight,
         'on_ground':     on_ground,
         'maintenance':   maintenance,
-        'flights':       len(flights),
+        'flights':       total_flights_count,  # Use total count, not paginated
         'staff':         len(staff_members),
         'customers':     len(raw_customers),
         'total_revenue': total_revenue,
@@ -393,6 +407,7 @@ def admin_dashboard():
         customers=customers,
         admin_users=admin_users,
         flights=flights,
+        flights_pagination=flights_pagination,
         kpis=kpis,
         now=now,
     )

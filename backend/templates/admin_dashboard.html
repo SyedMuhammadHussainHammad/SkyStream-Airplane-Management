@@ -568,23 +568,42 @@
                     <div class="flex items-center gap-2">
                         <i data-lucide="calendar" class="w-4 h-4 text-gold"></i>
                         <h2 class="font-display font-bold text-base text-navy">Flight Schedule</h2>
-                        <span class="text-xs text-slate-400">({{ flights|length }} routes)</span>
+                        <span class="text-xs text-slate-400">({{ kpis.flights }} total routes)</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <!-- Pagination controls -->
+                        <!-- Server-side Pagination controls -->
+                        {% if flights_pagination.pages > 1 %}
                         <div class="flex items-center gap-2">
-                            <button onclick="changeFlightPage(-1)" id="flights-prev-btn" 
-                                class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-navy px-3 py-1.5 rounded-lg transition border border-slate-200 hover:border-gold disabled:opacity-40 disabled:cursor-not-allowed">
+                            {% if flights_pagination.has_prev %}
+                            <a href="{{ url_for('admin_dashboard', flights_page=flights_pagination.prev_num) }}#flights"
+                                class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-navy px-3 py-1.5 rounded-lg transition border border-slate-200 hover:border-gold">
+                                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Prev
+                            </a>
+                            {% else %}
+                            <button disabled
+                                class="flex items-center gap-1 text-xs font-semibold text-slate-400 px-3 py-1.5 rounded-lg border border-slate-200 opacity-40 cursor-not-allowed">
                                 <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Prev
                             </button>
+                            {% endif %}
+                            
                             <span class="text-xs font-semibold text-slate-600 px-2">
-                                Page <span id="flights-current-page">1</span> of <span id="flights-total-pages">1</span>
+                                Page {{ flights_pagination.page }} of {{ flights_pagination.pages }}
                             </span>
-                            <button onclick="changeFlightPage(1)" id="flights-next-btn"
-                                class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-navy px-3 py-1.5 rounded-lg transition border border-slate-200 hover:border-gold disabled:opacity-40 disabled:cursor-not-allowed">
+                            
+                            {% if flights_pagination.has_next %}
+                            <a href="{{ url_for('admin_dashboard', flights_page=flights_pagination.next_num) }}#flights"
+                                class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-navy px-3 py-1.5 rounded-lg transition border border-slate-200 hover:border-gold">
+                                Next <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                            {% else %}
+                            <button disabled
+                                class="flex items-center gap-1 text-xs font-semibold text-slate-400 px-3 py-1.5 rounded-lg border border-slate-200 opacity-40 cursor-not-allowed">
                                 Next <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                             </button>
+                            {% endif %}
                         </div>
+                        {% endif %}
+                        
                         <a href="{{ url_for('admin_add_flight') }}"
                            class="flex items-center gap-1.5 bg-navy hover:bg-navy-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-sm">
                             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Flight
@@ -605,7 +624,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="flights-tbody">
                                 {% for fl in flights %}
-                                <tr class="hover:bg-slate-50 transition-colors flight-row" data-flight-index="{{ loop.index0 }}">
+                                <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-5 py-3.5">
                                         <span
                                             class="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold">SS-{{
@@ -1036,67 +1055,6 @@
         function closeDeleteModal() {
             document.getElementById('staff-delete-modal').style.display = 'none';
         }
-
-        // ══════════════════════════════════════════════════════════════
-        // FLIGHTS PAGINATION
-        // ══════════════════════════════════════════════════════════════
-        let flightsCurrentPage = 1;
-        const flightsPerPage = 10; // Show 10 flights per page
-        let totalFlights = 0;
-        let totalFlightPages = 1;
-
-        function initFlightsPagination() {
-            const rows = document.querySelectorAll('.flight-row');
-            totalFlights = rows.length;
-            totalFlightPages = Math.ceil(totalFlights / flightsPerPage);
-            
-            document.getElementById('flights-total-pages').textContent = totalFlightPages;
-            
-            if (totalFlights > 0) {
-                showFlightPage(1);
-            }
-        }
-
-        function showFlightPage(page) {
-            const rows = document.querySelectorAll('.flight-row');
-            const start = (page - 1) * flightsPerPage;
-            const end = start + flightsPerPage;
-
-            rows.forEach((row, index) => {
-                if (index >= start && index < end) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            flightsCurrentPage = page;
-            document.getElementById('flights-current-page').textContent = page;
-
-            // Update button states
-            const prevBtn = document.getElementById('flights-prev-btn');
-            const nextBtn = document.getElementById('flights-next-btn');
-            
-            prevBtn.disabled = page === 1;
-            nextBtn.disabled = page === totalFlightPages;
-
-            // Re-initialize Lucide icons for visible rows
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
-
-        function changeFlightPage(delta) {
-            const newPage = flightsCurrentPage + delta;
-            if (newPage >= 1 && newPage <= totalFlightPages) {
-                showFlightPage(newPage);
-            }
-        }
-
-        // Initialize pagination when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initFlightsPagination();
-        });
     </script>
 
   <!-- ── Staff Delete Modal ── -->
