@@ -7,39 +7,6 @@
   <meta name="description" content="SkyStream Airlines – Pakistan's premier digital airline.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <script>if(localStorage.getItem('ss-theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            navy:  { DEFAULT:'#050d1f', 900:'#050d1f', 800:'#0a1628', 700:'#0d1f3c', 600:'#112850', 500:'#1a3a6b' },
-            sky:   { DEFAULT:'#0ea5e9', light:'#38bdf8', dark:'#0284c7' },
-            gold:  { DEFAULT:'#c9922a', light:'#e8b84b', pale:'#fdf3dc', dark:'#a07020' },
-          },
-          fontFamily: {
-            display: ["'Inter'","'Sora'","sans-serif"],
-            body:    ["'Inter'","'DM Sans'","sans-serif"],
-          },
-          animation: {
-            'fade-up':   'fadeUp .5s cubic-bezier(.16,1,.3,1) both',
-            'fade-in':   'fadeIn .35s ease both',
-            'float':     'float 6s ease-in-out infinite',
-            'shimmer':   'shimmer 2.5s linear infinite',
-            'pulse-slow':'pulseSlow 3s ease-in-out infinite',
-          },
-          keyframes: {
-            fadeUp:    { from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} },
-            fadeIn:    { from:{opacity:'0'}, to:{opacity:'1'} },
-            float:     { '0%,100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-12px)'} },
-            shimmer:   { from:{backgroundPosition:'-200% 0'}, to:{backgroundPosition:'200% 0'} },
-            pulseSlow: { '0%,100%':{opacity:'1'}, '50%':{opacity:'.5'} },
-          }
-        }
-      }
-    }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/skystream.css') }}">
