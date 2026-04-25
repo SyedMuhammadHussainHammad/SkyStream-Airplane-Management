@@ -351,8 +351,9 @@ def admin_dashboard():
     staff_members = User.query.filter_by(role='staff').all()
     admin_users   = User.query.filter_by(role='admin').all()
     
-    # Paginate flights
-    flights_pagination = Flight.query.order_by(Flight.departure_time.desc()).paginate(
+    # Paginate flights - soonest/most recent first (ascending by departure time)
+    # This shows April 24 before May 3
+    flights_pagination = Flight.query.order_by(Flight.departure_time.asc()).paginate(
         page=flights_page,
         per_page=flights_per_page,
         error_out=False
