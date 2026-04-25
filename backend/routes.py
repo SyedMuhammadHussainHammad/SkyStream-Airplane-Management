@@ -17,7 +17,7 @@ from forms import (
     FlightSearchForm
 )
 
-from models import User, Flight, Seat, Plane, Booking, Passenger, Ticket, StaffProfile
+from models import User, Flight, Seat, Plane, Booking, Passenger, Ticket, StaffProfile, Roster
 
 # ── UTILS ──
 def utc_now():
@@ -606,10 +606,22 @@ def admin_delete_user(user_id):
     if user_id == current_user.id:
         flash('You cannot delete your own account.', 'danger')
         return redirect(url_for('admin_dashboard'))
+    
     user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    flash(f'Account for {user.first_name} {user.last_name} deleted.', 'success')
+    user_name = f"{user.first_name} {user.last_name}"
+    
+    try:
+        # With cascade="all, delete-orphan" configured in models,
+        # SQLAlchemy will automatically handle deletion of:
+        # - StaffProfile and its Rosters (for staff users)
+        # - Bookings and their Passengers and Tickets (for customer users)
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Account for {user_name} deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {str(e)}', 'danger')
+    
     return redirect(url_for('admin_dashboard'))
 
 # ── VIEW TICKET ──

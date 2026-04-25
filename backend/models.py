@@ -98,8 +98,8 @@ class Booking(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    passengers = db.relationship("Passenger", backref="booking", lazy=True)
-    ticket = db.relationship("Ticket", backref="booking", uselist=False)
+    passengers = db.relationship("Passenger", backref="booking", lazy=True, cascade="all, delete-orphan")
+    ticket = db.relationship("Ticket", backref="booking", uselist=False, cascade="all, delete-orphan")
 
 
 # ── PASSENGER ──
@@ -129,7 +129,7 @@ class StaffProfile(db.Model):
     feedback_rating = db.Column(db.Float, default=0.0)
     reward_points = db.Column(db.Integer, default=0)
 
-    rosters = db.relationship("Roster", backref="staff_profile", lazy=True)
+    rosters = db.relationship("Roster", backref="staff_profile", lazy=True, cascade="all, delete-orphan")
 
 
 # ── ROSTER ──
